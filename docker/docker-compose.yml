@@ -1,0 +1,58 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: be_golang_fashionecom_postgres
+    restart: no
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - TZ=Asia/Ho_Chi_Minh
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+      - ./my_db.sql:/docker-entrypoint-initdb.d/my_db.sql
+    networks:
+      - be_golang_fashionecom
+
+  redis:
+    image: redis:7
+    container_name: be_golang_fashionecom_redis
+    restart: no
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    ports:
+      - "${REDIS_PORT}:6379"
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    volumes:
+      - ./redis_data:/data
+    networks:
+      - be_golang_fashionecom
+  
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    container_name: be_golang_fashionecom_elasticsearch
+    restart: no
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=true
+      - ELASTIC_PASSWORD=${ELASTICSEARCH_PASSWORD}
+      - xpack.security.http.ssl.enabled=false
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+    ports:
+      - "${ELASTICSEARCH_PORT}:9200"
+    volumes:
+      - ./elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - be_golang_fashionecom
+    healthcheck:
+      test: ["CMD-SHELL", "curl -u elastic:${ELASTICSEARCH_PASSWORD} -s http://localhost:9200 >/dev/null || exit 1"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 5s
+
+
+networks:
+  be_golang_fashionecom:
