@@ -16,34 +16,32 @@ import (
 	"github.com/elastic/go-elasticsearch/v8/esutil"
 )
 
-type userElasticsearchRepository struct {
+type invoiceElasticsearchRepository struct {
 }
 
-type UserElasticsearchRepository interface {
-	SyncAllAvailable(ctx context.Context, users []model.User) error
+type InvoiceElasticsearchRepository interface {
+	SyncAllAvailable(ctx context.Context, invoices []model.Invoice) error
 
-	SyncCreating(ctx context.Context, newUser *model.User) error
-	SyncUpdating(ctx context.Context, updatedUser *model.User) error
+	SyncCreating(ctx context.Context, newInvoice *model.Invoice) error
+	SyncUpdating(ctx context.Context, updatedInvoice *model.Invoice) error
 	SyncDeletingById(ctx context.Context, id int64) error
 
 	Get(ctx context.Context, offset int, limit int, sortFields []utils.SortField,
-		fullName string,
-		email string,
-		username string,
-		address string,
-		roleName string,
+		status string,
+		totalAmountGTL string,
+		totalAmountLTE string,
 		createdAtGTE string,
 		createdAtLTE string,
-	) ([]dto.UserView, error)
+	) ([]dto.InvoiceView, error)
 }
 
-func NewUserElasticsearchRepository() UserElasticsearchRepository {
-	return &userElasticsearchRepository{}
+func NewInvoiceElasticsearchRepository() InvoiceElasticsearchRepository {
+	return &invoiceElasticsearchRepository{}
 }
 
-func (userElasticsearchRepository *userElasticsearchRepository) SyncAllAvailable(ctx context.Context, users []model.User) error {
+func (invoiceElasticsearchRepository *invoiceElasticsearchRepository) SyncAllAvailable(ctx context.Context, invoices []model.Invoice) error {
 	// Check if index already exists on Elasticsearch
-	existsRes, err := infrastructure.ElasticsearchClient.Indices.Exists([]string{"users"})
+	existsRes, err := infrastructure.ElasticsearchClient.Indices.Exists([]string{"invoices"})
 	if err != nil {
 		return err
 	}
@@ -52,15 +50,15 @@ func (userElasticsearchRepository *userElasticsearchRepository) SyncAllAvailable
 	// If index does not exists on Elasticsearch
 	if existsRes.StatusCode == 404 {
 		// Create index on Elasticsearch using custom schema
-		res, err := infrastructure.ElasticsearchClient.Indices.Create("users",
-			infrastructure.ElasticsearchClient.Indices.Create.WithBody(bytes.NewReader([]byte(model.UserSchemaMappingElasticsearch))))
+		res, err := infrastructure.ElasticsearchClient.Indices.Create("invoices",
+			infrastructure.ElasticsearchClient.Indices.Create.WithBody(bytes.NewReader([]byte(model.InvoiceSchemaMappingElasticsearch))))
 		if err != nil {
 			return err
 		}
 		defer res.Body.Close()
 
 		if res.IsError() {
-			return fmt.Errorf("some thing wrong when creating users index")
+			return fmt.Errorf("some thing wrong when creating invoices index")
 		}
 
 		hasFailure := false
@@ -69,7 +67,7 @@ func (userElasticsearchRepository *userElasticsearchRepository) SyncAllAvailable
 		// Create BulkIndexer for above index to index to Elasticsearch
 		indexer, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
 			Client: infrastructure.ElasticsearchClient,
-			Index:  "users",
+			Index:  "invoices",
 		})
 		if err != nil {
 			return err
@@ -81,9 +79,9 @@ func (userElasticsearchRepository *userElasticsearchRepository) SyncAllAvailable
 		}()
 
 		// Add all available data on PostgreSQL to BulkIndexer
-		for _, user := range users {
+		for _, invoice := range invoices {
 			// Convert data to JSON data
-			userJSON, err := json.Marshal(user)
+			invoiceJSON, err := json.Marshal(invoice)
 			if err != nil {
 				return err
 			}
@@ -91,13 +89,13 @@ func (userElasticsearchRepository *userElasticsearchRepository) SyncAllAvailable
 			// Add data to BulkIndexer
 			err = indexer.Add(ctx, esutil.BulkIndexerItem{
 				Action:     "index",
-				DocumentID: strconv.FormatInt(user.Id, 10),
-				Body:       bytes.NewReader(userJSON),
+				DocumentID: strconv.FormatInt(invoice.Id, 10),
+				Body:       bytes.NewReader(invoiceJSON),
 				OnFailure: func(ctx context.Context, item esutil.BulkIndexerItem, resp esutil.BulkIndexerResponseItem, err error) {
 					if err != nil {
 						log.Printf("Bulk index failed: %s", err.Error())
 					} else {
-						log.Printf("Index user with id = %s failed: %s", item.DocumentID, resp.Error.Reason)
+						log.Printf("Index invoice with id = %s failed: %s", item.DocumentID, resp.Error.Reason)
 					}
 					hasFailure = true
 				},
@@ -108,24 +106,24 @@ func (userElasticsearchRepository *userElasticsearchRepository) SyncAllAvailable
 		}
 
 		if hasFailure {
-			return fmt.Errorf("some thing wrong when syncing all available users")
+			return fmt.Errorf("some thing wrong when syncing all available invoices")
 		}
 		if closeBulkIndexer != nil {
-			return fmt.Errorf("some thing wrong when syncing all available users (%s)", closeBulkIndexer.Error())
+			return fmt.Errorf("some thing wrong when syncing all available invoices (%s)", closeBulkIndexer.Error())
 		}
 
 		return nil
 	}
 
-	return fmt.Errorf("users index already exists after first sync all")
+	return fmt.Errorf("invoices index already exists after first sync all")
 }
 
-func (userElasticsearchRepository *userElasticsearchRepository) SyncCreating(ctx context.Context, newUser *model.User) error {
+func (invoiceElasticsearchRepository *invoiceElasticsearchRepository) SyncCreating(ctx context.Context, newInvoice *model.Invoice) error {
 	// Add data to Elasticsearch
 	res, err := infrastructure.ElasticsearchClient.Index(
-		"users",
-		esutil.NewJSONReader(newUser),
-		infrastructure.ElasticsearchClient.Index.WithDocumentID(strconv.FormatInt(newUser.Id, 10)),
+		"invoices",
+		esutil.NewJSONReader(newInvoice),
+		infrastructure.ElasticsearchClient.Index.WithDocumentID(strconv.FormatInt(newInvoice.Id, 10)),
 		infrastructure.ElasticsearchClient.Index.WithRefresh("true"),
 	)
 	if err != nil {
@@ -134,18 +132,18 @@ func (userElasticsearchRepository *userElasticsearchRepository) SyncCreating(ctx
 	defer res.Body.Close()
 
 	if res.IsError() {
-		return fmt.Errorf("some thing wrong when syncing creating user")
+		return fmt.Errorf("some thing wrong when syncing creating invoice")
 	}
 
 	return nil
 }
 
-func (userElasticsearchRepository *userElasticsearchRepository) SyncUpdating(ctx context.Context, updatedUser *model.User) error {
+func (invoiceElasticsearchRepository *invoiceElasticsearchRepository) SyncUpdating(ctx context.Context, updatedInvoice *model.Invoice) error {
 	// Update data on Elasticsearch
 	res, err := infrastructure.ElasticsearchClient.Index(
-		"users",
-		esutil.NewJSONReader(updatedUser),
-		infrastructure.ElasticsearchClient.Index.WithDocumentID(strconv.FormatInt(updatedUser.Id, 10)),
+		"invoices",
+		esutil.NewJSONReader(updatedInvoice),
+		infrastructure.ElasticsearchClient.Index.WithDocumentID(strconv.FormatInt(updatedInvoice.Id, 10)),
 		infrastructure.ElasticsearchClient.Index.WithRefresh("true"),
 	)
 	if err != nil {
@@ -154,16 +152,16 @@ func (userElasticsearchRepository *userElasticsearchRepository) SyncUpdating(ctx
 	defer res.Body.Close()
 
 	if res.IsError() {
-		return fmt.Errorf("some thing wrong when syncing updating user")
+		return fmt.Errorf("some thing wrong when syncing updating invoice")
 	}
 
 	return nil
 }
 
-func (userElasticsearchRepository *userElasticsearchRepository) SyncDeletingById(ctx context.Context, id int64) error {
+func (invoiceElasticsearchRepository *invoiceElasticsearchRepository) SyncDeletingById(ctx context.Context, id int64) error {
 	// Delete data from Elasticsearch
 	res, err := infrastructure.ElasticsearchClient.Delete(
-		"users",
+		"invoices",
 		strconv.FormatInt(id, 10),
 		infrastructure.ElasticsearchClient.Delete.WithRefresh("true"),
 	)
@@ -173,64 +171,42 @@ func (userElasticsearchRepository *userElasticsearchRepository) SyncDeletingById
 	defer res.Body.Close()
 
 	if res.IsError() {
-		return fmt.Errorf("some thing wrong when syncing deleting user")
+		return fmt.Errorf("some thing wrong when syncing deleting invoice")
 	}
 
 	return nil
 }
 
-func (userElasticsearchRepository *userElasticsearchRepository) Get(ctx context.Context, offset int, limit int, sortFields []utils.SortField,
-	fullName string,
-	email string,
-	username string,
-	address string,
-	roleName string,
+func (invoiceElasticsearchRepository *invoiceElasticsearchRepository) Get(ctx context.Context, offset int, limit int, sortFields []utils.SortField,
+	status string,
+	totalAmountGTL string,
+	totalAmountLTE string,
 	createdAtGTE string,
 	createdAtLTE string,
-) ([]dto.UserView, error) {
+) ([]dto.InvoiceView, error) {
 	mustConditions := []map[string]interface{}{}
 
 	// If filtering by full_name
-	if fullName != "" {
+	if status != "" {
 		mustConditions = append(mustConditions, map[string]interface{}{
 			"match": map[string]interface{}{
-				"full_name": fullName,
+				"status": status,
 			},
 		})
 	}
 
-	// If filtering by email
-	if email != "" {
-		mustConditions = append(mustConditions, map[string]interface{}{
-			"match": map[string]interface{}{
-				"email": email,
-			},
-		})
+	// If filtering by total_amount in range or partial range
+	totalAmountRange := map[string]interface{}{}
+	if totalAmountGTL != "" {
+		totalAmountRange["gte"] = totalAmountGTL
 	}
-
-	// If filtering by username
-	if username != "" {
-		mustConditions = append(mustConditions, map[string]interface{}{
-			"match": map[string]interface{}{
-				"username": username,
-			},
-		})
+	if totalAmountLTE != "" {
+		totalAmountRange["lte"] = totalAmountLTE
 	}
-
-	// If filtering by address
-	if address != "" {
+	if len(totalAmountRange) > 0 {
 		mustConditions = append(mustConditions, map[string]interface{}{
-			"match": map[string]interface{}{
-				"address": address,
-			},
-		})
-	}
-
-	// If filtering by role_name
-	if roleName != "" {
-		mustConditions = append(mustConditions, map[string]interface{}{
-			"match": map[string]interface{}{
-				"role_name": roleName,
+			"range": map[string]interface{}{
+				"total_amount": totalAmountRange,
 			},
 		})
 	}
@@ -274,7 +250,7 @@ func (userElasticsearchRepository *userElasticsearchRepository) Get(ctx context.
 	_sortFields := []map[string]interface{}{}
 	for _, sortField := range sortFields {
 		_sortFields = append(_sortFields, map[string]interface{}{
-			model.UserSchemaMappingElasticsearchSortFieldMap[sortField.Field]: strings.ToLower(sortField.Direction),
+			model.InvoiceSchemaMappingElasticsearchSortFieldMap[sortField.Field]: strings.ToLower(sortField.Direction),
 		})
 	}
 	query["sort"] = _sortFields
@@ -288,7 +264,7 @@ func (userElasticsearchRepository *userElasticsearchRepository) Get(ctx context.
 	// Send request to Elasticsearch
 	res, err := infrastructure.ElasticsearchClient.Search(
 		infrastructure.ElasticsearchClient.Search.WithContext(ctx),
-		infrastructure.ElasticsearchClient.Search.WithIndex("users"),
+		infrastructure.ElasticsearchClient.Search.WithIndex("invoices"),
 		infrastructure.ElasticsearchClient.Search.WithBody(bytes.NewReader(queryJSON)),
 	)
 	if err != nil {
@@ -298,14 +274,14 @@ func (userElasticsearchRepository *userElasticsearchRepository) Get(ctx context.
 
 	// Parse Elasticsearch response
 	if res.IsError() {
-		return nil, fmt.Errorf("some thing wrong when querying users")
+		return nil, fmt.Errorf("some thing wrong when querying invoices")
 	}
 
 	// Declare Elasticsearch response
 	var elasticsearchResponse struct {
 		Hits struct {
 			Hits []struct {
-				Source dto.UserView `json:"_source"`
+				Source dto.InvoiceView `json:"_source"`
 			} `json:"hits"`
 		} `json:"hits"`
 	}
@@ -317,10 +293,10 @@ func (userElasticsearchRepository *userElasticsearchRepository) Get(ctx context.
 	}
 
 	// Extract data from Elasticsearch response
-	users := make([]dto.UserView, len(elasticsearchResponse.Hits.Hits))
+	invoices := make([]dto.InvoiceView, len(elasticsearchResponse.Hits.Hits))
 	for i, hit := range elasticsearchResponse.Hits.Hits {
-		users[i] = hit.Source
+		invoices[i] = hit.Source
 	}
 
-	return users, nil
+	return invoices, nil
 }

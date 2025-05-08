@@ -20,6 +20,8 @@ type UserRepository interface {
 	Update(ctx context.Context, updatedUser *model.User) error
 	DeleteById(ctx context.Context, id int64) error
 
+	// Integrate with Elasticsearch
+
 	GetAll(ctx context.Context) ([]model.User, error)
 }
 
@@ -85,9 +87,11 @@ func (userRepository *userRepository) Update(ctx context.Context, updatedUser *m
 }
 
 func (userRepository *userRepository) DeleteById(ctx context.Context, id int64) error {
-	_, err := infrastructure.PostgresDB.NewDelete().Model(&model.User{}).Returning("*").Where("id = ?", id).Exec(ctx)
+	_, err := infrastructure.PostgresDB.NewDelete().Model(&model.User{}).Where("id = ?", id).Exec(ctx)
 	return err
 }
+
+// Integrate with Elasticsearch
 
 func (userRepository *userRepository) GetAll(ctx context.Context) ([]model.User, error) {
 	var users []model.User

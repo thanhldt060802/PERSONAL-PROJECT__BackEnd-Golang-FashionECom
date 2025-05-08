@@ -171,16 +171,6 @@ func NewUserHandler(api huma.API, userService service.UserService, jwtAuthMiddle
 		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
 	}, userHandler.GetUsersWithElasticsearch)
 
-	// Statistics number of users created with Elasticsearch
-	huma.Register(api, huma.Operation{
-		Method:      http.MethodGet,
-		Path:        "/users/elasticsearch/statistics-number-of-users-created",
-		Summary:     "/users/elasticsearch/statistics-number-of-users-created",
-		Description: "Statistics number of users created with Elasticsearch.",
-		Tags:        []string{"User"},
-		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
-	}, userHandler.StatisticsNumberOfUsersCreatedWithElasticsearch)
-
 	return userHandler
 }
 
@@ -278,14 +268,14 @@ func (userHandler *UserHandler) UpdateUserById(ctx context.Context, reqDTO *dto.
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusBadRequest
 		res.Code = "ERR_BAD_REQUEST"
-		res.Message = "Update user failed"
+		res.Message = "Update user by id failed"
 		res.Details = []string{err.Error()}
 		return nil, res
 	}
 
 	res := &dto.SuccessResponse{}
 	res.Body.Code = "OK"
-	res.Body.Message = "Update user successful"
+	res.Body.Message = "Update user by id successful"
 	return res, nil
 }
 
@@ -294,14 +284,14 @@ func (userHandler *UserHandler) DeleteUserById(ctx context.Context, reqDTO *dto.
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusBadRequest
 		res.Code = "ERR_BAD_REQUEST"
-		res.Message = "Delete user failed"
+		res.Message = "Delete user by id failed"
 		res.Details = []string{err.Error()}
 		return nil, res
 	}
 
 	res := &dto.SuccessResponse{}
 	res.Body.Code = "OK"
-	res.Body.Message = "Delete user successful"
+	res.Body.Message = "Delete user by id successful"
 	return res, nil
 }
 
@@ -437,23 +427,5 @@ func (userHandler *UserHandler) GetUsersWithElasticsearch(ctx context.Context, r
 	res.Body.Message = "Get users with Elasticsearch successful"
 	res.Body.Data = users
 	res.Body.Total = len(users)
-	return res, nil
-}
-
-func (userHandler *UserHandler) StatisticsNumberOfUsersCreatedWithElasticsearch(ctx context.Context, reqDTO *dto.StatisticsNumberOfUsersCreatedRequest) (*dto.BodyResponse[dto.NumberOfUsersCreatedReport], error) {
-	report, err := userHandler.userService.StatisticsNumberOfUsersCreatedWithElasticsearch(ctx, reqDTO)
-	if err != nil {
-		res := &dto.ErrorResponse{}
-		res.Status = http.StatusInternalServerError
-		res.Code = "ERR_INTERNAL_SERVER"
-		res.Message = "Statistics number of users created with Elasticsearch failed"
-		res.Details = []string{err.Error()}
-		return nil, res
-	}
-
-	res := &dto.BodyResponse[dto.NumberOfUsersCreatedReport]{}
-	res.Body.Code = "OK"
-	res.Body.Message = "Statistics number of users created with Elasticsearch successful"
-	res.Body.Data = *report
 	return res, nil
 }
