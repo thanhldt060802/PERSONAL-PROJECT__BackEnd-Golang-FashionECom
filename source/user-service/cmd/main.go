@@ -38,7 +38,6 @@ func main() {
 	defer infrastructure.PostgresDB.Close()
 	infrastructure.InitRedisClient()
 	defer infrastructure.RedisClient.Close()
-	infrastructure.InitElasticsearchClient()
 
 	humaCfg := huma.DefaultConfig("FashionECom - User Service", "v1.0.0")
 	humaCfg.DocsPath = ""
@@ -76,9 +75,8 @@ func main() {
 	jwtAuthMiddleware := middleware.NewAuthMiddleware()
 
 	userRepository := repository.NewUserRepository()
-	userElasticsearchRepository := repository.NewUserElasticsearchRepository()
 
-	userService := service.NewUserService(userRepository, userElasticsearchRepository)
+	userService := service.NewUserService(userRepository)
 
 	handler.NewUserHandler(api, userService, jwtAuthMiddleware)
 

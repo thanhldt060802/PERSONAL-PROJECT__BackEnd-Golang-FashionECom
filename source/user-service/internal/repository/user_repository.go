@@ -2,44 +2,32 @@ package repository
 
 import (
 	"context"
-	"fmt"
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/model"
-	"thanhldt060802/utils"
 )
 
 type userRepository struct {
 }
 
 type UserRepository interface {
-	Get(ctx context.Context, offset int, limit int, sortFields []utils.SortField) ([]model.User, error)
+	GetAll(ctx context.Context) ([]model.User, error) // Integrate with Elasticsearch
+
 	GetById(ctx context.Context, id int64) (*model.User, error)
 	GetByUsername(ctx context.Context, username string) (*model.User, error)
 	GetByEmail(ctx context.Context, email string) (*model.User, error)
 	Create(ctx context.Context, newUser *model.User) error
 	Update(ctx context.Context, updatedUser *model.User) error
 	DeleteById(ctx context.Context, id int64) error
-
-	// Integrate with Elasticsearch
-
-	GetAll(ctx context.Context) ([]model.User, error)
 }
 
 func NewUserRepository() UserRepository {
 	return &userRepository{}
 }
 
-func (userRepository *userRepository) Get(ctx context.Context, offset int, limit int, sortFields []utils.SortField) ([]model.User, error) {
+func (userRepository *userRepository) GetAll(ctx context.Context) ([]model.User, error) {
 	var users []model.User
 
-	query := infrastructure.PostgresDB.NewSelect().Model(&users).
-		Offset(offset).
-		Limit(limit)
-	for _, sortField := range sortFields {
-		query = query.Order(fmt.Sprintf("%s %s", sortField.Field, sortField.Direction))
-	}
-
-	if err := query.Scan(ctx); err != nil {
+	if err := infrastructure.PostgresDB.NewSelect().Model(&users).Scan(ctx); err != nil {
 		return nil, err
 	}
 
@@ -89,16 +77,4 @@ func (userRepository *userRepository) Update(ctx context.Context, updatedUser *m
 func (userRepository *userRepository) DeleteById(ctx context.Context, id int64) error {
 	_, err := infrastructure.PostgresDB.NewDelete().Model(&model.User{}).Where("id = ?", id).Exec(ctx)
 	return err
-}
-
-// Integrate with Elasticsearch
-
-func (userRepository *userRepository) GetAll(ctx context.Context) ([]model.User, error) {
-	var users []model.User
-
-	if err := infrastructure.PostgresDB.NewSelect().Model(&users).Scan(ctx); err != nil {
-		return nil, err
-	}
-
-	return users, nil
 }

@@ -14,38 +14,38 @@ import (
 )
 
 type userService struct {
-	userRepository              repository.UserRepository
-	userElasticsearchRepository repository.UserElasticsearchRepository
+	userRepository repository.UserRepository
 }
 
 type UserService interface {
+	GetAllUsers(ctx context.Context) ([]dto.UserView, error)
+
 	GetUsers(ctx context.Context, reqDTO *dto.GetUsersRequest) ([]dto.UserView, error)
 	GetUserById(ctx context.Context, reqDTO *dto.GetUserByIdRequest) (*dto.UserView, error)
-	GetUserByUsername(ctx context.Context, reqDTO *dto.GetUserByUsernameRequest) (*dto.UserView, error)
-	GetUserByEmail(ctx context.Context, reqDTO *dto.GetUserByEmailRequest) (*dto.UserView, error)
 	CreateUser(ctx context.Context, reqDTO *dto.CreateUserRequest) error
 	UpdateUserById(ctx context.Context, reqDTO *dto.UpdateUserByIdRequest) error
 	DeleteUserById(ctx context.Context, reqDTO *dto.DeleteUserByIdRequest) error
-
-	KillUserToken(ctx context.Context, reqDTO *dto.KillUserTokenRequest) error
-
+	KillAccountToken(ctx context.Context, reqDTO *dto.KillUserTokenRequest) error
 	LoginUserAccount(ctx context.Context, reqDTO *dto.LoginUserAccountRequest) (*string, error)
 	LogoutUserAccount(ctx context.Context) error
 	RegisterUserAccount(ctx context.Context, reqDTO *dto.RegisterUserAccountRequest) error
 	GetUserAccount(ctx context.Context) (*dto.UserView, error)
 	UpdateUserAccount(ctx context.Context, reqDTO *dto.UpdateUserAccountRequest) error
-
-	// Integrate with Elasticsearch
-
-	SyncAllAvailableUsersToElasticsearch(ctx context.Context) error
-	GetUsersWithElasticsearch(ctx context.Context, reqDTO *dto.GetUsersWithElasticsearchRequest) ([]dto.UserView, error)
 }
 
-func NewUserService(userRepository repository.UserRepository, userElasticsearchRepository repository.UserElasticsearchRepository) UserService {
+func NewUserService(userRepository repository.UserRepository) UserService {
 	return &userService{
-		userRepository:              userRepository,
-		userElasticsearchRepository: userElasticsearchRepository,
+		userRepository: userRepository,
 	}
+}
+
+func (userService *userService) GetAllUsers(ctx context.Context) ([]dto.UserView, error) {
+	users, err := userService.userRepository.GetAll(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("query users from postgresql failed: %s", err.Error())
+	}
+
+	return dto.ToListUserView(users), nil
 }
 
 func (userService *userService) GetUsers(ctx context.Context, reqDTO *dto.GetUsersRequest) ([]dto.UserView, error) {
@@ -63,24 +63,6 @@ func (userService *userService) GetUserById(ctx context.Context, reqDTO *dto.Get
 	foundUser, err := userService.userRepository.GetById(ctx, reqDTO.Id)
 	if err != nil {
 		return nil, fmt.Errorf("id of user is not valid: %s", err.Error())
-	}
-
-	return dto.ToUserView(foundUser), nil
-}
-
-func (userService *userService) GetUserByUsername(ctx context.Context, reqDTO *dto.GetUserByUsernameRequest) (*dto.UserView, error) {
-	foundUser, err := userService.userRepository.GetByUsername(ctx, reqDTO.Username)
-	if err != nil {
-		return nil, fmt.Errorf("username of user is not valid: %s", err.Error())
-	}
-
-	return dto.ToUserView(foundUser), nil
-}
-
-func (userService *userService) GetUserByEmail(ctx context.Context, reqDTO *dto.GetUserByEmailRequest) (*dto.UserView, error) {
-	foundUser, err := userService.userRepository.GetByEmail(ctx, reqDTO.Email)
-	if err != nil {
-		return nil, fmt.Errorf("email of user is not valid: %s", err.Error())
 	}
 
 	return dto.ToUserView(foundUser), nil
@@ -109,10 +91,6 @@ func (userService *userService) CreateUser(ctx context.Context, reqDTO *dto.Crea
 	}
 	if err := userService.userRepository.Create(ctx, &newUser); err != nil {
 		return fmt.Errorf("insert user to postgresql failed: %s", err.Error())
-	}
-
-	if err := userService.userElasticsearchRepository.SyncCreating(ctx, &newUser); err != nil {
-		return fmt.Errorf("sync creating user to elasticsearch failed: %s", err.Error())
 	}
 
 	// Create cart for user
@@ -155,10 +133,6 @@ func (userService *userService) UpdateUserById(ctx context.Context, reqDTO *dto.
 		return fmt.Errorf("update user on postgresql failed: %s", err.Error())
 	}
 
-	if err := userService.userElasticsearchRepository.SyncUpdating(ctx, foundUser); err != nil {
-		return fmt.Errorf("sync updating user on elasticsearch failed: %s", err.Error())
-	}
-
 	return nil
 }
 
@@ -174,14 +148,10 @@ func (userService *userService) DeleteUserById(ctx context.Context, reqDTO *dto.
 		return fmt.Errorf("delete user from postgresql failed: %s", err.Error())
 	}
 
-	if err := userService.userElasticsearchRepository.SyncDeletingById(ctx, reqDTO.Id); err != nil {
-		return fmt.Errorf("sync deleting user from elasticsearch failed: %s", err.Error())
-	}
-
 	return nil
 }
 
-func (userService *userService) KillUserToken(ctx context.Context, reqDTO *dto.KillUserTokenRequest) error {
+func (userService *userService) KillAccountToken(ctx context.Context, reqDTO *dto.KillUserTokenRequest) error {
 	redisKey := fmt.Sprintf("token:%s", reqDTO.Token)
 
 	deleted, err := infrastructure.RedisClient.Del(ctx, redisKey).Result()
@@ -215,9 +185,10 @@ func (userService *userService) LoginUserAccount(ctx context.Context, reqDTO *dt
 
 	redisKey := fmt.Sprintf("token:%s", tokenStr)
 	userData := map[string]interface{}{
-		"user_id":   foundUser.Id,
-		"role_name": foundUser.RoleName,
-		"cart_id":   0,
+		"access_token": tokenStr,
+		"user_id":      foundUser.Id,
+		"role_name":    foundUser.RoleName,
+		"cart_id":      0,
 	}
 	userDataJSON, _ := json.Marshal(userData)
 
@@ -234,9 +205,9 @@ func (userService *userService) LoginUserAccount(ctx context.Context, reqDTO *dt
 
 func (userService *userService) LogoutUserAccount(ctx context.Context) error {
 	convertReqDTO := &dto.KillUserTokenRequest{}
-	convertReqDTO.Token = ctx.Value("token_str").(string)
+	convertReqDTO.Token = ctx.Value("access_token").(string)
 
-	return userService.KillUserToken(ctx, convertReqDTO)
+	return userService.KillAccountToken(ctx, convertReqDTO)
 }
 
 func (userService *userService) RegisterUserAccount(ctx context.Context, reqDTO *dto.RegisterUserAccountRequest) error {
@@ -267,38 +238,4 @@ func (userService *userService) UpdateUserAccount(ctx context.Context, reqDTO *d
 	convertReqDTO.Body.Address = reqDTO.Body.Address
 
 	return userService.UpdateUserById(ctx, convertReqDTO)
-}
-
-// Integrate with Elasticsearch
-
-func (userService *userService) SyncAllAvailableUsersToElasticsearch(ctx context.Context) error {
-	users, err := userService.userRepository.GetAll(ctx)
-	if err != nil {
-		return fmt.Errorf("query users from postgresql failed: %s", err.Error())
-	}
-
-	if err := userService.userElasticsearchRepository.SyncAllAvailable(ctx, users); err != nil {
-		return fmt.Errorf("sync all available users to elasticsearch failed: %s", err.Error())
-	}
-
-	return nil
-}
-
-func (userService *userService) GetUsersWithElasticsearch(ctx context.Context, reqDTO *dto.GetUsersWithElasticsearchRequest) ([]dto.UserView, error) {
-	sortFields := utils.ParseSorter(reqDTO.SortBy)
-
-	users, err := userService.userElasticsearchRepository.Get(ctx, reqDTO.Offset, reqDTO.Limit, sortFields,
-		reqDTO.FullName,
-		reqDTO.Email,
-		reqDTO.Username,
-		reqDTO.Address,
-		reqDTO.RoleName,
-		reqDTO.CreatedAtGTE,
-		reqDTO.CreatedAtLTE,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("query users from elasticsearch failed: %s", err.Error())
-	}
-
-	return users, nil
 }

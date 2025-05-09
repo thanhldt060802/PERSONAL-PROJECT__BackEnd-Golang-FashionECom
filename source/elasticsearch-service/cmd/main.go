@@ -4,17 +4,10 @@ import (
 	"net/http"
 	"thanhldt060802/config"
 	"thanhldt060802/infrastructure"
-
 	"thanhldt060802/internal/dto"
 	"thanhldt060802/internal/handler"
 	"thanhldt060802/internal/middleware"
-	"thanhldt060802/internal/repository"
 	"thanhldt060802/internal/service"
-
-	// "thanhldt060802/internal/handler"
-	// "thanhldt060802/internal/middleware"
-	// "thanhldt060802/internal/repository"
-	// "thanhldt060802/internal/service"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humagin"
@@ -40,13 +33,11 @@ var humaDocsEmbedded = `<!doctype html>
 func main() {
 
 	config.InitConfig()
-	infrastructure.InitPostgesDB()
-	defer infrastructure.PostgresDB.Close()
 	infrastructure.InitRedisClient()
 	defer infrastructure.RedisClient.Close()
 	infrastructure.InitElasticsearchClient()
 
-	humaCfg := huma.DefaultConfig("FashionECom - Report Service", "v1.0.0")
+	humaCfg := huma.DefaultConfig("FashionECom - Statistic & Report Service", "v1.0.0")
 	humaCfg.DocsPath = ""
 	humaCfg.JSONSchemaDialect = ""
 	humaCfg.CreateHooks = nil
@@ -81,14 +72,11 @@ func main() {
 
 	jwtAuthMiddleware := middleware.NewAuthMiddleware()
 
-	userElasticsearchRepository := repository.NewUserElasticsearchRepository()
-	invoiceElasticsearchRepository := repository.NewInvoiceElasticsearchRepository()
-
-	userService := service.NewUserService(userElasticsearchRepository)
-	invoiceService := service.NewInvoiceService(invoiceElasticsearchRepository)
+	userService := service.NewUserService()
+	// invoiceService := service.NewInvoiceService(invoiceElasticsearchRepository)
 
 	handler.NewUserHandler(api, userService, jwtAuthMiddleware)
-	handler.NewInvoiceHandler(api, invoiceService, jwtAuthMiddleware)
+	// handler.NewInvoiceHandler(api, invoiceService, jwtAuthMiddleware)
 
 	r.Run(":" + config.AppConfig.AppPort)
 
