@@ -24,7 +24,7 @@ type InvoiceDetailView struct {
 	TotalPrice         int64 `json:"total_price"`
 }
 
-func ToInvoiceView(invoice *model.Invoice, details ...InvoiceDetailView) *InvoiceView {
+func ToInvoiceView(invoice *model.Invoice, details []InvoiceDetailView) *InvoiceView {
 	return &InvoiceView{
 		Id:          invoice.Id,
 		UserId:      invoice.UserId,
@@ -39,7 +39,7 @@ func ToInvoiceView(invoice *model.Invoice, details ...InvoiceDetailView) *Invoic
 func ToListInvoiceView(invoices []model.Invoice) []InvoiceView {
 	invoiceViews := make([]InvoiceView, len(invoices))
 	for i, invoice := range invoices {
-		invoiceViews[i] = *ToInvoiceView(&invoice)
+		invoiceViews[i] = *ToInvoiceView(&invoice, nil)
 	}
 	return invoiceViews
 }

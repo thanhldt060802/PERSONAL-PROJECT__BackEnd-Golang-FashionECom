@@ -21,25 +21,25 @@ func NewUserHandler(api huma.API, userService service.UserService, jwtAuthMiddle
 		jwtAuthMiddleware: jwtAuthMiddleware,
 	}
 
+	//
+	//
+	// Integrate with Elasticsearch
+	// ######################################################################################
+
 	// Get all users (integrate with Elasticsearch)
 	huma.Register(api, huma.Operation{
 		Method:      http.MethodGet,
-		Path:        "/all-users",
-		Summary:     "/all-users",
+		Path:        "/users/all",
+		Summary:     "/users/all",
 		Description: "Get all users (integrate with Elasticsearch).",
 		Tags:        []string{"For Sycing Data To Elasticsearch"},
 		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
 	}, userHandler.GetAllUsers)
 
-	// Get users
-	huma.Register(api, huma.Operation{
-		Method:      http.MethodGet,
-		Path:        "/users",
-		Summary:     "/users",
-		Description: "Get users.",
-		Tags:        []string{"User"},
-		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
-	}, userHandler.GetUsers)
+	//
+	//
+	// Main features
+	// ######################################################################################
 
 	// Get user by id
 	huma.Register(api, huma.Operation{
@@ -81,68 +81,77 @@ func NewUserHandler(api huma.API, userService service.UserService, jwtAuthMiddle
 		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
 	}, userHandler.DeleteUserById)
 
-	// Show logged in user
+	//
+	//
+	// Extra features
+	// ######################################################################################
 
-	// Kill account token
-	huma.Register(api, huma.Operation{
-		Method:      http.MethodDelete,
-		Path:        "/users/kill-token/{token}",
-		Summary:     "/users/kill-token/{token}",
-		Description: "Kill account token.",
-		Tags:        []string{"Account"},
-		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
-	}, userHandler.KillAccountToken)
-
-	// Login user account
+	// Login account
 	huma.Register(api, huma.Operation{
 		Method:      http.MethodPost,
 		Path:        "/login",
 		Summary:     "/login",
-		Description: "Login user account.",
+		Description: "Login account.",
 		Tags:        []string{"Account"},
-	}, userHandler.LoginUserAccount)
+	}, userHandler.LoginAccount)
 
-	// Logout user account
+	// Logout account
 	huma.Register(api, huma.Operation{
 		Method:      http.MethodDelete,
 		Path:        "/logout",
 		Summary:     "/logout",
-		Description: "Logout user account.",
+		Description: "Logout account.",
 		Tags:        []string{"Account"},
 		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication},
-	}, userHandler.LogoutUserAccount)
+	}, userHandler.LogoutAccount)
 
-	// Register user
+	// Register account
 	huma.Register(api, huma.Operation{
 		Method:      http.MethodPost,
 		Path:        "/register",
 		Summary:     "/register",
-		Description: "Register user account.",
+		Description: "Register account.",
 		Tags:        []string{"Account"},
-	}, userHandler.RegisterUserAccount)
+	}, userHandler.RegisterAccount)
 
-	// Get user account
+	// Get account
 	huma.Register(api, huma.Operation{
 		Method:      http.MethodGet,
 		Path:        "/my-account",
 		Summary:     "/my-account",
-		Description: "Get user account.",
+		Description: "Get account.",
 		Tags:        []string{"Account"},
 		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication},
-	}, userHandler.GetUserAccount)
+	}, userHandler.GetAccount)
 
-	// Update user account
+	// Update account
 	huma.Register(api, huma.Operation{
 		Method:      http.MethodPut,
 		Path:        "/my-account",
 		Summary:     "/my-account",
-		Description: "Update user account.",
+		Description: "Update account.",
 		Tags:        []string{"Account"},
 		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication},
-	}, userHandler.UpdateUserAccount)
+	}, userHandler.UpdateAccount)
+
+	// Show all logged in accounts
+
+	// Destroy logged in account token
+
+	//
+	//
+	// Elasticsearch integration features
+	// ######################################################################################
+
+	// Get users
 
 	return userHandler
 }
+
+//
+//
+// Integrate with Elasticsearch
+// ######################################################################################
 
 func (userHandler *UserHandler) GetAllUsers(ctx context.Context, _ *struct{}) (*dto.BodyResponse[[]dto.UserView], error) {
 	users, err := userHandler.userService.GetAllUsers(ctx)
@@ -162,24 +171,10 @@ func (userHandler *UserHandler) GetAllUsers(ctx context.Context, _ *struct{}) (*
 	return res, nil
 }
 
-func (userHandler *UserHandler) GetUsers(ctx context.Context, reqDTO *dto.GetUsersRequest) (*dto.PaginationBodyResponseList[dto.UserView], error) {
-	users, err := userHandler.userService.GetUsers(ctx, reqDTO)
-	if err != nil {
-		res := &dto.ErrorResponse{}
-		res.Status = http.StatusInternalServerError
-		res.Code = "ERR_INTERNAL_SERVER"
-		res.Message = "Get users failed"
-		res.Details = []string{err.Error()}
-		return nil, res
-	}
-
-	res := &dto.PaginationBodyResponseList[dto.UserView]{}
-	res.Body.Code = "OK"
-	res.Body.Message = "Get users successful"
-	res.Body.Data = users
-	res.Body.Total = len(users)
-	return res, nil
-}
+//
+//
+// Main features
+// ######################################################################################
 
 func (userHandler *UserHandler) GetUserById(ctx context.Context, reqDTO *dto.GetUserByIdRequest) (*dto.BodyResponse[dto.UserView], error) {
 	foundUser, err := userHandler.userService.GetUserById(ctx, reqDTO)
@@ -247,26 +242,13 @@ func (userHandler *UserHandler) DeleteUserById(ctx context.Context, reqDTO *dto.
 	return res, nil
 }
 
-func (userHandler *UserHandler) ShowInUseAccount(ctx context.Context, _ *struct{})
+//
+//
+// Extra features
+// ######################################################################################
 
-func (userHandler *UserHandler) KillAccountToken(ctx context.Context, reqDTO *dto.KillUserTokenRequest) (*dto.SuccessResponse, error) {
-	if err := userHandler.userService.KillAccountToken(ctx, reqDTO); err != nil {
-		res := &dto.ErrorResponse{}
-		res.Status = http.StatusBadRequest
-		res.Code = "ERR_BAD_REQUEST"
-		res.Message = "Kill user token failed"
-		res.Details = []string{err.Error()}
-		return nil, res
-	}
-
-	res := &dto.SuccessResponse{}
-	res.Body.Code = "OK"
-	res.Body.Message = "Kill user token successful"
-	return res, nil
-}
-
-func (userHandler *UserHandler) LoginUserAccount(ctx context.Context, reqDTO *dto.LoginUserAccountRequest) (*dto.BodyResponse[string], error) {
-	token, err := userHandler.userService.LoginUserAccount(ctx, reqDTO)
+func (userHandler *UserHandler) LoginAccount(ctx context.Context, reqDTO *dto.LoginAccountRequest) (*dto.BodyResponse[string], error) {
+	token, err := userHandler.userService.LoginAccount(ctx, reqDTO)
 	if err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusBadRequest
@@ -283,68 +265,86 @@ func (userHandler *UserHandler) LoginUserAccount(ctx context.Context, reqDTO *dt
 	return res, nil
 }
 
-func (userHandler *UserHandler) LogoutUserAccount(ctx context.Context, _ *struct{}) (*dto.SuccessResponse, error) {
-	if err := userHandler.userService.LogoutUserAccount(ctx); err != nil {
+func (userHandler *UserHandler) LogoutAccount(ctx context.Context, _ *struct{}) (*dto.SuccessResponse, error) {
+	if err := userHandler.userService.LogoutAccount(ctx, ctx.Value("access_token").(string)); err != nil {
 		res := &dto.ErrorResponse{}
-		res.Status = http.StatusBadRequest
-		res.Code = "ERR_BAD_REQUEST"
-		res.Message = "Logout user account failed"
+		res.Status = http.StatusInternalServerError
+		res.Code = "ERR_INTERNAL_SERVER"
+		res.Message = "Logout account failed"
 		res.Details = []string{err.Error()}
 		return nil, res
 	}
 
 	res := &dto.SuccessResponse{}
 	res.Body.Code = "OK"
-	res.Body.Message = "Logout user account successful"
+	res.Body.Message = "Logout account successful"
 	return res, nil
 }
 
-func (userHandler *UserHandler) RegisterUserAccount(ctx context.Context, reqDTO *dto.RegisterUserAccountRequest) (*dto.SuccessResponse, error) {
-	if err := userHandler.userService.RegisterUserAccount(ctx, reqDTO); err != nil {
+func (userHandler *UserHandler) RegisterAccount(ctx context.Context, reqDTO *dto.RegisterAccountRequest) (*dto.SuccessResponse, error) {
+	convertReqDTO := &dto.CreateUserRequest{}
+	convertReqDTO.Body.FullName = reqDTO.Body.FullName
+	convertReqDTO.Body.Email = reqDTO.Body.Email
+	convertReqDTO.Body.Username = reqDTO.Body.Username
+	convertReqDTO.Body.Password = reqDTO.Body.Password
+	convertReqDTO.Body.Address = reqDTO.Body.Address
+	convertReqDTO.Body.RoleName = "CUSTOMER"
+
+	if err := userHandler.userService.CreateUser(ctx, convertReqDTO); err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusBadRequest
 		res.Code = "ERR_BAD_REQUEST"
-		res.Message = "Register user account failed"
+		res.Message = "Register account failed"
 		res.Details = []string{err.Error()}
 		return nil, res
 	}
 
 	res := &dto.SuccessResponse{}
 	res.Body.Code = "OK"
-	res.Body.Message = "Register user account successful"
+	res.Body.Message = "Register account successful"
 	return res, nil
 }
 
-func (userHandler *UserHandler) GetUserAccount(ctx context.Context, _ *struct{}) (*dto.BodyResponse[dto.UserView], error) {
-	foundUser, err := userHandler.userService.GetUserAccount(ctx)
+func (userHandler *UserHandler) GetAccount(ctx context.Context, _ *struct{}) (*dto.BodyResponse[dto.UserView], error) {
+	convertReqDTO := &dto.GetUserByIdRequest{}
+	convertReqDTO.Id = ctx.Value("user_id").(int64)
+
+	foundUser, err := userHandler.userService.GetUserById(ctx, convertReqDTO)
 	if err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusBadRequest
 		res.Code = "ERR_BAD_REQUEST"
-		res.Message = "Get user account failed"
+		res.Message = "Get account failed"
 		res.Details = []string{err.Error()}
 		return nil, res
 	}
 
 	res := &dto.BodyResponse[dto.UserView]{}
 	res.Body.Code = "OK"
-	res.Body.Message = "Get user account successful"
+	res.Body.Message = "Get account successful"
 	res.Body.Data = *foundUser
 	return res, nil
 }
 
-func (userHandler *UserHandler) UpdateUserAccount(ctx context.Context, reqDTO *dto.UpdateUserAccountRequest) (*dto.SuccessResponse, error) {
-	if err := userHandler.userService.UpdateUserAccount(ctx, reqDTO); err != nil {
+func (userHandler *UserHandler) UpdateAccount(ctx context.Context, reqDTO *dto.UpdateAccountRequest) (*dto.SuccessResponse, error) {
+	convertReqDTO := &dto.UpdateUserByIdRequest{}
+	convertReqDTO.Id = ctx.Value("user_id").(int64)
+	convertReqDTO.Body.FullName = reqDTO.Body.FullName
+	convertReqDTO.Body.Email = reqDTO.Body.Email
+	convertReqDTO.Body.Password = reqDTO.Body.Password
+	convertReqDTO.Body.Address = reqDTO.Body.Address
+
+	if err := userHandler.userService.UpdateUserById(ctx, convertReqDTO); err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusBadRequest
 		res.Code = "ERR_BAD_REQUEST"
-		res.Message = "Update user account failed"
+		res.Message = "Update account failed"
 		res.Details = []string{err.Error()}
 		return nil, res
 	}
 
 	res := &dto.SuccessResponse{}
 	res.Body.Code = "OK"
-	res.Body.Message = "Update user account successful"
+	res.Body.Message = "Update account successful"
 	return res, nil
 }

@@ -9,12 +9,12 @@ import (
 type Invoice struct {
 	bun.BaseModel `bun:"table:invoices"`
 
-	Id          int64     `bun:"id,pk,autoincrement" json:"id"`
-	UserId      int64     `bun:"user_id,notnull" json:"user_id"`
-	TotalAmount int64     `bun:"total_amount,notnull" json:"total_amount"`
-	Status      string    `bun:"status,notnull" json:"status"`
-	CreatedAt   time.Time `bun:"created_at,notnull,default:current_timestamp" json:"created_at"`
-	UpdatedAt   time.Time `bun:"updated_at,notnull,default:current_timestamp" json:"updated_at"`
+	Id          int64     `bun:"id,pk,autoincrement"`
+	UserId      int64     `bun:"user_id,notnull"`
+	TotalAmount int64     `bun:"total_amount,notnull"`
+	Status      string    `bun:"status,notnull"`
+	CreatedAt   time.Time `bun:"created_at,notnull,default:current_timestamp"`
+	UpdatedAt   time.Time `bun:"updated_at,notnull,default:current_timestamp"`
 }
 
 // Integrate with Elasticsearch

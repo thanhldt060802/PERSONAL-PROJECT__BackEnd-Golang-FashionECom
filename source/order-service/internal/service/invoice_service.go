@@ -63,7 +63,7 @@ func (invoiceService *invoiceService) GetInvoiceById(ctx context.Context, reqDTO
 		return nil, fmt.Errorf("invoice has no invoice details: %s", err.Error())
 	}
 
-	return dto.ToInvoiceView(foundInvoice, dto.ToListInvoiceDetailView(foundInvoiceDetails)...), nil
+	return dto.ToInvoiceView(foundInvoice, dto.ToListInvoiceDetailView(foundInvoiceDetails)), nil
 }
 
 func (invoiceService *invoiceService) GetInvoicesByUserId(ctx context.Context, reqDTO *dto.GetInvoicesByUserIdRequest) ([]dto.InvoiceView, error) {

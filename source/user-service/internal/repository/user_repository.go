@@ -10,8 +10,10 @@ type userRepository struct {
 }
 
 type UserRepository interface {
-	GetAll(ctx context.Context) ([]model.User, error) // Integrate with Elasticsearch
+	// Integrate with Elasticsearch
+	GetAll(ctx context.Context) ([]model.User, error)
 
+	// Main features
 	GetById(ctx context.Context, id int64) (*model.User, error)
 	GetByUsername(ctx context.Context, username string) (*model.User, error)
 	GetByEmail(ctx context.Context, email string) (*model.User, error)
@@ -24,6 +26,11 @@ func NewUserRepository() UserRepository {
 	return &userRepository{}
 }
 
+//
+//
+// Integrate with Elasticsearch
+// ######################################################################################
+
 func (userRepository *userRepository) GetAll(ctx context.Context) ([]model.User, error) {
 	var users []model.User
 
@@ -33,6 +40,11 @@ func (userRepository *userRepository) GetAll(ctx context.Context) ([]model.User,
 
 	return users, nil
 }
+
+//
+//
+// Main features
+// ######################################################################################
 
 func (userRepository *userRepository) GetById(ctx context.Context, id int64) (*model.User, error) {
 	var user model.User

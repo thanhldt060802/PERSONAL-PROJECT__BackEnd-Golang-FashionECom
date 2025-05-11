@@ -5,13 +5,8 @@ import (
 	"thanhldt060802/config"
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/dto"
-	"thanhldt060802/internal/handler"
-	"thanhldt060802/internal/middleware"
-	"thanhldt060802/internal/repository"
-	"thanhldt060802/internal/service"
 
 	"github.com/danielgtaylor/huma/v2"
-	"github.com/danielgtaylor/huma/v2/adapters/humagin"
 	"github.com/gin-gonic/gin"
 )
 
@@ -38,7 +33,6 @@ func main() {
 	defer infrastructure.PostgresDB.Close()
 	infrastructure.InitRedisClient()
 	defer infrastructure.RedisClient.Close()
-	infrastructure.InitElasticsearchClient()
 
 	humaCfg := huma.DefaultConfig("FashionECom - Order Service", "v1.0.0")
 	humaCfg.DocsPath = ""
@@ -71,18 +65,18 @@ func main() {
 		ctx.Data(http.StatusOK, "text/html", []byte(humaDocsEmbedded))
 	})
 
-	api := humagin.New(r, humaCfg)
+	// api := humagin.New(r, humaCfg)
 
-	jwtAuthMiddleware := middleware.NewAuthMiddleware()
+	// jwtAuthMiddleware := middleware.NewAuthMiddleware()
 
-	invoiceRepository := repository.NewInvoiceRepository()
-	invoiceElasticsearchRepository := repository.NewInvoiceElasticsearchRepository()
-	invoiceDetailRepository := repository.NewInvoiceDetailRepository()
-	invoiceDetailElasticsearchRepository := repository.NewInvoiceDetailElasticsearchRepository()
+	// invoiceRepository := repository.NewInvoiceRepository()
+	// invoiceElasticsearchRepository := repository.NewInvoiceElasticsearchRepository()
+	// invoiceDetailRepository := repository.NewInvoiceDetailRepository()
+	// invoiceDetailElasticsearchRepository := repository.NewInvoiceDetailElasticsearchRepository()
 
-	invoiceService := service.NewInvoiceService(invoiceRepository, invoiceElasticsearchRepository, invoiceDetailRepository, invoiceDetailElasticsearchRepository)
+	// invoiceService := service.NewInvoiceService(invoiceRepository, invoiceElasticsearchRepository, invoiceDetailRepository, invoiceDetailElasticsearchRepository)
 
-	handler.NewInvoiceHandler(api, invoiceService, jwtAuthMiddleware)
+	// handler.NewInvoiceHandler(api, invoiceService, jwtAuthMiddleware)
 
 	r.Run(":" + config.AppConfig.AppPort)
 
