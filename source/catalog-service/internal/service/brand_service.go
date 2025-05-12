@@ -16,7 +16,7 @@ type brandService struct {
 
 type BrandService interface {
 	// Main features
-	GetAllBrands(ctx context.Context, reqDTO *dto.GetAllBrandsRequest) ([]dto.BrandView, error)
+	GetBrands(ctx context.Context, reqDTO *dto.GetBrandsRequest) ([]dto.BrandView, error)
 	GetBrandById(ctx context.Context, reqDTO *dto.GetBrandByIdRequest) (*dto.BrandView, error)
 	CreateBrand(ctx context.Context, reqDTO *dto.CreateBrandRequest) error
 	UpdateBrandById(ctx context.Context, reqDTO *dto.UpdateBrandByIdRequest) error
@@ -34,10 +34,10 @@ func NewBrandService(brandRepository repository.BrandRepository) BrandService {
 // Main features
 // ######################################################################################
 
-func (brandService *brandService) GetAllBrands(ctx context.Context, redDTO *dto.GetAllBrandsRequest) ([]dto.BrandView, error) {
+func (brandService *brandService) GetBrands(ctx context.Context, redDTO *dto.GetBrandsRequest) ([]dto.BrandView, error) {
 	sortFields := utils.ParseSorter(redDTO.SortBy)
 
-	brands, err := brandService.brandRepository.GetAll(ctx, &redDTO.Offset, &redDTO.Limit, sortFields)
+	brands, err := brandService.brandRepository.Get(ctx, &redDTO.Offset, &redDTO.Limit, sortFields)
 	if err != nil {
 		return nil, fmt.Errorf("query brands from postgresql failed: %s", err.Error())
 	}

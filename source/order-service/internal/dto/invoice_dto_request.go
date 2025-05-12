@@ -1,5 +1,12 @@
 package dto
 
+type GetInvoicesByUserIdRequest struct {
+	UserId int64  `path:"user_id" required:"true" doc:"Id of user."`
+	Offset int    `query:"offset" default:"0" minimum:"0" example:"0" doc:"Skip item by offset."`
+	Limit  int    `query:"limit" default:"5" minimum:"1" maximum:"10" example:"10" doc:"Limit item from offset."`
+	SortBy string `query:"sort_by" default:"created_at:asc" example:"total_amount:desc,created_at" doc:"Sort by one or more fields separated by commas. For example: sort_by=total_amount:desc,created_at will sort by total_amount in descending order, then by created_at in ascending order."`
+}
+
 type GetInvoiceByIdRequest struct {
 	Id int64 `path:"id" required:"true" doc:"Id of invoice item."`
 }
@@ -13,7 +20,7 @@ type CreateInvoiceRequest struct {
 			Price              int64 `json:"product_price" required:"true" minimum:"0" doc:"Price of product of invoice detail."`
 			DiscountPercentage int32 `json:"discount_percentage" required:"true" minimum:"0" doc:"Discount percentage of product of invoice detail."`
 			Quantity           int32 `json:"quantity" required:"true" minimum:"1" doc:"Quantity of product of invoice detail."`
-			TotalPrice         int64 `json:"total_price" required:"true" minimum:"0" doc:"Total price of product id of invoice detail."`
+			TotalPrice         int64 `json:"total_price" required:"true" minimum:"0" doc:"Total price of product of invoice detail."`
 		} `json:"details" required:"true" doc:"Details of invoice."`
 	}
 }
@@ -29,8 +36,14 @@ type DeleteInvoiceByIdRequest struct {
 	Id int64 `path:"id" required:"true" doc:"Id of invoice."`
 }
 
+type GetAccountInvoices struct {
+	Offset int    `query:"offset" default:"0" minimum:"0" example:"0" doc:"Skip item by offset."`
+	Limit  int    `query:"limit" default:"5" minimum:"1" maximum:"10" example:"10" doc:"Limit item from offset."`
+	SortBy string `query:"sort_by" default:"created_at:asc" example:"total_amount:desc,created_at" doc:"Sort by one or more fields separated by commas. For example: sort_by=total_amount:desc,created_at will sort by total_amount in descending order, then by created_at in ascending order."`
+}
+
 type GetAccountInvoiceByIdRequest struct {
-	Id int64 `path:"id" required:"true" doc:"Id of invoice item."`
+	Id int64 `path:"id" required:"true" doc:"Id of invoice."`
 }
 
 type DeleteAccountInvoiceByIdRequest struct {

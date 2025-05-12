@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "pb/";
+
+import "google/protobuf/timestamp.proto";
+
+service UserService {
+  rpc GetAllUsers (GetAllUsersRequest) returns (GetAllUsersResponse);
+}
+
+message GetAllUsersRequest {}
+
+message GetAllUsersResponse {
+  repeated User users = 1;
+}
+
+message User {
+  int64 id = 1;
+  string full_name = 2;
+  string email = 3;
+  string username = 4;
+  string address = 5;
+  string role_name = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}

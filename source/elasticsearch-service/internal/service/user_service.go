@@ -5,13 +5,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
-	"net/http"
 	"strconv"
 	"strings"
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/dto"
+	grpc_client "thanhldt060802/internal/grpc-client"
 	"thanhldt060802/internal/schema"
 	"thanhldt060802/utils"
 
@@ -22,7 +21,7 @@ type userService struct {
 }
 
 type UserService interface {
-	SyncAllAvailableUsers(ctx context.Context, reqDTO *dto.SyncAllAvailableUsersRequest) error
+	SyncAllAvailableUsers(ctx context.Context) error
 
 	SyncCreatingUser(ctx context.Context, newUser *dto.UserView) error
 	SyncUpdatingUserById(ctx context.Context, updatedUser *dto.UserView) error
@@ -37,7 +36,7 @@ func NewUserService() UserService {
 	return &userService{}
 }
 
-func (userService *userService) SyncAllAvailableUsers(ctx context.Context, reqDTO *dto.SyncAllAvailableUsersRequest) error {
+func (userService *userService) SyncAllAvailableUsers(ctx context.Context) error {
 	// Check if index already exists on Elasticsearch
 	existsRes, err := infrastructure.ElasticsearchClient.Indices.Exists([]string{"users"})
 	if err != nil {
@@ -47,34 +46,36 @@ func (userService *userService) SyncAllAvailableUsers(ctx context.Context, reqDT
 
 	// If index does not exists on Elasticsearch
 	if existsRes.StatusCode == 404 {
-		// Get all available users from user-service
-		req, err := http.NewRequest("GET", reqDTO.Body.URL, nil)
-		if err != nil {
-			return err
-		}
-		req.Header.Set("Authorization", "Bearer "+ctx.Value("access_token").(string))
+		// // Get all available users from user-service
+		// req, err := http.NewRequest("GET", "asdasd", nil)
+		// if err != nil {
+		// 	return err
+		// }
+		// req.Header.Set("Authorization", "Bearer "+ctx.Value("access_token").(string))
 
-		resp, err := http.DefaultClient.Do(req)
-		if err != nil {
-			return err
-		}
-		defer resp.Body.Close()
+		// resp, err := http.DefaultClient.Do(req)
+		// if err != nil {
+		// 	return err
+		// }
+		// defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusOK {
-			return fmt.Errorf("get all available users from user-service failed")
-		}
+		// if resp.StatusCode != http.StatusOK {
+		// 	return fmt.Errorf("get all available users from user-service failed")
+		// }
 
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return err
-		}
+		// body, err := io.ReadAll(resp.Body)
+		// if err != nil {
+		// 	return err
+		// }
 
-		var respBody dto.BodyResponse[[]dto.UserView]
-		if err := json.Unmarshal(body, &respBody); err != nil {
-			return err
-		}
+		// var respBody dto.BodyResponse[[]dto.UserView]
+		// if err := json.Unmarshal(body, &respBody); err != nil {
+		// 	return err
+		// }
 
-		users := respBody.Body.Data
+		// users := respBody.Body.Data
+
+		users := grpc_client.GetAllUsers()
 
 		// Create index on Elasticsearch using custom schema
 		res, err := infrastructure.ElasticsearchClient.Indices.Create("users",

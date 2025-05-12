@@ -33,7 +33,7 @@ func NewBrandHandler(api huma.API, brandService service.BrandService, jwtAuthMid
 		Summary:     "/brands/all",
 		Description: "Get all brands.",
 		Tags:        []string{"Brand"},
-	}, brandHandler.GetAllBrands)
+	}, brandHandler.GetBrands)
 
 	// Get brand by id
 	huma.Register(api, huma.Operation{
@@ -82,8 +82,8 @@ func NewBrandHandler(api huma.API, brandService service.BrandService, jwtAuthMid
 // Main features
 // ######################################################################################
 
-func (brandHandler *BrandHandler) GetAllBrands(ctx context.Context, reqDTO *dto.GetAllBrandsRequest) (*dto.BodyResponse[[]dto.BrandView], error) {
-	brands, err := brandHandler.brandService.GetAllBrands(ctx, reqDTO)
+func (brandHandler *BrandHandler) GetBrands(ctx context.Context, reqDTO *dto.GetBrandsRequest) (*dto.BodyResponse[[]dto.BrandView], error) {
+	brands, err := brandHandler.brandService.GetBrands(ctx, reqDTO)
 	if err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusInternalServerError

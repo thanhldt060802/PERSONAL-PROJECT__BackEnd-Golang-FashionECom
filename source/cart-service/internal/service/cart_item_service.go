@@ -16,7 +16,7 @@ type cartItemService struct {
 
 type CartItemService interface {
 	// Main features
-	GetAllCartItemsByUserId(ctx context.Context, reqDTO *dto.GetAllCartItemsByUserIdRequest) ([]dto.CartItemView, error)
+	GetCartItemsByUserId(ctx context.Context, reqDTO *dto.GetCartItemsByUserIdRequest) ([]dto.CartItemView, error)
 	GetCartItemById(ctx context.Context, id int64) (*dto.CartItemView, error)
 	CreateCartItem(ctx context.Context, reqDTO *dto.CreateCartItemRequest) error
 	UpdateCartItemById(ctx context.Context, reqDTO *dto.UpdateCartItemByIdRequest) error
@@ -34,10 +34,10 @@ func NewCartItemService(cartItemRepository repository.CartItemRepository) CartIt
 // Main features
 // ######################################################################################
 
-func (cartItemService *cartItemService) GetAllCartItemsByUserId(ctx context.Context, reqDTO *dto.GetAllCartItemsByUserIdRequest) ([]dto.CartItemView, error) {
+func (cartItemService *cartItemService) GetCartItemsByUserId(ctx context.Context, reqDTO *dto.GetCartItemsByUserIdRequest) ([]dto.CartItemView, error) {
 	sortFields := utils.ParseSorter(reqDTO.SortBy)
 
-	cartItems, err := cartItemService.cartItemRepository.GetAllByUserId(ctx, reqDTO.UserId, &reqDTO.Offset, &reqDTO.Limit, sortFields)
+	cartItems, err := cartItemService.cartItemRepository.GetByUserId(ctx, reqDTO.UserId, &reqDTO.Offset, &reqDTO.Limit, sortFields)
 	if err != nil {
 		return nil, fmt.Errorf("query cart items from postgresql failed: %s", err.Error())
 	}

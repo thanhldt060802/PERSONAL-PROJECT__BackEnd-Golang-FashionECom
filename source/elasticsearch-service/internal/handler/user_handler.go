@@ -28,7 +28,7 @@ func NewUserHandler(api huma.API, userService service.UserService, jwtAuthMiddle
 		Summary:     "/user-service/sync",
 		Description: "Sync all available users.",
 		Tags:        []string{"Sync Data"},
-		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
+		// Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
 	}, userHandler.SyncAllAvailableUsers)
 
 	// // Statistics number of users created
@@ -44,8 +44,8 @@ func NewUserHandler(api huma.API, userService service.UserService, jwtAuthMiddle
 	return userHandler
 }
 
-func (userHandler *UserHandler) SyncAllAvailableUsers(ctx context.Context, reqDTO *dto.SyncAllAvailableUsersRequest) (*dto.SuccessResponse, error) {
-	if err := userHandler.userService.SyncAllAvailableUsers(ctx, reqDTO); err != nil {
+func (userHandler *UserHandler) SyncAllAvailableUsers(ctx context.Context, _ *struct{}) (*dto.SuccessResponse, error) {
+	if err := userHandler.userService.SyncAllAvailableUsers(ctx); err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusInternalServerError
 		res.Code = "ERR_INTERNAL_SERVER"

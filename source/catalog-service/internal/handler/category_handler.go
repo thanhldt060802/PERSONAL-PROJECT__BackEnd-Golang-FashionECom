@@ -82,8 +82,8 @@ func NewCategoryHandler(api huma.API, categoryService service.CategoryService, j
 // Main features
 // ######################################################################################
 
-func (categoryHandler *CategoryHandler) GetAllCategories(ctx context.Context, reqDTO *dto.GetAllCategoriesRequest) (*dto.BodyResponse[[]dto.CategoryView], error) {
-	categories, err := categoryHandler.categoryService.GetAllCategories(ctx, reqDTO)
+func (categoryHandler *CategoryHandler) GetAllCategories(ctx context.Context, reqDTO *dto.GetCategoriesRequest) (*dto.BodyResponse[[]dto.CategoryView], error) {
+	categories, err := categoryHandler.categoryService.GetCategories(ctx, reqDTO)
 	if err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusInternalServerError

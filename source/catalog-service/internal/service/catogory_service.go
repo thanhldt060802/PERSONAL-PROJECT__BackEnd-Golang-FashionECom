@@ -16,7 +16,7 @@ type categoryService struct {
 
 type CategoryService interface {
 	// Main features
-	GetAllCategories(ctx context.Context, reqDTO *dto.GetAllCategoriesRequest) ([]dto.CategoryView, error)
+	GetCategories(ctx context.Context, reqDTO *dto.GetCategoriesRequest) ([]dto.CategoryView, error)
 	GetCategoryById(ctx context.Context, reqDTO *dto.GetCategoryByIdRequest) (*dto.CategoryView, error)
 	CreateCategory(ctx context.Context, reqDTO *dto.CreateCategoryRequest) error
 	UpdateCategoryById(ctx context.Context, reqDTO *dto.UpdateCategoryByIdRequest) error
@@ -34,10 +34,10 @@ func NewCategoryService(categoryRepository repository.CategoryRepository) Catego
 // Main features
 // ######################################################################################
 
-func (categoryService *categoryService) GetAllCategories(ctx context.Context, reqDTO *dto.GetAllCategoriesRequest) ([]dto.CategoryView, error) {
+func (categoryService *categoryService) GetCategories(ctx context.Context, reqDTO *dto.GetCategoriesRequest) ([]dto.CategoryView, error) {
 	sortFields := utils.ParseSorter(reqDTO.SortBy)
 
-	categories, err := categoryService.categoryRepository.GetAll(ctx, &reqDTO.Limit, &reqDTO.Offset, sortFields)
+	categories, err := categoryService.categoryRepository.Get(ctx, &reqDTO.Limit, &reqDTO.Offset, sortFields)
 	if err != nil {
 		return nil, fmt.Errorf("query categories from postgresql failed: %s", err.Error())
 	}

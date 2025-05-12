@@ -1,6 +1,9 @@
 package dto
 
-import "time"
+import (
+	"thanhldt060802/internal/grpc-client/pb"
+	"time"
+)
 
 type UserView struct {
 	Id        int64     `json:"id"`
@@ -24,4 +27,26 @@ type NumberOfUsersCreatedReport struct {
 		EndTime   string  `json:"end_time"`
 		Total     float64 `json:"total"`
 	} `json:"detail"`
+}
+
+func ToUserViewFromProto(userProto *pb.User) *UserView {
+	return &UserView{
+		Id:        userProto.Id,
+		FullName:  userProto.FullName,
+		Email:     userProto.Email,
+		Username:  userProto.Username,
+		Address:   userProto.Address,
+		RoleName:  userProto.RoleName,
+		CreatedAt: userProto.CreatedAt.AsTime(),
+		UpdatedAt: userProto.UpdatedAt.AsTime(),
+	}
+}
+
+func ToListUserViewFromProto(userProtos []*pb.User) []UserView {
+	userViews := make([]UserView, len(userProtos))
+	for i := range userProtos {
+		userViews[i] = *ToUserViewFromProto(userProtos[i])
+	}
+
+	return userViews
 }

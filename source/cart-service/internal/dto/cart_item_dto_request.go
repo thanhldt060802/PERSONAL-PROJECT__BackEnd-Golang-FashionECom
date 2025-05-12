@@ -1,6 +1,6 @@
 package dto
 
-type GetAllCartItemsByUserIdRequest struct {
+type GetCartItemsByUserIdRequest struct {
 	UserId int64  `path:"user_id" required:"true" doc:"User id of cart item."`
 	Offset int    `query:"offset" default:"0" minimum:"0" example:"0" doc:"Skip item by offset."`
 	Limit  int    `query:"limit" default:"5" minimum:"1" maximum:"10" example:"10" doc:"Limit item from offset."`
@@ -23,6 +23,12 @@ type UpdateCartItemByIdRequest struct {
 
 type DeleteCartItemByIdRequest struct {
 	Id int64 `path:"id" required:"true" doc:"Id of cart item."`
+}
+
+type GetAccountCartItemsRequest struct {
+	Offset int    `query:"offset" default:"0" minimum:"0" example:"0" doc:"Skip item by offset."`
+	Limit  int    `query:"limit" default:"5" minimum:"1" maximum:"10" example:"10" doc:"Limit item from offset."`
+	SortBy string `query:"sort_by" default:"id:asc" example:"quantity:desc,id" doc:"Sort by one or more fields separated by commas. For example: sort_by=quantity:desc,id will sort by quantity in descending order, then by id in ascending order."`
 }
 
 type CreateAccountCartItemRequest struct {

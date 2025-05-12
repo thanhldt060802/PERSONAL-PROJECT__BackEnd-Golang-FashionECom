@@ -1,8 +1,11 @@
 package dto
 
 import (
+	"thanhldt060802/internal/grpc-server/pb"
 	"thanhldt060802/internal/model"
 	"time"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type UserView struct {
@@ -36,4 +39,26 @@ func ToListUserView(users []model.User) []UserView {
 	}
 
 	return userViews
+}
+
+func ToUserProto(user *model.User) *pb.User {
+	return &pb.User{
+		Id:        user.Id,
+		FullName:  user.FullName,
+		Email:     user.Email,
+		Username:  user.Username,
+		Address:   user.Address,
+		RoleName:  user.RoleName,
+		CreatedAt: timestamppb.New(user.CreatedAt),
+		UpdatedAt: timestamppb.New(user.UpdatedAt),
+	}
+}
+
+func ToListUserProto(users []model.User) []*pb.User {
+	userProtos := make([]*pb.User, len(users))
+	for i, user := range users {
+		userProtos[i] = ToUserProto(&user)
+	}
+
+	return userProtos
 }

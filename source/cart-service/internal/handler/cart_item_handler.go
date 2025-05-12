@@ -26,15 +26,15 @@ func NewCartItemHandler(api huma.API, cartItemService service.CartItemService, j
 	// Main features
 	// ######################################################################################
 
-	// Get all account cart items
+	// Get account cart items
 	huma.Register(api, huma.Operation{
 		Method:      http.MethodGet,
 		Path:        "/my-cart-items",
 		Summary:     "/my-cart-items",
-		Description: "Get all account cart items.",
+		Description: "Get account cart items.",
 		Tags:        []string{"Account Cart Item"},
 		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication},
-	}, cartItemHandler.GetAllAccountCartItems)
+	}, cartItemHandler.GetAccountCartItems)
 
 	// Create account cart item
 	huma.Register(api, huma.Operation{
@@ -74,23 +74,26 @@ func NewCartItemHandler(api huma.API, cartItemService service.CartItemService, j
 // Main features
 // ######################################################################################
 
-func (cartItemHandler *CartItemHandler) GetAllAccountCartItems(ctx context.Context, _ *struct{}) (*dto.BodyResponse[[]dto.CartItemView], error) {
-	convertReqDTO := &dto.GetAllCartItemsByUserIdRequest{}
+func (cartItemHandler *CartItemHandler) GetAccountCartItems(ctx context.Context, reqDTO *dto.GetAccountCartItemsRequest) (*dto.BodyResponse[[]dto.CartItemView], error) {
+	convertReqDTO := &dto.GetCartItemsByUserIdRequest{}
 	convertReqDTO.UserId = ctx.Value("user_id").(int64)
+	convertReqDTO.Offset = reqDTO.Offset
+	convertReqDTO.Limit = reqDTO.Limit
+	convertReqDTO.SortBy = reqDTO.SortBy
 
-	cartItems, err := cartItemHandler.cartItemService.GetAllCartItemsByUserId(ctx, convertReqDTO)
+	cartItems, err := cartItemHandler.cartItemService.GetCartItemsByUserId(ctx, convertReqDTO)
 	if err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusInternalServerError
 		res.Code = "ERR_INTERNAL_SERVER"
-		res.Message = "Get all cart items failed"
+		res.Message = "Get account cart items failed"
 		res.Details = []string{err.Error()}
 		return nil, res
 	}
 
 	res := &dto.BodyResponse[[]dto.CartItemView]{}
 	res.Body.Code = "OK"
-	res.Body.Message = "Get all cart items successful"
+	res.Body.Message = "Get account cart items successful"
 	res.Body.Data = cartItems
 	return res, nil
 }
@@ -121,7 +124,7 @@ func (cartItemHandler *CartItemHandler) UpdateAccountCartItemById(ctx context.Co
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusBadRequest
 		res.Code = "ERR_BAD_REQUEST"
-		res.Message = "Update cart item by id failed"
+		res.Message = "Update account cart item by id failed"
 		res.Details = []string{err.Error()}
 		return nil, res
 	}

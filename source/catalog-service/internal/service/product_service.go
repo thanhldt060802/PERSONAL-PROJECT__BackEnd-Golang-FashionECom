@@ -48,12 +48,12 @@ func (productService *productService) GetAllProducts(ctx context.Context) ([]dto
 		return nil, fmt.Errorf("query products from postgresql failed: %s", err.Error())
 	}
 
-	categories, err := productService.categoryRepository.GetAll(ctx, nil, nil, nil)
+	categories, err := productService.categoryRepository.Get(ctx, nil, nil, nil)
 	if err != nil {
 		return nil, fmt.Errorf("query categories from postgresql failed: %s", err.Error())
 	}
 
-	brands, err := productService.brandRepository.GetAll(ctx, nil, nil, nil)
+	brands, err := productService.brandRepository.Get(ctx, nil, nil, nil)
 	if err != nil {
 		return nil, fmt.Errorf("query brands from postgresql failed: %s", err.Error())
 	}
