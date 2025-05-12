@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"thanhldt060802/internal/dto"
+	"thanhldt060802/internal/grpc-server/pb"
 	"thanhldt060802/internal/middleware"
 	"thanhldt060802/internal/service"
 
@@ -27,14 +28,14 @@ func NewUserHandler(api huma.API, userService service.UserService, jwtAuthMiddle
 	// ######################################################################################
 
 	// Get all users (integrate with Elasticsearch)
-	huma.Register(api, huma.Operation{
-		Method:      http.MethodGet,
-		Path:        "/users/all",
-		Summary:     "/users/all",
-		Description: "Get all users (integrate with Elasticsearch).",
-		Tags:        []string{"For Sycing Data To Elasticsearch"},
-		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
-	}, userHandler.GetAllUsers)
+	// huma.Register(api, huma.Operation{
+	// 	Method:      http.MethodGet,
+	// 	Path:        "/users/all",
+	// 	Summary:     "/users/all",
+	// 	Description: "Get all users (integrate with Elasticsearch).",
+	// 	Tags:        []string{"For Sycing Data To Elasticsearch"},
+	// 	Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
+	// }, userHandler.GetAllUsers)
 
 	//
 	//
@@ -153,7 +154,7 @@ func NewUserHandler(api huma.API, userService service.UserService, jwtAuthMiddle
 // Integrate with Elasticsearch
 // ######################################################################################
 
-func (userHandler *UserHandler) GetAllUsers(ctx context.Context, _ *struct{}) (*dto.BodyResponse[[]dto.UserView], error) {
+func (userHandler *UserHandler) GetAllUsers(ctx context.Context, _ *pb.GetAllUsersRequest) (*pb.GetAllUsersResponse, error) {
 	users, err := userHandler.userService.GetAllUsers(ctx)
 	if err != nil {
 		res := &dto.ErrorResponse{}
@@ -164,10 +165,8 @@ func (userHandler *UserHandler) GetAllUsers(ctx context.Context, _ *struct{}) (*
 		return nil, res
 	}
 
-	res := &dto.BodyResponse[[]dto.UserView]{}
-	res.Body.Code = "OK"
-	res.Body.Message = "Get all users successful"
-	res.Body.Data = users
+	res := &pb.GetAllUsersResponse{}
+	res.Users = dto.ToListUserProtoFromListUserView(users)
 	return res, nil
 }
 

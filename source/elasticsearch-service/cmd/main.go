@@ -1,10 +1,12 @@
 package main
 
 import (
+	"log"
 	"net/http"
 	"thanhldt060802/config"
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/dto"
+	grpc_client "thanhldt060802/internal/grpc-client"
 	"thanhldt060802/internal/handler"
 	"thanhldt060802/internal/middleware"
 	"thanhldt060802/internal/service"
@@ -72,7 +74,13 @@ func main() {
 
 	jwtAuthMiddleware := middleware.NewAuthMiddleware()
 
-	userService := service.NewUserService()
+	grpcClientCfg, userServiceClient, err := grpc_client.NewGRPCClientConfig("localhost:50051")
+	if err != nil {
+		log.Fatalf("Failed to connect to user-service via gRPC: %v", err)
+	}
+	defer grpcClientCfg.Close() // đảm bảo close khi app shutdown
+
+	userService := service.NewUserService(userServiceClient)
 	// invoiceService := service.NewInvoiceService(invoiceElasticsearchRepository)
 
 	handler.NewUserHandler(api, userService, jwtAuthMiddleware)

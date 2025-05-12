@@ -41,7 +41,7 @@ func ToListUserView(users []model.User) []UserView {
 	return userViews
 }
 
-func ToUserProto(user *model.User) *pb.User {
+func ToUserProtoFromUserView(user *UserView) *pb.User {
 	return &pb.User{
 		Id:        user.Id,
 		FullName:  user.FullName,
@@ -54,10 +54,10 @@ func ToUserProto(user *model.User) *pb.User {
 	}
 }
 
-func ToListUserProto(users []model.User) []*pb.User {
+func ToListUserProtoFromListUserView(users []UserView) []*pb.User {
 	userProtos := make([]*pb.User, len(users))
 	for i, user := range users {
-		userProtos[i] = ToUserProto(&user)
+		userProtos[i] = ToUserProtoFromUserView(&user)
 	}
 
 	return userProtos

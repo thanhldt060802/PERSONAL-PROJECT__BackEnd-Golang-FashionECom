@@ -10,7 +10,7 @@ import (
 	"strings"
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/dto"
-	grpc_client "thanhldt060802/internal/grpc-client"
+	"thanhldt060802/internal/grpc-client/pb"
 	"thanhldt060802/internal/schema"
 	"thanhldt060802/utils"
 
@@ -18,6 +18,7 @@ import (
 )
 
 type userService struct {
+	userServiceClient pb.UserServiceClient
 }
 
 type UserService interface {
@@ -32,8 +33,10 @@ type UserService interface {
 	// StatisticsNumberOfUsersCreated(ctx context.Context, reqDTO *dto.StatisticsNumberOfUsersCreatedRequest) (*dto.NumberOfUsersCreatedReport, error)
 }
 
-func NewUserService() UserService {
-	return &userService{}
+func NewUserService(userServiceClient pb.UserServiceClient) UserService {
+	return &userService{
+		userServiceClient: userServiceClient,
+	}
 }
 
 func (userService *userService) SyncAllAvailableUsers(ctx context.Context) error {
@@ -75,7 +78,11 @@ func (userService *userService) SyncAllAvailableUsers(ctx context.Context) error
 
 		// users := respBody.Body.Data
 
-		users := grpc_client.GetAllUsers()
+		grpcRes, err := userService.userServiceClient.GetAllUsers(ctx, &pb.GetAllUsersRequest{})
+		if err != nil {
+			return fmt.Errorf("some thing wrong when loading data from user-service")
+		}
+		users := grpcRes.Users
 
 		// Create index on Elasticsearch using custom schema
 		res, err := infrastructure.ElasticsearchClient.Indices.Create("users",
@@ -109,7 +116,7 @@ func (userService *userService) SyncAllAvailableUsers(ctx context.Context) error
 		// Add all available data on PostgreSQL to BulkIndexer
 		for _, user := range users {
 			// Convert data to JSON data
-			userJSON, err := json.Marshal(user)
+			userJSON, err := json.Marshal(dto.ToUserViewFromProto(user))
 			if err != nil {
 				return err
 			}
