@@ -1,12 +1,10 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"thanhldt060802/config"
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/dto"
-	grpc_client "thanhldt060802/internal/grpc-client"
 	"thanhldt060802/internal/handler"
 	"thanhldt060802/internal/middleware"
 	"thanhldt060802/internal/service"
@@ -38,6 +36,11 @@ func main() {
 	infrastructure.InitRedisClient()
 	defer infrastructure.RedisClient.Close()
 	infrastructure.InitElasticsearchClient()
+	grpcClientManager := &infrastructure.GRPCClientsManager{}
+	infrastructure.InitGRPCClientsManager(grpcClientManager, map[string]string{
+		"user-service": "localhost:50051",
+	})
+	defer grpcClientManager.Close()
 
 	humaCfg := huma.DefaultConfig("FashionECom - Statistic & Report Service", "v1.0.0")
 	humaCfg.DocsPath = ""
@@ -74,13 +77,7 @@ func main() {
 
 	jwtAuthMiddleware := middleware.NewAuthMiddleware()
 
-	grpcClientCfg, userServiceClient, err := grpc_client.NewGRPCClientConfig("localhost:50051")
-	if err != nil {
-		log.Fatalf("Failed to connect to user-service via gRPC: %v", err)
-	}
-	defer grpcClientCfg.Close() // đảm bảo close khi app shutdown
-
-	userService := service.NewUserService(userServiceClient)
+	userService := service.NewUserService(grpcClientManager.UserServiceClient)
 	// invoiceService := service.NewInvoiceService(invoiceElasticsearchRepository)
 
 	handler.NewUserHandler(api, userService, jwtAuthMiddleware)
