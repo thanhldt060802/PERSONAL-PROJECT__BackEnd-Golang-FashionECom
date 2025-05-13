@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 	"thanhldt060802/internal/dto"
-	"thanhldt060802/internal/grpc-server/pb"
+	"thanhldt060802/internal/grpc/pb"
 	"thanhldt060802/internal/middleware"
 	"thanhldt060802/internal/service"
 

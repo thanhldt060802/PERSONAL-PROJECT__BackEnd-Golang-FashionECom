@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"thanhldt060802/internal/grpc-server/pb"
+	"thanhldt060802/internal/grpc/pb"
 	"thanhldt060802/internal/model"
 	"time"
 

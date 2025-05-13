@@ -2,7 +2,7 @@ package infrastructure
 
 import (
 	"log"
-	"thanhldt060802/internal/grpc-client/pb"
+	"thanhldt060802/internal/grpc/pb"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

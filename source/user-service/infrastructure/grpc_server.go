@@ -3,7 +3,7 @@ package infrastructure
 import (
 	"log"
 	"net"
-	"thanhldt060802/internal/grpc-server/pb"
+	"thanhldt060802/internal/grpc/pb"
 
 	"google.golang.org/grpc"
 )

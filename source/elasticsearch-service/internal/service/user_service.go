@@ -10,7 +10,7 @@ import (
 	"strings"
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/dto"
-	"thanhldt060802/internal/grpc-client/pb"
+	"thanhldt060802/internal/grpc/pb"
 	"thanhldt060802/internal/schema"
 	"thanhldt060802/utils"
 

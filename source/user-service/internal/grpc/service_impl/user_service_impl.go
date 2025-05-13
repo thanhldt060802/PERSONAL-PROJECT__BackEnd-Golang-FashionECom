@@ -1,8 +1,8 @@
-package grpcserver
+package grpcimpl
 
 import (
 	"context"
-	"thanhldt060802/internal/grpc-server/pb"
+	"thanhldt060802/internal/grpc/pb"
 	"thanhldt060802/internal/handler"
 )
 
