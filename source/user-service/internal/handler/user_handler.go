@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 	"thanhldt060802/internal/dto"
-	"thanhldt060802/internal/grpc/pb"
 	"thanhldt060802/internal/middleware"
 	"thanhldt060802/internal/service"
 
@@ -21,21 +20,6 @@ func NewUserHandler(api huma.API, userService service.UserService, jwtAuthMiddle
 		userService:       userService,
 		jwtAuthMiddleware: jwtAuthMiddleware,
 	}
-
-	//
-	//
-	// Integrate with Elasticsearch
-	// ######################################################################################
-
-	// Get all users (integrate with Elasticsearch)
-	// huma.Register(api, huma.Operation{
-	// 	Method:      http.MethodGet,
-	// 	Path:        "/users/all",
-	// 	Summary:     "/users/all",
-	// 	Description: "Get all users (integrate with Elasticsearch).",
-	// 	Tags:        []string{"For Sycing Data To Elasticsearch"},
-	// 	Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
-	// }, userHandler.GetAllUsers)
 
 	//
 	//
@@ -147,27 +131,6 @@ func NewUserHandler(api huma.API, userService service.UserService, jwtAuthMiddle
 	// Get users
 
 	return userHandler
-}
-
-//
-//
-// Integrate with Elasticsearch
-// ######################################################################################
-
-func (userHandler *UserHandler) GetAllUsers(ctx context.Context, _ *pb.GetAllUsersRequest) (*pb.GetAllUsersResponse, error) {
-	users, err := userHandler.userService.GetAllUsers(ctx)
-	if err != nil {
-		res := &dto.ErrorResponse{}
-		res.Status = http.StatusInternalServerError
-		res.Code = "ERR_INTERNAL_SERVER"
-		res.Message = "Get all users failed"
-		res.Details = []string{err.Error()}
-		return nil, res
-	}
-
-	res := &pb.GetAllUsersResponse{}
-	res.Users = dto.ToListUserProtoFromListUserView(users)
-	return res, nil
 }
 
 //

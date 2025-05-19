@@ -23,21 +23,6 @@ func NewProductHandler(api huma.API, productService service.ProductService, jwtA
 
 	//
 	//
-	// Integrate with Elasticsearch
-	// ######################################################################################
-
-	// Get all products (integrate with Elasticsearch)
-	huma.Register(api, huma.Operation{
-		Method:      http.MethodGet,
-		Path:        "/products/all",
-		Summary:     "/products/all",
-		Description: "Get all products (integrate with Elasticsearch).",
-		Tags:        []string{"For Sycing Data To Elasticsearch"},
-		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
-	}, productHandler.GetAllProducts)
-
-	//
-	//
 	// Main features
 	// ######################################################################################
 
@@ -88,29 +73,6 @@ func NewProductHandler(api huma.API, productService service.ProductService, jwtA
 	// Get products
 
 	return productHandler
-}
-
-//
-//
-// Integrate with Elasticsearch
-// ######################################################################################
-
-func (productHandler *ProductHandler) GetAllProducts(ctx context.Context, _ *struct{}) (*dto.BodyResponse[[]dto.ProductView], error) {
-	products, err := productHandler.productService.GetAllProducts(ctx)
-	if err != nil {
-		res := &dto.ErrorResponse{}
-		res.Status = http.StatusInternalServerError
-		res.Code = "ERR_INTERNAL_SERVER"
-		res.Message = "Get all products failed"
-		res.Details = []string{err.Error()}
-		return nil, res
-	}
-
-	res := &dto.BodyResponse[[]dto.ProductView]{}
-	res.Body.Code = "OK"
-	res.Body.Message = "Get all products successful"
-	res.Body.Data = products
-	return res, nil
 }
 
 //

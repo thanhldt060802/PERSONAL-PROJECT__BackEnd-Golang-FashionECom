@@ -79,9 +79,9 @@ func main() {
 
 	userService := service.NewUserService(userRepository)
 
-	userHandler := handler.NewUserHandler(api, userService, jwtAuthMiddleware)
+	handler.NewUserHandler(api, userService, jwtAuthMiddleware)
 
-	go infrastructure.StartGRPCServer("localhost:50051", grpcimpl.NewUserServiceImpl(userHandler))
+	go infrastructure.StartGRPCServer("localhost:50051", grpcimpl.NewUserServiceImpl(userService))
 
 	r.Run(":" + config.AppConfig.AppPort)
 

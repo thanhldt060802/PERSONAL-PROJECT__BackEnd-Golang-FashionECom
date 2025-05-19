@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v4.25.7
-// source: proto/elasticsearch_sync_user.proto
+// source: proto/user_service.proto
 
 package pb
 
@@ -117,5 +117,5 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/elasticsearch_sync_user.proto",
+	Metadata: "proto/user_service.proto",
 }

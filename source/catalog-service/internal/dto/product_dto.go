@@ -1,8 +1,11 @@
 package dto
 
 import (
+	"thanhldt060802/internal/grpc/pb"
 	"thanhldt060802/internal/model"
 	"time"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type ProductView struct {
@@ -58,4 +61,32 @@ func ToListProductView(products []model.Product, categories []model.Category, br
 	}
 
 	return productViews
+}
+
+func ToProductProtoFromProductView(product *ProductView) *pb.Product {
+	return &pb.Product{
+		Id:                 product.Id,
+		Name:               product.Name,
+		Description:        product.Description,
+		Sex:                product.Sex,
+		Price:              product.Price,
+		DiscountPercentage: product.DiscountPercentage,
+		Stock:              product.Stock,
+		ImageUrl:           product.ImageURL,
+		CategoryId:         product.CategoryId,
+		CategoryName:       product.CategoryName,
+		BrandId:            product.BrandId,
+		BrandName:          product.BrandName,
+		CreatedAt:          timestamppb.New(product.CreatedAt),
+		UpdatedAt:          timestamppb.New(product.UpdatedAt),
+	}
+}
+
+func ToListProductProtoFromListProductView(products []ProductView) []*pb.Product {
+	productProtos := make([]*pb.Product, len(products))
+	for i, product := range products {
+		productProtos[i] = ToProductProtoFromProductView(&product)
+	}
+
+	return productProtos
 }
