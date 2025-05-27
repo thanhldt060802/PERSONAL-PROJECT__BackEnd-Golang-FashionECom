@@ -27,32 +27,23 @@ func (jwtAuthMiddleware *JWTAuthMiddleware) Authentication(ctx huma.Context, nex
 
 	tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
 	redisKey := fmt.Sprintf("token:%s", tokenStr)
-
 	userDataJson, err := infrastructure.RedisClient.Get(ctx.Context(), redisKey).Result()
 	if err == redis.Nil {
 		CustomHumaWriteErr(ctx, http.StatusUnauthorized, "ERR_UNAUTHORIZED", "Token not found or expired", []string{"invalid token"})
 		return
 	} else if err != nil {
-		CustomHumaWriteErr(ctx, http.StatusUnauthorized, "ERR_UNAUTHORIZED", "Check token on Redis failed", []string{"some thing wrong on redis"})
+		CustomHumaWriteErr(ctx, http.StatusUnauthorized, "ERR_UNAUTHORIZED", "Check token on Redis failed", []string{err.Error()})
 		return
 	}
 
 	var userData struct {
-		AccessToken string `json:"access_token"`
-		UserId      int64  `json:"user_id"`
-		RoleName    string `json:"role_name"`
-		CartId      int64  `json:"cart_id"`
+		UserId   int64  `json:"user_id"`
+		RoleName string `json:"role_name"`
 	}
+	json.Unmarshal([]byte(userDataJson), &userData)
 
-	if err := json.Unmarshal([]byte(userDataJson), &userData); err != nil {
-		CustomHumaWriteErr(ctx, http.StatusUnauthorized, "ERR_UNAUTHORIZED", "User data in token is not valid", []string{"invalid token"})
-		return
-	}
-
-	ctx = huma.WithValue(ctx, "access_token", tokenStr)
 	ctx = huma.WithValue(ctx, "user_id", userData.UserId)
 	ctx = huma.WithValue(ctx, "role_name", userData.RoleName)
-	ctx = huma.WithValue(ctx, "cart_id", userData.CartId)
 
 	next(ctx)
 }

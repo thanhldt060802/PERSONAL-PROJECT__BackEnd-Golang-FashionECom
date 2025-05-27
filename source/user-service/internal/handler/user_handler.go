@@ -119,9 +119,25 @@ func NewUserHandler(api huma.API, userService service.UserService, jwtAuthMiddle
 		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication},
 	}, userHandler.UpdateAccount)
 
-	// Show all logged in accounts
+	// Get all logged in accounts
+	huma.Register(api, huma.Operation{
+		Method:      http.MethodGet,
+		Path:        "/logged-in-accounts",
+		Summary:     "/logged-in-accounts",
+		Description: "Show all logged in accounts.",
+		Tags:        []string{"Account"},
+		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
+	}, userHandler.GetAllLoggedInAccounts)
 
-	// Destroy logged in account token
+	// Delete logged in account
+	huma.Register(api, huma.Operation{
+		Method:      http.MethodDelete,
+		Path:        "/logged-in-accounts/{id}",
+		Summary:     "/logged-in-accounts/{id}",
+		Description: "Delete logged in account.",
+		Tags:        []string{"Account"},
+		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
+	}, userHandler.DeleteLoggedInAccount)
 
 	//
 	//
@@ -223,12 +239,12 @@ func (userHandler *UserHandler) LoginAccount(ctx context.Context, reqDTO *dto.Lo
 	res := &dto.BodyResponse[string]{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Login user account successful"
-	res.Body.Data = *token
+	res.Body.Data = token
 	return res, nil
 }
 
 func (userHandler *UserHandler) LogoutAccount(ctx context.Context, _ *struct{}) (*dto.SuccessResponse, error) {
-	if err := userHandler.userService.LogoutAccount(ctx, ctx.Value("access_token").(string)); err != nil {
+	if err := userHandler.userService.LogoutAccount(ctx, ctx.Value("user_id").(int64)); err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusInternalServerError
 		res.Code = "ERR_INTERNAL_SERVER"
@@ -308,5 +324,39 @@ func (userHandler *UserHandler) UpdateAccount(ctx context.Context, reqDTO *dto.U
 	res := &dto.SuccessResponse{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Update account successful"
+	return res, nil
+}
+
+func (userHandler *UserHandler) GetAllLoggedInAccounts(ctx context.Context, _ *struct{}) (*dto.BodyResponse[[]int64], error) {
+	loggedInAccounts, err := userHandler.userService.GetAllLoggedInAccounts(ctx)
+	if err != nil {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusInternalServerError
+		res.Code = "ERR_INTERNAL_SERVER"
+		res.Message = "Get all logged in accounts failed"
+		res.Details = []string{err.Error()}
+		return nil, res
+	}
+
+	res := &dto.BodyResponse[[]int64]{}
+	res.Body.Code = "OK"
+	res.Body.Message = "Get all logged in accounts successful"
+	res.Body.Data = loggedInAccounts
+	return res, nil
+}
+
+func (userHandler *UserHandler) DeleteLoggedInAccount(ctx context.Context, reqDTO *dto.DeleteLoggedInAccountRequest) (*dto.SuccessResponse, error) {
+	if err := userHandler.userService.LogoutAccount(ctx, reqDTO.Id); err != nil {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusBadRequest
+		res.Code = "ERR_BAD_REQUEST"
+		res.Message = "Delete logged in account failed"
+		res.Details = []string{err.Error()}
+		return nil, res
+	}
+
+	res := &dto.SuccessResponse{}
+	res.Body.Code = "OK"
+	res.Body.Message = "Delete logged in account successful"
 	return res, nil
 }

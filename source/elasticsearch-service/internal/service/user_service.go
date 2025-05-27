@@ -18,24 +18,31 @@ import (
 )
 
 type userService struct {
-	userServiceClient pb.UserServiceClient
+	userServiceGRPCClient pb.UserServiceGRPCClient
 }
 
 type UserService interface {
 	SyncAllAvailableUsers(ctx context.Context) error
 
-	SyncCreatingUser(ctx context.Context, newUser *dto.UserView) error
-	SyncUpdatingUserById(ctx context.Context, updatedUser *dto.UserView) error
-	SyncDeletingUserById(ctx context.Context, id int64) error
-
 	GetUsers(ctx context.Context, reqDTO *dto.GetUsersRequest) ([]dto.UserView, error)
+	syncCreatingUserLoop()
+	syncUpdatingUserLoop()
+	syncDeletingUserLoop()
 
 	// StatisticsNumberOfUsersCreated(ctx context.Context, reqDTO *dto.StatisticsNumberOfUsersCreatedRequest) (*dto.NumberOfUsersCreatedReport, error)
 }
 
-func NewUserService(userServiceClient pb.UserServiceClient) UserService {
+func NewUserService(userServiceGRPCClient pb.UserServiceGRPCClient) UserService {
+	userServier := &userService{
+		userServiceGRPCClient: userServiceGRPCClient,
+	}
+
+	go userServier.syncCreatingUserLoop()
+	go userServier.syncUpdatingUserLoop()
+	go userServier.syncDeletingUserLoop()
+
 	return &userService{
-		userServiceClient: userServiceClient,
+		userServiceGRPCClient: userServiceGRPCClient,
 	}
 }
 
@@ -49,38 +56,9 @@ func (userService *userService) SyncAllAvailableUsers(ctx context.Context) error
 
 	// If index does not exists on Elasticsearch
 	if existsRes.StatusCode == 404 {
-		// // Get all available users from user-service
-		// req, err := http.NewRequest("GET", "asdasd", nil)
-		// if err != nil {
-		// 	return err
-		// }
-		// req.Header.Set("Authorization", "Bearer "+ctx.Value("access_token").(string))
-
-		// resp, err := http.DefaultClient.Do(req)
-		// if err != nil {
-		// 	return err
-		// }
-		// defer resp.Body.Close()
-
-		// if resp.StatusCode != http.StatusOK {
-		// 	return fmt.Errorf("get all available users from user-service failed")
-		// }
-
-		// body, err := io.ReadAll(resp.Body)
-		// if err != nil {
-		// 	return err
-		// }
-
-		// var respBody dto.BodyResponse[[]dto.UserView]
-		// if err := json.Unmarshal(body, &respBody); err != nil {
-		// 	return err
-		// }
-
-		// users := respBody.Body.Data
-
-		grpcRes, err := userService.userServiceClient.GetAllUsers(ctx, &pb.GetAllUsersRequest{})
+		grpcRes, err := userService.userServiceGRPCClient.GetAllUsers(ctx, &pb.GetAllUsersRequest{})
 		if err != nil {
-			return fmt.Errorf("some thing wrong when loading data from user-service")
+			return fmt.Errorf("get all user from user-service failed: %s", err.Error())
 		}
 		users := grpcRes.Users
 
@@ -93,7 +71,7 @@ func (userService *userService) SyncAllAvailableUsers(ctx context.Context) error
 		defer res.Body.Close()
 
 		if res.IsError() {
-			return fmt.Errorf("some thing wrong when creating users index on elasticsearch")
+			return fmt.Errorf("create users index on elasticsearch failed: %s", res.String())
 		}
 
 		hasFailure := false
@@ -116,7 +94,7 @@ func (userService *userService) SyncAllAvailableUsers(ctx context.Context) error
 		// Add all available data on PostgreSQL to BulkIndexer
 		for _, user := range users {
 			// Convert data to JSON data
-			userJSON, err := json.Marshal(dto.ToUserViewFromProto(user))
+			userJSON, err := json.Marshal(dto.ToUserView(user))
 			if err != nil {
 				return err
 			}
@@ -141,10 +119,10 @@ func (userService *userService) SyncAllAvailableUsers(ctx context.Context) error
 		}
 
 		if hasFailure {
-			return fmt.Errorf("some thing wrong when syncing all available users to elasticsearch")
+			return fmt.Errorf("sync all available users to elasticsearch failed: index user to bulk")
 		}
 		if closeBulkIndexer != nil {
-			return fmt.Errorf("some thing wrong when syncing all available users (%s) to elasticsearch", closeBulkIndexer.Error())
+			return fmt.Errorf("sync all available users to elasticsearch failed: %s", closeBulkIndexer.Error())
 		}
 
 		return nil
@@ -153,63 +131,95 @@ func (userService *userService) SyncAllAvailableUsers(ctx context.Context) error
 	return fmt.Errorf("users index on elasticsearch already exists after first syncing all")
 }
 
-func (userService *userService) SyncCreatingUser(ctx context.Context, newUser *dto.UserView) error {
-	// Add data to Elasticsearch
-	res, err := infrastructure.ElasticsearchClient.Index(
-		"users",
-		esutil.NewJSONReader(newUser),
-		infrastructure.ElasticsearchClient.Index.WithDocumentID(strconv.FormatInt(newUser.Id, 10)),
-		infrastructure.ElasticsearchClient.Index.WithRefresh("true"),
-	)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
+func (userService *userService) syncCreatingUserLoop() {
+	subscribe := infrastructure.RedisClient.Subscribe(context.Background(), "user-service.created-user")
+	defer subscribe.Close()
 
-	if res.IsError() {
-		return fmt.Errorf("some thing wrong when syncing creating user on elasticsearch")
-	}
+	ch := subscribe.Channel()
 
-	return nil
+	for msg := range ch {
+		var newUserView dto.UserView
+		if err := json.Unmarshal([]byte(msg.Payload), &newUserView); err != nil {
+			log.Printf("Parse payload from event user-service.created-user failed: %s", err.Error())
+			continue
+		}
+
+		func() {
+			res, err := infrastructure.ElasticsearchClient.Index(
+				"users",
+				esutil.NewJSONReader(newUserView),
+				infrastructure.ElasticsearchClient.Index.WithDocumentID(strconv.FormatInt(newUserView.Id, 10)),
+				infrastructure.ElasticsearchClient.Index.WithRefresh("true"),
+			)
+			if err != nil {
+				log.Printf("Insert user to Elasticsearch failed: %s", err.Error())
+			}
+			defer res.Body.Close()
+
+			if res.IsError() {
+				log.Printf("Some thing wrong when syncing creating user: %s", res.String())
+			}
+		}()
+	}
 }
 
-func (userService *userService) SyncUpdatingUserById(ctx context.Context, updatedUser *dto.UserView) error {
-	// Update data on Elasticsearch
-	res, err := infrastructure.ElasticsearchClient.Index(
-		"users",
-		esutil.NewJSONReader(updatedUser),
-		infrastructure.ElasticsearchClient.Index.WithDocumentID(strconv.FormatInt(updatedUser.Id, 10)),
-		infrastructure.ElasticsearchClient.Index.WithRefresh("true"),
-	)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
+func (userService *userService) syncUpdatingUserLoop() {
+	subscribe := infrastructure.RedisClient.Subscribe(context.Background(), "user-service.updated-user")
+	defer subscribe.Close()
 
-	if res.IsError() {
-		return fmt.Errorf("some thing wrong when syncing updating user on elasticsearch")
-	}
+	ch := subscribe.Channel()
 
-	return nil
+	for msg := range ch {
+		var updatedUserView dto.UserView
+		if err := json.Unmarshal([]byte(msg.Payload), &updatedUserView); err != nil {
+			log.Printf("Parse payload from event user-service.updated-user failed: %s", err.Error())
+			continue
+		}
+
+		func() {
+			res, err := infrastructure.ElasticsearchClient.Index(
+				"users",
+				esutil.NewJSONReader(updatedUserView),
+				infrastructure.ElasticsearchClient.Index.WithDocumentID(strconv.FormatInt(updatedUserView.Id, 10)),
+				infrastructure.ElasticsearchClient.Index.WithRefresh("true"),
+			)
+			if err != nil {
+				log.Printf("Update user on Elasticsearch failed: %s", err.Error())
+			}
+			defer res.Body.Close()
+
+			if res.IsError() {
+				log.Printf("Some thing wrong when syncing updating user: %s", res.String())
+			}
+		}()
+	}
 }
 
-func (userService *userService) SyncDeletingUserById(ctx context.Context, id int64) error {
-	// Delete data from Elasticsearch
-	res, err := infrastructure.ElasticsearchClient.Delete(
-		"users",
-		strconv.FormatInt(id, 10),
-		infrastructure.ElasticsearchClient.Delete.WithRefresh("true"),
-	)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
+func (userService *userService) syncDeletingUserLoop() {
+	subscribe := infrastructure.RedisClient.Subscribe(context.Background(), "user-service.updated-user")
+	defer subscribe.Close()
 
-	if res.IsError() {
-		return fmt.Errorf("some thing wrong when syncing deleting user from elasticsearch")
-	}
+	ch := subscribe.Channel()
 
-	return nil
+	for msg := range ch {
+		userIdStr := msg.Payload
+
+		func() {
+			res, err := infrastructure.ElasticsearchClient.Delete(
+				"users",
+				userIdStr,
+				infrastructure.ElasticsearchClient.Delete.WithRefresh("true"),
+			)
+			if err != nil {
+				log.Printf("Delete user from Elasticsearch failed: %s", err.Error())
+			}
+			defer res.Body.Close()
+
+			if res.IsError() {
+				log.Printf("Some thing wrong when syncing deleting user: %s", res.String())
+			}
+		}()
+	}
 }
 
 func (userService *userService) GetUsers(ctx context.Context, reqDTO *dto.GetUsersRequest) ([]dto.UserView, error) {
@@ -350,134 +360,3 @@ func (userService *userService) GetUsers(ctx context.Context, reqDTO *dto.GetUse
 
 	return users, nil
 }
-
-// func (userService *userService) StatisticsNumberOfUsersCreated(ctx context.Context, reqDTO *dto.StatisticsNumberOfUsersCreatedRequest) (*dto.NumberOfUsersCreatedReport, error) {
-// 	report := &dto.NumberOfUsersCreatedReport{}
-// 	report.TimeInterval = reqDTO.TimeInterval
-
-// 	mustConditions := []map[string]interface{}{}
-
-// 	// If filtering by created_at in range or partial range
-// 	createdAtRange := map[string]interface{}{}
-// 	if reqDTO.CreatedAtGTE != "" {
-// 		createdAtRange["gte"] = reqDTO.CreatedAtGTE
-// 		report.StartTime = reqDTO.CreatedAtGTE
-// 	}
-// 	if reqDTO.CreatedAtLTE != "" {
-// 		createdAtRange["lte"] = reqDTO.CreatedAtLTE
-// 		report.EndTime = reqDTO.CreatedAtLTE
-// 	}
-// 	if len(createdAtRange) > 0 {
-// 		createdAtRange["format"] = "strict_date_optional_time" // For format YYYY-MM-ddTHH:mm:ss
-// 		mustConditions = append(mustConditions, map[string]interface{}{
-// 			"range": map[string]interface{}{
-// 				"created_at": createdAtRange,
-// 			},
-// 		})
-// 	}
-
-// 	// If not filtering -> get all
-// 	if len(mustConditions) == 0 {
-// 		mustConditions = append(mustConditions, map[string]interface{}{
-// 			"match_all": map[string]interface{}{},
-// 		})
-// 	}
-
-// 	// Setup query
-// 	query := map[string]interface{}{
-// 		"size": 0,
-// 		"query": map[string]interface{}{
-// 			"bool": map[string]interface{}{
-// 				"must": mustConditions,
-// 			},
-// 		},
-// 		"aggs": map[string]interface{}{
-// 			"total_users_per_interval": map[string]interface{}{
-// 				"date_histogram": map[string]interface{}{
-// 					"field":             "created_at",
-// 					"calendar_interval": report.TimeInterval,
-// 					"format":            "yyyy-MM-dd'T'HH:mm:ss",
-// 				},
-// 			},
-// 			"total_users": map[string]interface{}{
-// 				"value_count": map[string]interface{}{
-// 					"field": "id",
-// 				},
-// 			},
-// 			"avg_users_per_interval": map[string]interface{}{
-// 				"avg_bucket": map[string]interface{}{
-// 					"buckets_path": "total_users_per_interval>_count",
-// 				},
-// 			},
-// 		},
-// 	}
-
-// 	// Convert query to JSON query
-// 	queryJSON, err := json.Marshal(query)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	// Send request to Elasticsearch
-// 	res, err := infrastructure.ElasticsearchClient.Search(
-// 		infrastructure.ElasticsearchClient.Search.WithContext(ctx),
-// 		infrastructure.ElasticsearchClient.Search.WithIndex("users"),
-// 		infrastructure.ElasticsearchClient.Search.WithBody(bytes.NewReader(queryJSON)),
-// 	)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	defer res.Body.Close()
-
-// 	// Parse Elasticsearch response
-// 	if res.IsError() {
-// 		return nil, fmt.Errorf("some thing wrong when querying users")
-// 	}
-
-// 	// Declare Elasticsearch response
-// 	var elasticsearchResponse struct {
-// 		Aggregations struct {
-// 			TotalUsersPerInterval struct {
-// 				Buckets []struct {
-// 					KeyAsString string `json:"key_as_string"`
-// 					DocCount    int64  `json:"doc_count"`
-// 				} `json:"buckets"`
-// 			} `json:"total_users_per_interval"`
-// 			TotalUsers struct {
-// 				Value float64 `json:"value"`
-// 			} `json:"total_users"`
-// 			AvgUsersPerInterval struct {
-// 				Value float64 `json:"value"`
-// 			} `json:"avg_users_per_interval"`
-// 		} `json:"aggregations"`
-// 	}
-
-// 	// Unmarshal Elasticsearch response body to Elasticsearch response
-// 	elasticsearchResponseBody := json.NewDecoder(res.Body)
-// 	if err := elasticsearchResponseBody.Decode(&elasticsearchResponse); err != nil {
-// 		return nil, err
-// 	}
-
-// 	// Extract data from Elasticsearch response
-// 	report.Total = elasticsearchResponse.Aggregations.TotalUsers.Value
-// 	report.Average = elasticsearchResponse.Aggregations.AvgUsersPerInterval.Value
-// 	for _, bucket := range elasticsearchResponse.Aggregations.TotalUsersPerInterval.Buckets {
-// 		startTime := bucket.KeyAsString
-// 		endTime, err := utils.GenerateEndTimeString(startTime, reqDTO.TimeInterval)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-
-// 		report.Details = append(report.Details, struct {
-// 			StartTime string  `json:"start_time"`
-// 			EndTime   string  `json:"end_time"`
-// 			Total     float64 `json:"total"`
-// 		}{
-// 			StartTime: startTime,
-// 			EndTime:   endTime,
-// 			Total:     float64(bucket.DocCount),
-// 		})
-// 	}
-
-// 	return report, nil
-// }

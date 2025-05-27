@@ -1,19 +1,23 @@
 syntax = "proto3";
 
-package user;
+package userservice;
 
 option go_package = "pb/";
 
 import "google/protobuf/timestamp.proto";
 
-service UserService {
+service UserServiceGRPC {
   rpc GetAllUsers (GetAllUsersRequest) returns (GetAllUsersResponse);
 }
 
 message GetAllUsersRequest {}
 
 message GetAllUsersResponse {
-  repeated User users = 1;
+  string code = 1;
+  int32 status = 2;
+  string message = 3;
+  
+  repeated User users = 4;
 }
 
 message User {

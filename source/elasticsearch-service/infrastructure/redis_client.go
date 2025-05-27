@@ -12,8 +12,14 @@ import (
 var RedisClient *redis.Client
 
 func InitRedisClient() {
+	address := fmt.Sprintf(
+		"%s:%s",
+		config.AppConfig.RedisHost,
+		config.AppConfig.RedisPort,
+	)
+
 	RedisClient = redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%s", config.AppConfig.RedisHost, config.AppConfig.RedisPort),
+		Addr:     address,
 		Password: config.AppConfig.RedisPassword,
 		DB:       0,
 	})

@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:16
-    container_name: be_golang_fashionecom_postgres
+    container_name: backend_golang_fashionecom_postgres
     restart: no
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
@@ -14,11 +14,11 @@ services:
       - ./postgres_data:/var/lib/postgresql/data
       - ./my_db.sql:/docker-entrypoint-initdb.d/my_db.sql
     networks:
-      - be_golang_fashionecom
+      - backend_golang_fashionecom
 
   redis:
     image: redis:7
-    container_name: be_golang_fashionecom_redis
+    container_name: backend_golang_fashionecom_redis
     restart: no
     environment:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
@@ -28,11 +28,11 @@ services:
     volumes:
       - ./redis_data:/data
     networks:
-      - be_golang_fashionecom
+      - backend_golang_fashionecom
   
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
-    container_name: be_golang_fashionecom_elasticsearch
+    container_name: backend_golang_fashionecom_elasticsearch
     restart: no
     environment:
       - discovery.type=single-node
@@ -45,7 +45,7 @@ services:
     volumes:
       - ./elasticsearch_data:/usr/share/elasticsearch/data
     networks:
-      - be_golang_fashionecom
+      - backend_golang_fashionecom
     healthcheck:
       test: ["CMD-SHELL", "curl -u elastic:${ELASTICSEARCH_PASSWORD} -s http://localhost:9200 >/dev/null || exit 1"]
       interval: 10s
@@ -55,4 +55,4 @@ services:
 
 
 networks:
-  be_golang_fashionecom:
+  backend_golang_fashionecom:

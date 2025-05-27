@@ -24,6 +24,9 @@ type Config struct {
 	RedisHost     string
 	RedisPort     string
 	RedisPassword string
+
+	UserServiceGRPCServerHost string
+	UserServiceGRPCServerPort string
 }
 
 var AppConfig *Config
@@ -48,6 +51,9 @@ func InitConfig() {
 		RedisHost:     GetEnv("REDIS_HOST", "localhost"),
 		RedisPort:     GetEnv("REDIS_PORT", "6379"),
 		RedisPassword: GetEnv("REDIS_PASSWORD", ""),
+
+		UserServiceGRPCServerHost: GetEnv("USER_SERVICE_GRPC_SERVER_HOST", "localhost"),
+		UserServiceGRPCServerPort: GetEnv("USER_SERVICE+GRPC_SERVER_PORT", "50050"),
 	}
 
 	// Validate constraint environment variable value
@@ -66,8 +72,8 @@ func GetEnv(key string, defaultValue string) string {
 	}
 }
 
-func (config *Config) TokenExpireMinutesValue() *time.Duration {
+func (config *Config) TokenExpireMinutesValue() time.Duration {
 	tokenExpireMinutes, _ := strconv.Atoi(config.TokenExpireMinutes)
 	expireDuration := time.Duration(tokenExpireMinutes) * time.Minute
-	return &expireDuration
+	return expireDuration
 }

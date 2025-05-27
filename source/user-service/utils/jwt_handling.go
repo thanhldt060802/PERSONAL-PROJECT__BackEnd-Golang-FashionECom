@@ -11,7 +11,7 @@ func GenerateToken(userId int64, roleName string) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id":   userId,
 		"role_name": roleName,
-		"exp":       time.Now().Add(*config.AppConfig.TokenExpireMinutesValue()).Unix(),
+		"exp":       time.Now().Add(config.AppConfig.TokenExpireMinutesValue()).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -23,22 +23,22 @@ func GenerateToken(userId int64, roleName string) (string, error) {
 	return tokenStr, nil
 }
 
-func ValidateToken(tokenStr string) (jwt.MapClaims, error) {
-	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, jwt.ErrSignatureInvalid
-		}
+// func ValidateToken(tokenStr string) (jwt.MapClaims, error) {
+// 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+// 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+// 			return nil, jwt.ErrSignatureInvalid
+// 		}
 
-		return []byte(config.AppConfig.JWTSecret), nil
-	})
-	if err != nil {
-		return nil, err
-	}
+// 		return []byte(config.AppConfig.JWTSecret), nil
+// 	})
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok || !token.Valid {
-		return nil, jwt.ErrSignatureInvalid
-	}
+// 	claims, ok := token.Claims.(jwt.MapClaims)
+// 	if !ok || !token.Valid {
+// 		return nil, jwt.ErrSignatureInvalid
+// 	}
 
-	return claims, nil
-}
+// 	return claims, nil
+// }

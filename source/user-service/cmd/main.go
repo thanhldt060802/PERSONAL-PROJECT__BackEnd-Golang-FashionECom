@@ -5,7 +5,7 @@ import (
 	"thanhldt060802/config"
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/dto"
-	grpcimpl "thanhldt060802/internal/grpc/service_impl"
+	grpcimpl "thanhldt060802/internal/grpc/grpc_impl"
 	"thanhldt060802/internal/handler"
 	"thanhldt060802/internal/middleware"
 	"thanhldt060802/internal/repository"
@@ -79,9 +79,9 @@ func main() {
 
 	userService := service.NewUserService(userRepository)
 
-	handler.NewUserHandler(api, userService, jwtAuthMiddleware)
+	grpcimpl.StartGRPCServer(grpcimpl.NewUserServiceGRPCImpl(userService))
 
-	go infrastructure.StartGRPCServer("localhost:50051", grpcimpl.NewUserServiceImpl(userService))
+	handler.NewUserHandler(api, userService, jwtAuthMiddleware)
 
 	r.Run(":" + config.AppConfig.AppPort)
 

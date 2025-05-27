@@ -56,6 +56,10 @@ type UpdateAccountRequest struct {
 	}
 }
 
+type DeleteLoggedInAccountRequest struct {
+	Id int64 `path:"id" required:"true" doc:"Id of user."`
+}
+
 // // Integrate with Elasticsearch
 
 // type GetUsersWithElasticsearchRequest struct {

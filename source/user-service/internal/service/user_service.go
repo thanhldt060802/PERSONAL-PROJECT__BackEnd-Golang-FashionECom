@@ -4,13 +4,18 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"thanhldt060802/config"
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/dto"
+	"thanhldt060802/internal/grpc/pb"
 	"thanhldt060802/internal/model"
 	"thanhldt060802/internal/repository"
 	"thanhldt060802/utils"
 	"time"
+
+	"github.com/redis/go-redis/v9"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type userService struct {
@@ -19,7 +24,7 @@ type userService struct {
 
 type UserService interface {
 	// Integrate with Elasticsearch
-	GetAllUsers(ctx context.Context) ([]dto.UserView, error)
+	GetAllUsers(ctx context.Context) ([]*pb.User, error)
 
 	// Main features
 	GetUserById(ctx context.Context, reqDTO *dto.GetUserByIdRequest) (*dto.UserView, error)
@@ -28,10 +33,9 @@ type UserService interface {
 	DeleteUserById(ctx context.Context, reqDTO *dto.DeleteUserByIdRequest) error
 
 	// Extra feature
-	LoginAccount(ctx context.Context, reqDTO *dto.LoginAccountRequest) (*string, error)
-	LogoutAccount(ctx context.Context, token string) error
-	// ShowAllLoggedInAccounts()
-	// DestroyLoggedInAccountToken()
+	LoginAccount(ctx context.Context, reqDTO *dto.LoginAccountRequest) (string, error)
+	LogoutAccount(ctx context.Context, id int64) error
+	GetAllLoggedInAccounts(ctx context.Context) ([]int64, error)
 
 	// Elasticsearch integration features
 	// GetUsers()
@@ -48,13 +52,27 @@ func NewUserService(userRepository repository.UserRepository) UserService {
 // Integrate with Elasticsearch
 // ######################################################################################
 
-func (userService *userService) GetAllUsers(ctx context.Context) ([]dto.UserView, error) {
+func (userService *userService) GetAllUsers(ctx context.Context) ([]*pb.User, error) {
 	users, err := userService.userRepository.GetAll(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("query users from postgresql failed: %s", err.Error())
 	}
 
-	return dto.ToListUserView(users), nil
+	userProtos := []*pb.User{}
+	for _, user := range users {
+		userProtos = append(userProtos, &pb.User{
+			Id:        user.Id,
+			FullName:  user.FullName,
+			Email:     user.Email,
+			Username:  user.Username,
+			Address:   user.Address,
+			RoleName:  user.RoleName,
+			CreatedAt: timestamppb.New(user.CreatedAt),
+			UpdatedAt: timestamppb.New(user.UpdatedAt),
+		})
+	}
+
+	return userProtos, nil
 }
 
 //
@@ -96,7 +114,11 @@ func (userService *userService) CreateUser(ctx context.Context, reqDTO *dto.Crea
 		return fmt.Errorf("insert user to postgresql failed: %s", err.Error())
 	}
 
-	// Missing->SyncCreatingToElasticsearch
+	newUserView := dto.ToUserView(&newUser)
+	payload, _ := json.Marshal(newUserView)
+	if err := infrastructure.RedisClient.Publish(ctx, "user-service.created-user", payload).Err(); err != nil {
+		return fmt.Errorf("pulish event user-service.created-user failed: %s", err.Error())
+	}
 
 	return nil
 }
@@ -135,7 +157,11 @@ func (userService *userService) UpdateUserById(ctx context.Context, reqDTO *dto.
 		return fmt.Errorf("update user on postgresql failed: %s", err.Error())
 	}
 
-	// Missing->SyncUpdatingToElasticsearch
+	updatedUserView := dto.ToUserView(foundUser)
+	payload, _ := json.Marshal(updatedUserView)
+	if err := infrastructure.RedisClient.Publish(ctx, "user-service.updated-user", payload).Err(); err != nil {
+		return fmt.Errorf("pulish event user-service.updated-user failed: %s", err.Error())
+	}
 
 	return nil
 }
@@ -149,7 +175,9 @@ func (userService *userService) DeleteUserById(ctx context.Context, reqDTO *dto.
 		return fmt.Errorf("delete user from postgresql failed: %s", err.Error())
 	}
 
-	// Missing->SyncDeletingToElasticsearch
+	if err := infrastructure.RedisClient.Publish(ctx, "user-service.deleted-user", strconv.FormatInt(reqDTO.Id, 10)).Err(); err != nil {
+		return fmt.Errorf("pulish event user-service.deleted-user failed: %s", err.Error())
+	}
 
 	return nil
 }
@@ -159,43 +187,72 @@ func (userService *userService) DeleteUserById(ctx context.Context, reqDTO *dto.
 // Extra features
 // ######################################################################################
 
-func (userService *userService) LoginAccount(ctx context.Context, reqDTO *dto.LoginAccountRequest) (*string, error) {
+func (userService *userService) LoginAccount(ctx context.Context, reqDTO *dto.LoginAccountRequest) (string, error) {
 	foundUser, err := userService.userRepository.GetByUsername(ctx, reqDTO.Body.Username)
 	if err != nil {
-		return nil, fmt.Errorf("username of user is not valid")
+		return "", fmt.Errorf("username of user is not valid")
 	}
 
-	if utils.ValidatePassword(foundUser.HashedPassword, reqDTO.Body.Password) != nil {
-		return nil, fmt.Errorf("password of user does not match")
+	redisKey := fmt.Sprintf("%d:token", foundUser.Id)
+	tokenStr, err := infrastructure.RedisClient.Get(ctx, redisKey).Result()
+	if err == redis.Nil {
+		if utils.ValidatePassword(foundUser.HashedPassword, reqDTO.Body.Password) != nil {
+			return "", fmt.Errorf("password of user does not match")
+		}
+
+		tokenStr, err = utils.GenerateToken(foundUser.Id, foundUser.RoleName)
+		if err != nil {
+			return "", fmt.Errorf("generate token failed: %s", err.Error())
+		}
+
+		redisKey = fmt.Sprintf("token:%s", tokenStr)
+		userData := map[string]interface{}{
+			"user_id":   foundUser.Id,
+			"role_name": foundUser.RoleName,
+		}
+		userDataJSON, _ := json.Marshal(userData)
+		status, err := infrastructure.RedisClient.SetEx(ctx, redisKey, userDataJSON, config.AppConfig.TokenExpireMinutesValue()).Result()
+		if err != nil {
+			return "", fmt.Errorf("save token to redis failed: %s", err.Error())
+		}
+		if status != "OK" {
+			return "", fmt.Errorf("unexpected response from redis - status: %s", status)
+		}
+
+		redisKey = fmt.Sprintf("%d:token", foundUser.Id)
+		status, err = infrastructure.RedisClient.SetEx(ctx, redisKey, tokenStr, config.AppConfig.TokenExpireMinutesValue()).Result()
+		if err != nil {
+			return "", fmt.Errorf("save logged in account to redis failed: %s", err.Error())
+		}
+		if status != "OK" {
+			return "", fmt.Errorf("unexpected response from redis - status: %s", status)
+		}
+	} else if err != nil {
+		return "", fmt.Errorf("check logged in account from redis failed: %s", err.Error())
 	}
 
-	tokenStr, err := utils.GenerateToken(foundUser.Id, foundUser.RoleName)
-	if err != nil {
-		return nil, fmt.Errorf("generate token failed: %s", err.Error())
-	}
-
-	redisKey := fmt.Sprintf("token:%s", tokenStr)
-	userData := map[string]interface{}{
-		"user_id":   foundUser.Id,
-		"role_name": foundUser.RoleName,
-	}
-	userDataJSON, _ := json.Marshal(userData)
-
-	status, err := infrastructure.RedisClient.SetEx(ctx, redisKey, userDataJSON, *config.AppConfig.TokenExpireMinutesValue()).Result()
-	if err != nil {
-		return nil, fmt.Errorf("save token to redis failed: %s", err.Error())
-	}
-	if status != "OK" {
-		return nil, fmt.Errorf("unexpected response from redis - status: %s", status)
-	}
-
-	return &tokenStr, nil
+	return tokenStr, nil
 }
 
-func (userService *userService) LogoutAccount(ctx context.Context, token string) error {
-	redisKey := fmt.Sprintf("token:%s", token)
+func (userService *userService) LogoutAccount(ctx context.Context, id int64) error {
+	redisKey := fmt.Sprintf("%d:token", id)
+	tokenStr, err := infrastructure.RedisClient.Get(ctx, redisKey).Result()
+	if err == redis.Nil {
+		return fmt.Errorf("logged in account is not valid")
+	} else if err != nil {
+		return fmt.Errorf("check logged in account from redis failed: %s", err.Error())
+	}
 
 	deleted, err := infrastructure.RedisClient.Del(ctx, redisKey).Result()
+	if err != nil {
+		return fmt.Errorf("delete logged id account from redis failed: %s", err.Error())
+	}
+	if deleted == 0 {
+		return fmt.Errorf("logged in account is not valid")
+	}
+
+	redisKey = fmt.Sprintf("token:%s", tokenStr)
+	deleted, err = infrastructure.RedisClient.Del(ctx, redisKey).Result()
 	if err != nil {
 		return fmt.Errorf("delete token from redis failed: %s", err.Error())
 	}
@@ -204,4 +261,38 @@ func (userService *userService) LogoutAccount(ctx context.Context, token string)
 	}
 
 	return nil
+}
+
+func (userService *userService) GetAllLoggedInAccounts(ctx context.Context) ([]int64, error) {
+	var cursor uint64
+	var loggedInAccounts []int64
+
+	for {
+		keys, nextCursor, err := infrastructure.RedisClient.Scan(ctx, cursor, "token:*", 100).Result()
+		if err != nil {
+			return nil, fmt.Errorf("scan keys on redis failed: %s", err.Error())
+		}
+
+		for _, key := range keys {
+			userDataJson, err := infrastructure.RedisClient.Get(ctx, key).Result()
+			if err != nil {
+				return nil, fmt.Errorf("check token on redis failed: %s", err.Error())
+			}
+
+			var userData struct {
+				UserId   int64  `json:"user_id"`
+				RoleName string `json:"role_name"`
+			}
+			json.Unmarshal([]byte(userDataJson), &userData)
+
+			loggedInAccounts = append(loggedInAccounts, userData.UserId)
+		}
+
+		if nextCursor == 0 {
+			break
+		}
+		cursor = nextCursor
+	}
+
+	return loggedInAccounts, nil
 }

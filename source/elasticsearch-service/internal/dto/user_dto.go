@@ -16,20 +16,7 @@ type UserView struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-type NumberOfUsersCreatedReport struct {
-	StartTime    string  `json:"start_time"`
-	EndTime      string  `json:"end_time"`
-	TimeInterval string  `json:"time_interval"`
-	Total        float64 `json:"total"`
-	Average      float64 `json:"average"`
-	Details      []struct {
-		StartTime string  `json:"start_time"`
-		EndTime   string  `json:"end_time"`
-		Total     float64 `json:"total"`
-	} `json:"detail"`
-}
-
-func ToUserViewFromProto(userProto *pb.User) *UserView {
+func ToUserView(userProto *pb.User) *UserView {
 	return &UserView{
 		Id:        userProto.Id,
 		FullName:  userProto.FullName,
@@ -42,11 +29,24 @@ func ToUserViewFromProto(userProto *pb.User) *UserView {
 	}
 }
 
-func ToListUserViewFromProto(userProtos []*pb.User) []UserView {
+func ToListUserView(userProtos []*pb.User) []UserView {
 	userViews := make([]UserView, len(userProtos))
 	for i := range userProtos {
-		userViews[i] = *ToUserViewFromProto(userProtos[i])
+		userViews[i] = *ToUserView(userProtos[i])
 	}
 
 	return userViews
+}
+
+type NumberOfUsersCreatedReport struct {
+	StartTime    string  `json:"start_time"`
+	EndTime      string  `json:"end_time"`
+	TimeInterval string  `json:"time_interval"`
+	Total        float64 `json:"total"`
+	Average      float64 `json:"average"`
+	Details      []struct {
+		StartTime string  `json:"start_time"`
+		EndTime   string  `json:"end_time"`
+		Total     float64 `json:"total"`
+	} `json:"detail"`
 }
