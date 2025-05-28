@@ -10,7 +10,8 @@ import (
 	"strings"
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/dto"
-	"thanhldt060802/internal/grpc/pb"
+	"thanhldt060802/internal/grpc/client/userservicepb"
+	"thanhldt060802/internal/grpc/service/elasticsearchservicepb"
 	"thanhldt060802/internal/schema"
 	"thanhldt060802/utils"
 
@@ -18,13 +19,12 @@ import (
 )
 
 type userService struct {
-	userServiceGRPCClient pb.UserServiceGRPCClient
 }
 
 type UserService interface {
-	SyncAllAvailableUsers(ctx context.Context) error
+	syncAllAvailableUsers() error
 
-	GetUsers(ctx context.Context, reqDTO *dto.GetUsersRequest) ([]dto.UserView, error)
+	GetUsers(ctx context.Context, reqDTO *elasticsearchservicepb.GetUsersRequest) ([]*elasticsearchservicepb.User, error)
 	syncCreatingUserLoop()
 	syncUpdatingUserLoop()
 	syncDeletingUserLoop()
@@ -32,21 +32,23 @@ type UserService interface {
 	// StatisticsNumberOfUsersCreated(ctx context.Context, reqDTO *dto.StatisticsNumberOfUsersCreatedRequest) (*dto.NumberOfUsersCreatedReport, error)
 }
 
-func NewUserService(userServiceGRPCClient pb.UserServiceGRPCClient) UserService {
-	userServier := &userService{
-		userServiceGRPCClient: userServiceGRPCClient,
+func NewUserService() UserService {
+	userService := &userService{}
+
+	if err := userService.syncAllAvailableUsers(); err != nil {
+		log.Printf("Sync all available users the first time failed: %s", err.Error())
+	} else {
+		log.Printf("Sync all available users the first time successful")
 	}
 
-	go userServier.syncCreatingUserLoop()
-	go userServier.syncUpdatingUserLoop()
-	go userServier.syncDeletingUserLoop()
+	go userService.syncCreatingUserLoop()
+	go userService.syncUpdatingUserLoop()
+	go userService.syncDeletingUserLoop()
 
-	return &userService{
-		userServiceGRPCClient: userServiceGRPCClient,
-	}
+	return userService
 }
 
-func (userService *userService) SyncAllAvailableUsers(ctx context.Context) error {
+func (userService *userService) syncAllAvailableUsers() error {
 	// Check if index already exists on Elasticsearch
 	existsRes, err := infrastructure.ElasticsearchClient.Indices.Exists([]string{"users"})
 	if err != nil {
@@ -56,7 +58,7 @@ func (userService *userService) SyncAllAvailableUsers(ctx context.Context) error
 
 	// If index does not exists on Elasticsearch
 	if existsRes.StatusCode == 404 {
-		grpcRes, err := userService.userServiceGRPCClient.GetAllUsers(ctx, &pb.GetAllUsersRequest{})
+		grpcRes, err := infrastructure.UserServiceGRPCClient.GetAllUsers(context.Background(), &userservicepb.GetAllUsersRequest{})
 		if err != nil {
 			return fmt.Errorf("get all user from user-service failed: %s", err.Error())
 		}
@@ -86,7 +88,7 @@ func (userService *userService) SyncAllAvailableUsers(ctx context.Context) error
 			return err
 		}
 		defer func() {
-			if err := indexer.Close(ctx); err != nil {
+			if err := indexer.Close(context.Background()); err != nil {
 				closeBulkIndexer = fmt.Errorf("close bulk indexer failed: %s", err.Error())
 			}
 		}()
@@ -94,13 +96,13 @@ func (userService *userService) SyncAllAvailableUsers(ctx context.Context) error
 		// Add all available data on PostgreSQL to BulkIndexer
 		for _, user := range users {
 			// Convert data to JSON data
-			userJSON, err := json.Marshal(dto.ToUserView(user))
+			userJSON, err := json.Marshal(dto.FromUserProtoToUserView(user))
 			if err != nil {
 				return err
 			}
 
 			// Add data to BulkIndexer
-			err = indexer.Add(ctx, esutil.BulkIndexerItem{
+			err = indexer.Add(context.Background(), esutil.BulkIndexerItem{
 				Action:     "index",
 				DocumentID: strconv.FormatInt(user.Id, 10),
 				Body:       bytes.NewReader(userJSON),
@@ -157,7 +159,9 @@ func (userService *userService) syncCreatingUserLoop() {
 			defer res.Body.Close()
 
 			if res.IsError() {
-				log.Printf("Some thing wrong when syncing creating user: %s", res.String())
+				log.Printf("Sync creating user failed: %s", res.String())
+			} else {
+				log.Printf("Sync creating user successful")
 			}
 		}()
 	}
@@ -189,14 +193,16 @@ func (userService *userService) syncUpdatingUserLoop() {
 			defer res.Body.Close()
 
 			if res.IsError() {
-				log.Printf("Some thing wrong when syncing updating user: %s", res.String())
+				log.Printf("Sync updating user failed: %s", res.String())
+			} else {
+				log.Printf("Sync updating user successful")
 			}
 		}()
 	}
 }
 
 func (userService *userService) syncDeletingUserLoop() {
-	subscribe := infrastructure.RedisClient.Subscribe(context.Background(), "user-service.updated-user")
+	subscribe := infrastructure.RedisClient.Subscribe(context.Background(), "user-service.deleted-user")
 	defer subscribe.Close()
 
 	ch := subscribe.Channel()
@@ -216,13 +222,15 @@ func (userService *userService) syncDeletingUserLoop() {
 			defer res.Body.Close()
 
 			if res.IsError() {
-				log.Printf("Some thing wrong when syncing deleting user: %s", res.String())
+				log.Printf("Sync deleting user failed: %s", res.String())
+			} else {
+				log.Printf("Sync deleting user successful")
 			}
 		}()
 	}
 }
 
-func (userService *userService) GetUsers(ctx context.Context, reqDTO *dto.GetUsersRequest) ([]dto.UserView, error) {
+func (userService *userService) GetUsers(ctx context.Context, reqDTO *elasticsearchservicepb.GetUsersRequest) ([]*elasticsearchservicepb.User, error) {
 	mustConditions := []map[string]interface{}{}
 
 	// If filtering by full_name
@@ -272,11 +280,11 @@ func (userService *userService) GetUsers(ctx context.Context, reqDTO *dto.GetUse
 
 	// If filtering by created_at in range or partial range
 	createdAtRange := map[string]interface{}{}
-	if reqDTO.CreatedAtGTE != "" {
-		createdAtRange["gte"] = reqDTO.CreatedAtGTE
+	if reqDTO.CreatedAtGte != "" {
+		createdAtRange["gte"] = reqDTO.CreatedAtGte
 	}
-	if reqDTO.CreatedAtLTE != "" {
-		createdAtRange["lte"] = reqDTO.CreatedAtLTE
+	if reqDTO.CreatedAtLte != "" {
+		createdAtRange["lte"] = reqDTO.CreatedAtLte
 	}
 	if len(createdAtRange) > 0 {
 		createdAtRange["format"] = "strict_date_optional_time" // For format YYYY-MM-ddTHH:mm:ss
@@ -358,5 +366,5 @@ func (userService *userService) GetUsers(ctx context.Context, reqDTO *dto.GetUse
 		users[i] = hit.Source
 	}
 
-	return users, nil
+	return dto.FromListUserViewToListUserProto(users), nil
 }

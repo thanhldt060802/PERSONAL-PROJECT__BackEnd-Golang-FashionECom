@@ -4,35 +4,42 @@ import (
 	"fmt"
 	"log"
 	"thanhldt060802/config"
-	"thanhldt060802/internal/grpc/pb"
+	"thanhldt060802/internal/grpc/client/userservicepb"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-var userServiceGRPCConnection *grpc.ClientConn
-var UserServiceGRPCClient pb.UserServiceGRPCClient
+var UserServiceGRPCClient userservicepb.UserServiceGRPCClient
 
-func CloseAll() {
-	userServiceGRPCConnection.Close()
+type serviceGRPCConnectionManager struct {
+	userServiceGRPCConnection *grpc.ClientConn
 }
 
+func (serviceGRPCConnectionManager *serviceGRPCConnectionManager) CloseAll() {
+	serviceGRPCConnectionManager.userServiceGRPCConnection.Close()
+}
+
+var ServiceGRPCConnectionManager *serviceGRPCConnectionManager
+
 func InitAllServiceGRPCClients() {
+	ServiceGRPCConnectionManager = &serviceGRPCConnectionManager{}
+
 	// Kết nối user-service
 	userServiceGRPCServerAddress := fmt.Sprintf(
 		"%s:%s",
-		config.AppConfig.UserServiceGRPCServerHost,
-		config.AppConfig.UserServiceGRPCServerPort,
+		config.AppConfig.UserServiceGRPCHost,
+		config.AppConfig.UserServiceGRPCPort,
 	)
 
 	conn, err := grpc.NewClient(userServiceGRPCServerAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("connect to user-service failed: %s", err.Error())
 	}
-	userServiceGRPCConnection = conn
-	UserServiceGRPCClient = pb.NewUserServiceGRPCClient(conn)
+	ServiceGRPCConnectionManager.userServiceGRPCConnection = conn
+	UserServiceGRPCClient = userservicepb.NewUserServiceGRPCClient(conn)
 
-	log.Println("connect to user-service successful")
+	log.Printf("connect to user-service successful")
 
 	// Kết nối catalog-service
 

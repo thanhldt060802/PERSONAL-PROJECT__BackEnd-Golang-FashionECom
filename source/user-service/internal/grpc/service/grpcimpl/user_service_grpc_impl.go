@@ -3,12 +3,12 @@ package grpcimpl
 import (
 	"context"
 	"net/http"
-	"thanhldt060802/internal/grpc/pb"
+	"thanhldt060802/internal/grpc/service/userservicepb"
 	"thanhldt060802/internal/service"
 )
 
 type UserServiceGRPCImpl struct {
-	pb.UnimplementedUserServiceGRPCServer
+	userservicepb.UnimplementedUserServiceGRPCServer
 	userService service.UserService
 }
 
@@ -16,8 +16,8 @@ func NewUserServiceGRPCImpl(userService service.UserService) *UserServiceGRPCImp
 	return &UserServiceGRPCImpl{userService: userService}
 }
 
-func (grpcUserServiceGRPC *UserServiceGRPCImpl) GetAllUsers(ctx context.Context, req *pb.GetAllUsersRequest) (*pb.GetAllUsersResponse, error) {
-	res := &pb.GetAllUsersResponse{}
+func (grpcUserServiceGRPC *UserServiceGRPCImpl) GetAllUsers(ctx context.Context, req *userservicepb.GetAllUsersRequest) (*userservicepb.GetAllUsersResponse, error) {
+	res := &userservicepb.GetAllUsersResponse{}
 
 	userProtos, err := grpcUserServiceGRPC.userService.GetAllUsers(ctx)
 	if err != nil {

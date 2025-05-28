@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package userservice;
+package userservicepb;
 
-option go_package = "pb/";
+option go_package = "userservicepb/";
 
 import "google/protobuf/timestamp.proto";
 

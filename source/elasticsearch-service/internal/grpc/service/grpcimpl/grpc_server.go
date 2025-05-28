@@ -5,16 +5,16 @@ import (
 	"log"
 	"net"
 	"thanhldt060802/config"
-	"thanhldt060802/internal/grpc/pb"
+	"thanhldt060802/internal/grpc/service/elasticsearchservicepb"
 
 	"google.golang.org/grpc"
 )
 
-func StartGRPCServer(userServiceGRPCImpl pb.UserServiceGRPCServer) {
+func StartGRPCServer(elasticsearchServiceGRPCImpl elasticsearchservicepb.ElasticsearchServiceGRPCServer) {
 	address := fmt.Sprintf(
 		"%s:%s",
-		config.AppConfig.UserServiceGRPCServerHost,
-		config.AppConfig.UserServiceGRPCServerPort,
+		config.AppConfig.ElasticsearchServiceGRPCHost,
+		config.AppConfig.ElasticsearchServiceGRPCPort,
 	)
 
 	lis, err := net.Listen("tcp", address)
@@ -24,7 +24,7 @@ func StartGRPCServer(userServiceGRPCImpl pb.UserServiceGRPCServer) {
 
 	server := grpc.NewServer()
 
-	pb.RegisterUserServiceGRPCServer(server, userServiceGRPCImpl)
+	elasticsearchservicepb.RegisterElasticsearchServiceGRPCServer(server, elasticsearchServiceGRPCImpl)
 
 	log.Printf("Start gRPC server successful")
 

@@ -8,7 +8,8 @@ import (
 	"thanhldt060802/config"
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/dto"
-	"thanhldt060802/internal/grpc/pb"
+	"thanhldt060802/internal/grpc/client/elasticsearchservicepb"
+	"thanhldt060802/internal/grpc/service/userservicepb"
 	"thanhldt060802/internal/model"
 	"thanhldt060802/internal/repository"
 	"thanhldt060802/utils"
@@ -24,7 +25,7 @@ type userService struct {
 
 type UserService interface {
 	// Integrate with Elasticsearch
-	GetAllUsers(ctx context.Context) ([]*pb.User, error)
+	GetAllUsers(ctx context.Context) ([]*userservicepb.User, error)
 
 	// Main features
 	GetUserById(ctx context.Context, reqDTO *dto.GetUserByIdRequest) (*dto.UserView, error)
@@ -38,7 +39,7 @@ type UserService interface {
 	GetAllLoggedInAccounts(ctx context.Context) ([]int64, error)
 
 	// Elasticsearch integration features
-	// GetUsers()
+	GetUsers(ctx context.Context, reqDTO *dto.GetUsersRequest) ([]dto.UserView, error)
 }
 
 func NewUserService(userRepository repository.UserRepository) UserService {
@@ -52,15 +53,15 @@ func NewUserService(userRepository repository.UserRepository) UserService {
 // Integrate with Elasticsearch
 // ######################################################################################
 
-func (userService *userService) GetAllUsers(ctx context.Context) ([]*pb.User, error) {
+func (userService *userService) GetAllUsers(ctx context.Context) ([]*userservicepb.User, error) {
 	users, err := userService.userRepository.GetAll(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("query users from postgresql failed: %s", err.Error())
 	}
 
-	userProtos := []*pb.User{}
+	userProtos := []*userservicepb.User{}
 	for _, user := range users {
-		userProtos = append(userProtos, &pb.User{
+		userProtos = append(userProtos, &userservicepb.User{
 			Id:        user.Id,
 			FullName:  user.FullName,
 			Email:     user.Email,
@@ -170,6 +171,8 @@ func (userService *userService) DeleteUserById(ctx context.Context, reqDTO *dto.
 	if _, err := userService.userRepository.GetById(ctx, reqDTO.Id); err != nil {
 		return fmt.Errorf("id of user is not valid")
 	}
+
+	userService.LogoutAccount(ctx, reqDTO.Id)
 
 	if err := userService.userRepository.DeleteById(ctx, reqDTO.Id); err != nil {
 		return fmt.Errorf("delete user from postgresql failed: %s", err.Error())
@@ -295,4 +298,30 @@ func (userService *userService) GetAllLoggedInAccounts(ctx context.Context) ([]i
 	}
 
 	return loggedInAccounts, nil
+}
+
+//
+//
+// Elasticsearch integration features
+// ######################################################################################
+
+func (userService *userService) GetUsers(ctx context.Context, reqDTO *dto.GetUsersRequest) ([]dto.UserView, error) {
+	convertReqDTO := elasticsearchservicepb.GetUsersRequest{}
+	convertReqDTO.Offset = reqDTO.Offset
+	convertReqDTO.Limit = reqDTO.Limit
+	convertReqDTO.SortBy = reqDTO.SortBy
+	convertReqDTO.FullName = reqDTO.FullName
+	convertReqDTO.Email = reqDTO.Email
+	convertReqDTO.Username = reqDTO.Username
+	convertReqDTO.Address = reqDTO.Address
+	convertReqDTO.RoleName = reqDTO.RoleName
+	convertReqDTO.CreatedAtGte = reqDTO.CreatedAtGTE
+	convertReqDTO.CreatedAtLte = reqDTO.CreatedAtLTE
+
+	grpcRes, err := infrastructure.ElasticsearchServiceGRPCClient.GetUsers(ctx, &convertReqDTO)
+	if err != nil {
+		return nil, fmt.Errorf("get all user from user-service failed: %s", err.Error())
+	}
+
+	return dto.FromListUserProtoToListUserView(grpcRes.Users), nil
 }

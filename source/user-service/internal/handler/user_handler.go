@@ -145,6 +145,14 @@ func NewUserHandler(api huma.API, userService service.UserService, jwtAuthMiddle
 	// ######################################################################################
 
 	// Get users
+	huma.Register(api, huma.Operation{
+		Method:      http.MethodGet,
+		Path:        "/users",
+		Summary:     "/users",
+		Description: "Get users.",
+		Tags:        []string{"User"},
+		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
+	}, userHandler.GetUsers)
 
 	return userHandler
 }
@@ -358,5 +366,29 @@ func (userHandler *UserHandler) DeleteLoggedInAccount(ctx context.Context, reqDT
 	res := &dto.SuccessResponse{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Delete logged in account successful"
+	return res, nil
+}
+
+//
+//
+// Elasticsearch integration features
+// ######################################################################################
+
+func (userHandler *UserHandler) GetUsers(ctx context.Context, reqDTO *dto.GetUsersRequest) (*dto.PaginationBodyResponseList[dto.UserView], error) {
+	users, err := userHandler.userService.GetUsers(ctx, reqDTO)
+	if err != nil {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusInternalServerError
+		res.Code = "ERR_INTERNAL_SERVER"
+		res.Message = "Get users failed"
+		res.Details = []string{err.Error()}
+		return nil, res
+	}
+
+	res := &dto.PaginationBodyResponseList[dto.UserView]{}
+	res.Body.Code = "OK"
+	res.Body.Message = "Get users successful"
+	res.Body.Data = users
+	res.Body.Total = len(users)
 	return res, nil
 }

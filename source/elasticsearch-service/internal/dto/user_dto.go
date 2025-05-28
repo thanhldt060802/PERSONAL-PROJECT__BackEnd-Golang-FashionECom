@@ -1,8 +1,11 @@
 package dto
 
 import (
-	"thanhldt060802/internal/grpc/pb"
+	"thanhldt060802/internal/grpc/client/userservicepb"
+	"thanhldt060802/internal/grpc/service/elasticsearchservicepb"
 	"time"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type UserView struct {
@@ -16,7 +19,9 @@ type UserView struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func ToUserView(userProto *pb.User) *UserView {
+// Receive
+
+func FromUserProtoToUserView(userProto *userservicepb.User) *UserView {
 	return &UserView{
 		Id:        userProto.Id,
 		FullName:  userProto.FullName,
@@ -29,13 +34,28 @@ func ToUserView(userProto *pb.User) *UserView {
 	}
 }
 
-func ToListUserView(userProtos []*pb.User) []UserView {
-	userViews := make([]UserView, len(userProtos))
+// Send
+
+func FromUserViewToUserProto(userView *UserView) *elasticsearchservicepb.User {
+	return &elasticsearchservicepb.User{
+		Id:        userView.Id,
+		FullName:  userView.FullName,
+		Email:     userView.Email,
+		Username:  userView.Username,
+		Address:   userView.Address,
+		RoleName:  userView.RoleName,
+		CreatedAt: timestamppb.New(userView.CreatedAt),
+		UpdatedAt: timestamppb.New(userView.UpdatedAt),
+	}
+}
+
+func FromListUserViewToListUserProto(userViews []UserView) []*elasticsearchservicepb.User {
+	userProtos := make([]*elasticsearchservicepb.User, len(userViews))
 	for i := range userProtos {
-		userViews[i] = *ToUserView(userProtos[i])
+		userProtos[i] = FromUserViewToUserProto(&userViews[i])
 	}
 
-	return userViews
+	return userProtos
 }
 
 type NumberOfUsersCreatedReport struct {

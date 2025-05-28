@@ -19,8 +19,10 @@ type Config struct {
 	RedisPort     string
 	RedisPassword string
 
-	UserServiceGRPCServerHost string
-	UserServiceGRPCServerPort string
+	ElasticsearchServiceGRPCHost string
+	ElasticsearchServiceGRPCPort string
+	UserServiceGRPCHost          string
+	UserServiceGRPCPort          string
 }
 
 var AppConfig *Config
@@ -42,8 +44,10 @@ func InitConfig() {
 		RedisPort:     GetEnv("REDIS_PORT", "6379"),
 		RedisPassword: GetEnv("REDIS_PASSWORD", ""),
 
-		UserServiceGRPCServerHost: GetEnv("USER_SERVICE_GRPC_SERVER_HOST", "localhost"),
-		UserServiceGRPCServerPort: GetEnv("USER_SERVICE_GRPC_SERVER_PORT", "50050"),
+		ElasticsearchServiceGRPCHost: GetEnv("ELASTICSEARCH_SERVICE_GRPC_HOST", "localhost"),
+		ElasticsearchServiceGRPCPort: GetEnv("ELASTICSEARCH_SERVICE_GRPC_PORT", "50050"),
+		UserServiceGRPCHost:          GetEnv("USER_SERVICE_GRPC_HOST", "localhost"),
+		UserServiceGRPCPort:          GetEnv("USER_SERVICE_GRPC_PORT", "50050"),
 	}
 
 	log.Println("Load .env file successful")

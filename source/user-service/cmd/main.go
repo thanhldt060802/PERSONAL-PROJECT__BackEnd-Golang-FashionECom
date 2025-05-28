@@ -5,7 +5,7 @@ import (
 	"thanhldt060802/config"
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/dto"
-	grpcimpl "thanhldt060802/internal/grpc/grpc_impl"
+	"thanhldt060802/internal/grpc/service/grpcimpl"
 	"thanhldt060802/internal/handler"
 	"thanhldt060802/internal/middleware"
 	"thanhldt060802/internal/repository"
@@ -39,6 +39,8 @@ func main() {
 	defer infrastructure.PostgresDB.Close()
 	infrastructure.InitRedisClient()
 	defer infrastructure.RedisClient.Close()
+	infrastructure.InitAllServiceGRPCClients()
+	defer infrastructure.ServiceGRPCConnectionManager.CloseAll()
 
 	humaCfg := huma.DefaultConfig("FashionECom - User Service", "v1.0.0")
 	humaCfg.DocsPath = ""
