@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package elasticsearchservicepb;
+
+option go_package = "elasticsearchservicepb/";
+
+import "google/protobuf/timestamp.proto";
+
+service ElasticsearchServiceGRPC {
+  rpc GetUsers (GetUsersRequest) returns (GetUsersResponse);
+}
+
+// user-service
+
+message GetUsersRequest {
+    int32 offset = 1;
+    int32 limit = 2;
+    string sort_by = 3;
+    optional string full_name = 4;
+    optional string email = 5;
+    optional string username = 6;
+    optional string address = 7;
+    optional string role_name = 8;
+    optional string created_at_gte = 9;
+    optional string created_at_lte = 10;
+}
+
+message GetUsersResponse {
+  repeated User users = 1;
+}
+
+message User {
+  int64 id = 1;
+  string full_name = 2;
+  string email = 3;
+  string username = 4;
+  string address = 5;
+  string role_name = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
+
+// catalog-service
+
+message GetProductsRequest {
+    int32 offset = 1;
+    int32 limit = 2;
+    string sort_by = 3;
+    optional string name = 4;
+    optional string description = 5;
+    optional string sex = 6;
+    optional int64 price_gte = 7;
+    optional int64 price_lte = 8;
+    optional int32 discount_percentage_gte = 9;
+    optional int32 discount_percentage_lte = 10;
+    optional int32 stock_gte = 11;
+    optional int32 stock_lte = 12;
+    optional string category_name = 13;
+    optional string brand_name = 14;
+    optional string created_at_gte = 15;
+    optional string created_at_lte = 16;
+}
+
+message GetProductsResponse {
+  repeated Product products = 1;
+}
+
+message Product {
+  int64 id = 1;
+  string name = 2;
+  string description = 3;
+  string sex = 4;
+  int64 price = 5;
+  int32 discount_percentage = 6;
+  int32 stock = 7;
+  string image_url = 8;
+  int64 category_id = 9;
+  string category_name = 10;
+  int64 brand_id = 11;
+  string brand_name = 12;   
+  google.protobuf.Timestamp created_at = 13;
+  google.protobuf.Timestamp updated_at = 14;
+}

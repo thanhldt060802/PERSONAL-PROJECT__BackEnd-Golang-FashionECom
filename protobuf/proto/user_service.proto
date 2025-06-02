@@ -13,11 +13,7 @@ service UserServiceGRPC {
 message GetAllUsersRequest {}
 
 message GetAllUsersResponse {
-  string code = 1;
-  int32 status = 2;
-  string message = 3;
-  
-  repeated User users = 4;
+  repeated User users = 1;
 }
 
 message User {

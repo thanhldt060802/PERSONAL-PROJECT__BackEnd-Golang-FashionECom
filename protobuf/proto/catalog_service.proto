@@ -2,11 +2,11 @@ syntax = "proto3";
 
 package catalogservice;
 
-option go_package = "pb/";
+option go_package = "catalogservicepb/";
 
 import "google/protobuf/timestamp.proto";
 
-service CatalogService {
+service CatalogServiceGRPC {
   rpc GetAllProducts (GetAllProductsRequest) returns (GetAllProductsResponse);
 }
 

@@ -11,9 +11,15 @@ import (
 var ElasticsearchClient *elasticsearch.Client
 
 func InitElasticsearchClient() {
+	address := fmt.Sprintf(
+		"http://%s:%s",
+		config.AppConfig.ElasticsearchHost,
+		config.AppConfig.ElasticsearchPort,
+	)
+
 	elasticsearchClient, err := elasticsearch.NewClient(elasticsearch.Config{
 		Addresses: []string{
-			fmt.Sprintf("http://%s:%s", config.AppConfig.ElasticsearchHost, config.AppConfig.ElasticsearchPort),
+			address,
 		},
 		Username: config.AppConfig.ElasticsearchUsername,
 		Password: config.AppConfig.ElasticsearchPassword,

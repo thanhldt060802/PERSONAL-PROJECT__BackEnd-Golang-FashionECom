@@ -27,13 +27,13 @@ type GetUsersRequest struct {
 	Offset        int32                  `protobuf:"varint,1,opt,name=offset,proto3" json:"offset,omitempty"`
 	Limit         int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
 	SortBy        string                 `protobuf:"bytes,3,opt,name=sort_by,json=sortBy,proto3" json:"sort_by,omitempty"`
-	FullName      string                 `protobuf:"bytes,4,opt,name=full_name,json=fullName,proto3" json:"full_name,omitempty"`
-	Email         string                 `protobuf:"bytes,5,opt,name=email,proto3" json:"email,omitempty"`
-	Username      string                 `protobuf:"bytes,6,opt,name=username,proto3" json:"username,omitempty"`
-	Address       string                 `protobuf:"bytes,7,opt,name=address,proto3" json:"address,omitempty"`
-	RoleName      string                 `protobuf:"bytes,8,opt,name=role_name,json=roleName,proto3" json:"role_name,omitempty"`
-	CreatedAtGte  string                 `protobuf:"bytes,9,opt,name=created_at_gte,json=createdAtGte,proto3" json:"created_at_gte,omitempty"`
-	CreatedAtLte  string                 `protobuf:"bytes,10,opt,name=created_at_lte,json=createdAtLte,proto3" json:"created_at_lte,omitempty"`
+	FullName      *string                `protobuf:"bytes,4,opt,name=full_name,json=fullName,proto3,oneof" json:"full_name,omitempty"`
+	Email         *string                `protobuf:"bytes,5,opt,name=email,proto3,oneof" json:"email,omitempty"`
+	Username      *string                `protobuf:"bytes,6,opt,name=username,proto3,oneof" json:"username,omitempty"`
+	Address       *string                `protobuf:"bytes,7,opt,name=address,proto3,oneof" json:"address,omitempty"`
+	RoleName      *string                `protobuf:"bytes,8,opt,name=role_name,json=roleName,proto3,oneof" json:"role_name,omitempty"`
+	CreatedAtGte  *string                `protobuf:"bytes,9,opt,name=created_at_gte,json=createdAtGte,proto3,oneof" json:"created_at_gte,omitempty"`
+	CreatedAtLte  *string                `protobuf:"bytes,10,opt,name=created_at_lte,json=createdAtLte,proto3,oneof" json:"created_at_lte,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -90,60 +90,57 @@ func (x *GetUsersRequest) GetSortBy() string {
 }
 
 func (x *GetUsersRequest) GetFullName() string {
-	if x != nil {
-		return x.FullName
+	if x != nil && x.FullName != nil {
+		return *x.FullName
 	}
 	return ""
 }
 
 func (x *GetUsersRequest) GetEmail() string {
-	if x != nil {
-		return x.Email
+	if x != nil && x.Email != nil {
+		return *x.Email
 	}
 	return ""
 }
 
 func (x *GetUsersRequest) GetUsername() string {
-	if x != nil {
-		return x.Username
+	if x != nil && x.Username != nil {
+		return *x.Username
 	}
 	return ""
 }
 
 func (x *GetUsersRequest) GetAddress() string {
-	if x != nil {
-		return x.Address
+	if x != nil && x.Address != nil {
+		return *x.Address
 	}
 	return ""
 }
 
 func (x *GetUsersRequest) GetRoleName() string {
-	if x != nil {
-		return x.RoleName
+	if x != nil && x.RoleName != nil {
+		return *x.RoleName
 	}
 	return ""
 }
 
 func (x *GetUsersRequest) GetCreatedAtGte() string {
-	if x != nil {
-		return x.CreatedAtGte
+	if x != nil && x.CreatedAtGte != nil {
+		return *x.CreatedAtGte
 	}
 	return ""
 }
 
 func (x *GetUsersRequest) GetCreatedAtLte() string {
-	if x != nil {
-		return x.CreatedAtLte
+	if x != nil && x.CreatedAtLte != nil {
+		return *x.CreatedAtLte
 	}
 	return ""
 }
 
 type GetUsersResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Code          string                 `protobuf:"bytes,1,opt,name=code,proto3" json:"code,omitempty"`
-	Status        int32                  `protobuf:"varint,2,opt,name=status,proto3" json:"status,omitempty"`
-	Message       string                 `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`
-	Users         []*User                `protobuf:"bytes,4,rep,name=users,proto3" json:"users,omitempty"`
+	Users         []*User                `protobuf:"bytes,1,rep,name=users,proto3" json:"users,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -176,27 +173,6 @@ func (x *GetUsersResponse) ProtoReflect() protoreflect.Message {
 // Deprecated: Use GetUsersResponse.ProtoReflect.Descriptor instead.
 func (*GetUsersResponse) Descriptor() ([]byte, []int) {
 	return file_elasticsearch_service_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *GetUsersResponse) GetCode() string {
-	if x != nil {
-		return x.Code
-	}
-	return ""
-}
-
-func (x *GetUsersResponse) GetStatus() int32 {
-	if x != nil {
-		return x.Status
-	}
-	return 0
-}
-
-func (x *GetUsersResponse) GetMessage() string {
-	if x != nil {
-		return x.Message
-	}
-	return ""
 }
 
 func (x *GetUsersResponse) GetUsers() []*User {
@@ -306,28 +282,391 @@ func (x *User) GetUpdatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+type GetProductsRequest struct {
+	state                 protoimpl.MessageState `protogen:"open.v1"`
+	Offset                int32                  `protobuf:"varint,1,opt,name=offset,proto3" json:"offset,omitempty"`
+	Limit                 int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
+	SortBy                string                 `protobuf:"bytes,3,opt,name=sort_by,json=sortBy,proto3" json:"sort_by,omitempty"`
+	Name                  *string                `protobuf:"bytes,4,opt,name=name,proto3,oneof" json:"name,omitempty"`
+	Description           *string                `protobuf:"bytes,5,opt,name=description,proto3,oneof" json:"description,omitempty"`
+	Sex                   *string                `protobuf:"bytes,6,opt,name=sex,proto3,oneof" json:"sex,omitempty"`
+	PriceGte              *int64                 `protobuf:"varint,7,opt,name=price_gte,json=priceGte,proto3,oneof" json:"price_gte,omitempty"`
+	PriceLte              *int64                 `protobuf:"varint,8,opt,name=price_lte,json=priceLte,proto3,oneof" json:"price_lte,omitempty"`
+	DiscountPercentageGte *int32                 `protobuf:"varint,9,opt,name=discount_percentage_gte,json=discountPercentageGte,proto3,oneof" json:"discount_percentage_gte,omitempty"`
+	DiscountPercentageLte *int32                 `protobuf:"varint,10,opt,name=discount_percentage_lte,json=discountPercentageLte,proto3,oneof" json:"discount_percentage_lte,omitempty"`
+	StockGte              *int32                 `protobuf:"varint,11,opt,name=stock_gte,json=stockGte,proto3,oneof" json:"stock_gte,omitempty"`
+	StockLte              *int32                 `protobuf:"varint,12,opt,name=stock_lte,json=stockLte,proto3,oneof" json:"stock_lte,omitempty"`
+	CategoryName          *string                `protobuf:"bytes,13,opt,name=category_name,json=categoryName,proto3,oneof" json:"category_name,omitempty"`
+	BrandName             *string                `protobuf:"bytes,14,opt,name=brand_name,json=brandName,proto3,oneof" json:"brand_name,omitempty"`
+	CreatedAtGte          *string                `protobuf:"bytes,15,opt,name=created_at_gte,json=createdAtGte,proto3,oneof" json:"created_at_gte,omitempty"`
+	CreatedAtLte          *string                `protobuf:"bytes,16,opt,name=created_at_lte,json=createdAtLte,proto3,oneof" json:"created_at_lte,omitempty"`
+	unknownFields         protoimpl.UnknownFields
+	sizeCache             protoimpl.SizeCache
+}
+
+func (x *GetProductsRequest) Reset() {
+	*x = GetProductsRequest{}
+	mi := &file_elasticsearch_service_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetProductsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetProductsRequest) ProtoMessage() {}
+
+func (x *GetProductsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_elasticsearch_service_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetProductsRequest.ProtoReflect.Descriptor instead.
+func (*GetProductsRequest) Descriptor() ([]byte, []int) {
+	return file_elasticsearch_service_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *GetProductsRequest) GetOffset() int32 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
+}
+
+func (x *GetProductsRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *GetProductsRequest) GetSortBy() string {
+	if x != nil {
+		return x.SortBy
+	}
+	return ""
+}
+
+func (x *GetProductsRequest) GetName() string {
+	if x != nil && x.Name != nil {
+		return *x.Name
+	}
+	return ""
+}
+
+func (x *GetProductsRequest) GetDescription() string {
+	if x != nil && x.Description != nil {
+		return *x.Description
+	}
+	return ""
+}
+
+func (x *GetProductsRequest) GetSex() string {
+	if x != nil && x.Sex != nil {
+		return *x.Sex
+	}
+	return ""
+}
+
+func (x *GetProductsRequest) GetPriceGte() int64 {
+	if x != nil && x.PriceGte != nil {
+		return *x.PriceGte
+	}
+	return 0
+}
+
+func (x *GetProductsRequest) GetPriceLte() int64 {
+	if x != nil && x.PriceLte != nil {
+		return *x.PriceLte
+	}
+	return 0
+}
+
+func (x *GetProductsRequest) GetDiscountPercentageGte() int32 {
+	if x != nil && x.DiscountPercentageGte != nil {
+		return *x.DiscountPercentageGte
+	}
+	return 0
+}
+
+func (x *GetProductsRequest) GetDiscountPercentageLte() int32 {
+	if x != nil && x.DiscountPercentageLte != nil {
+		return *x.DiscountPercentageLte
+	}
+	return 0
+}
+
+func (x *GetProductsRequest) GetStockGte() int32 {
+	if x != nil && x.StockGte != nil {
+		return *x.StockGte
+	}
+	return 0
+}
+
+func (x *GetProductsRequest) GetStockLte() int32 {
+	if x != nil && x.StockLte != nil {
+		return *x.StockLte
+	}
+	return 0
+}
+
+func (x *GetProductsRequest) GetCategoryName() string {
+	if x != nil && x.CategoryName != nil {
+		return *x.CategoryName
+	}
+	return ""
+}
+
+func (x *GetProductsRequest) GetBrandName() string {
+	if x != nil && x.BrandName != nil {
+		return *x.BrandName
+	}
+	return ""
+}
+
+func (x *GetProductsRequest) GetCreatedAtGte() string {
+	if x != nil && x.CreatedAtGte != nil {
+		return *x.CreatedAtGte
+	}
+	return ""
+}
+
+func (x *GetProductsRequest) GetCreatedAtLte() string {
+	if x != nil && x.CreatedAtLte != nil {
+		return *x.CreatedAtLte
+	}
+	return ""
+}
+
+type GetProductsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Products      []*Product             `protobuf:"bytes,1,rep,name=products,proto3" json:"products,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetProductsResponse) Reset() {
+	*x = GetProductsResponse{}
+	mi := &file_elasticsearch_service_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetProductsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetProductsResponse) ProtoMessage() {}
+
+func (x *GetProductsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_elasticsearch_service_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetProductsResponse.ProtoReflect.Descriptor instead.
+func (*GetProductsResponse) Descriptor() ([]byte, []int) {
+	return file_elasticsearch_service_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GetProductsResponse) GetProducts() []*Product {
+	if x != nil {
+		return x.Products
+	}
+	return nil
+}
+
+type Product struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	Id                 int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name               string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Description        string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	Sex                string                 `protobuf:"bytes,4,opt,name=sex,proto3" json:"sex,omitempty"`
+	Price              int64                  `protobuf:"varint,5,opt,name=price,proto3" json:"price,omitempty"`
+	DiscountPercentage int32                  `protobuf:"varint,6,opt,name=discount_percentage,json=discountPercentage,proto3" json:"discount_percentage,omitempty"`
+	Stock              int32                  `protobuf:"varint,7,opt,name=stock,proto3" json:"stock,omitempty"`
+	ImageUrl           string                 `protobuf:"bytes,8,opt,name=image_url,json=imageUrl,proto3" json:"image_url,omitempty"`
+	CategoryId         int64                  `protobuf:"varint,9,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
+	CategoryName       string                 `protobuf:"bytes,10,opt,name=category_name,json=categoryName,proto3" json:"category_name,omitempty"`
+	BrandId            int64                  `protobuf:"varint,11,opt,name=brand_id,json=brandId,proto3" json:"brand_id,omitempty"`
+	BrandName          string                 `protobuf:"bytes,12,opt,name=brand_name,json=brandName,proto3" json:"brand_name,omitempty"`
+	CreatedAt          *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt          *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *Product) Reset() {
+	*x = Product{}
+	mi := &file_elasticsearch_service_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Product) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Product) ProtoMessage() {}
+
+func (x *Product) ProtoReflect() protoreflect.Message {
+	mi := &file_elasticsearch_service_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Product.ProtoReflect.Descriptor instead.
+func (*Product) Descriptor() ([]byte, []int) {
+	return file_elasticsearch_service_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *Product) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *Product) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Product) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *Product) GetSex() string {
+	if x != nil {
+		return x.Sex
+	}
+	return ""
+}
+
+func (x *Product) GetPrice() int64 {
+	if x != nil {
+		return x.Price
+	}
+	return 0
+}
+
+func (x *Product) GetDiscountPercentage() int32 {
+	if x != nil {
+		return x.DiscountPercentage
+	}
+	return 0
+}
+
+func (x *Product) GetStock() int32 {
+	if x != nil {
+		return x.Stock
+	}
+	return 0
+}
+
+func (x *Product) GetImageUrl() string {
+	if x != nil {
+		return x.ImageUrl
+	}
+	return ""
+}
+
+func (x *Product) GetCategoryId() int64 {
+	if x != nil {
+		return x.CategoryId
+	}
+	return 0
+}
+
+func (x *Product) GetCategoryName() string {
+	if x != nil {
+		return x.CategoryName
+	}
+	return ""
+}
+
+func (x *Product) GetBrandId() int64 {
+	if x != nil {
+		return x.BrandId
+	}
+	return 0
+}
+
+func (x *Product) GetBrandName() string {
+	if x != nil {
+		return x.BrandName
+	}
+	return ""
+}
+
+func (x *Product) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+func (x *Product) GetUpdatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return nil
+}
+
 var File_elasticsearch_service_proto protoreflect.FileDescriptor
 
 const file_elasticsearch_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1belasticsearch_service.proto\x12\x16elasticsearchservicepb\x1a\x1fgoogle/protobuf/timestamp.proto\"\xaa\x02\n" +
+	"\x1belasticsearch_service.proto\x12\x16elasticsearchservicepb\x1a\x1fgoogle/protobuf/timestamp.proto\"\xb2\x03\n" +
 	"\x0fGetUsersRequest\x12\x16\n" +
 	"\x06offset\x18\x01 \x01(\x05R\x06offset\x12\x14\n" +
 	"\x05limit\x18\x02 \x01(\x05R\x05limit\x12\x17\n" +
-	"\asort_by\x18\x03 \x01(\tR\x06sortBy\x12\x1b\n" +
-	"\tfull_name\x18\x04 \x01(\tR\bfullName\x12\x14\n" +
-	"\x05email\x18\x05 \x01(\tR\x05email\x12\x1a\n" +
-	"\busername\x18\x06 \x01(\tR\busername\x12\x18\n" +
-	"\aaddress\x18\a \x01(\tR\aaddress\x12\x1b\n" +
-	"\trole_name\x18\b \x01(\tR\broleName\x12$\n" +
-	"\x0ecreated_at_gte\x18\t \x01(\tR\fcreatedAtGte\x12$\n" +
+	"\asort_by\x18\x03 \x01(\tR\x06sortBy\x12 \n" +
+	"\tfull_name\x18\x04 \x01(\tH\x00R\bfullName\x88\x01\x01\x12\x19\n" +
+	"\x05email\x18\x05 \x01(\tH\x01R\x05email\x88\x01\x01\x12\x1f\n" +
+	"\busername\x18\x06 \x01(\tH\x02R\busername\x88\x01\x01\x12\x1d\n" +
+	"\aaddress\x18\a \x01(\tH\x03R\aaddress\x88\x01\x01\x12 \n" +
+	"\trole_name\x18\b \x01(\tH\x04R\broleName\x88\x01\x01\x12)\n" +
+	"\x0ecreated_at_gte\x18\t \x01(\tH\x05R\fcreatedAtGte\x88\x01\x01\x12)\n" +
 	"\x0ecreated_at_lte\x18\n" +
-	" \x01(\tR\fcreatedAtLte\"\x8c\x01\n" +
-	"\x10GetUsersResponse\x12\x12\n" +
-	"\x04code\x18\x01 \x01(\tR\x04code\x12\x16\n" +
-	"\x06status\x18\x02 \x01(\x05R\x06status\x12\x18\n" +
-	"\amessage\x18\x03 \x01(\tR\amessage\x122\n" +
-	"\x05users\x18\x04 \x03(\v2\x1c.elasticsearchservicepb.UserR\x05users\"\x92\x02\n" +
+	" \x01(\tH\x06R\fcreatedAtLte\x88\x01\x01B\f\n" +
+	"\n" +
+	"_full_nameB\b\n" +
+	"\x06_emailB\v\n" +
+	"\t_usernameB\n" +
+	"\n" +
+	"\b_addressB\f\n" +
+	"\n" +
+	"_role_nameB\x11\n" +
+	"\x0f_created_at_gteB\x11\n" +
+	"\x0f_created_at_lte\"F\n" +
+	"\x10GetUsersResponse\x122\n" +
+	"\x05users\x18\x01 \x03(\v2\x1c.elasticsearchservicepb.UserR\x05users\"\x92\x02\n" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1b\n" +
 	"\tfull_name\x18\x02 \x01(\tR\bfullName\x12\x14\n" +
@@ -338,7 +677,66 @@ const file_elasticsearch_service_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt2y\n" +
+	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xb0\x06\n" +
+	"\x12GetProductsRequest\x12\x16\n" +
+	"\x06offset\x18\x01 \x01(\x05R\x06offset\x12\x14\n" +
+	"\x05limit\x18\x02 \x01(\x05R\x05limit\x12\x17\n" +
+	"\asort_by\x18\x03 \x01(\tR\x06sortBy\x12\x17\n" +
+	"\x04name\x18\x04 \x01(\tH\x00R\x04name\x88\x01\x01\x12%\n" +
+	"\vdescription\x18\x05 \x01(\tH\x01R\vdescription\x88\x01\x01\x12\x15\n" +
+	"\x03sex\x18\x06 \x01(\tH\x02R\x03sex\x88\x01\x01\x12 \n" +
+	"\tprice_gte\x18\a \x01(\x03H\x03R\bpriceGte\x88\x01\x01\x12 \n" +
+	"\tprice_lte\x18\b \x01(\x03H\x04R\bpriceLte\x88\x01\x01\x12;\n" +
+	"\x17discount_percentage_gte\x18\t \x01(\x05H\x05R\x15discountPercentageGte\x88\x01\x01\x12;\n" +
+	"\x17discount_percentage_lte\x18\n" +
+	" \x01(\x05H\x06R\x15discountPercentageLte\x88\x01\x01\x12 \n" +
+	"\tstock_gte\x18\v \x01(\x05H\aR\bstockGte\x88\x01\x01\x12 \n" +
+	"\tstock_lte\x18\f \x01(\x05H\bR\bstockLte\x88\x01\x01\x12(\n" +
+	"\rcategory_name\x18\r \x01(\tH\tR\fcategoryName\x88\x01\x01\x12\"\n" +
+	"\n" +
+	"brand_name\x18\x0e \x01(\tH\n" +
+	"R\tbrandName\x88\x01\x01\x12)\n" +
+	"\x0ecreated_at_gte\x18\x0f \x01(\tH\vR\fcreatedAtGte\x88\x01\x01\x12)\n" +
+	"\x0ecreated_at_lte\x18\x10 \x01(\tH\fR\fcreatedAtLte\x88\x01\x01B\a\n" +
+	"\x05_nameB\x0e\n" +
+	"\f_descriptionB\x06\n" +
+	"\x04_sexB\f\n" +
+	"\n" +
+	"_price_gteB\f\n" +
+	"\n" +
+	"_price_lteB\x1a\n" +
+	"\x18_discount_percentage_gteB\x1a\n" +
+	"\x18_discount_percentage_lteB\f\n" +
+	"\n" +
+	"_stock_gteB\f\n" +
+	"\n" +
+	"_stock_lteB\x10\n" +
+	"\x0e_category_nameB\r\n" +
+	"\v_brand_nameB\x11\n" +
+	"\x0f_created_at_gteB\x11\n" +
+	"\x0f_created_at_lte\"R\n" +
+	"\x13GetProductsResponse\x12;\n" +
+	"\bproducts\x18\x01 \x03(\v2\x1f.elasticsearchservicepb.ProductR\bproducts\"\xd1\x03\n" +
+	"\aProduct\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x10\n" +
+	"\x03sex\x18\x04 \x01(\tR\x03sex\x12\x14\n" +
+	"\x05price\x18\x05 \x01(\x03R\x05price\x12/\n" +
+	"\x13discount_percentage\x18\x06 \x01(\x05R\x12discountPercentage\x12\x14\n" +
+	"\x05stock\x18\a \x01(\x05R\x05stock\x12\x1b\n" +
+	"\timage_url\x18\b \x01(\tR\bimageUrl\x12\x1f\n" +
+	"\vcategory_id\x18\t \x01(\x03R\n" +
+	"categoryId\x12#\n" +
+	"\rcategory_name\x18\n" +
+	" \x01(\tR\fcategoryName\x12\x19\n" +
+	"\bbrand_id\x18\v \x01(\x03R\abrandId\x12\x1d\n" +
+	"\n" +
+	"brand_name\x18\f \x01(\tR\tbrandName\x129\n" +
+	"\n" +
+	"created_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"\n" +
+	"updated_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt2y\n" +
 	"\x18ElasticsearchServiceGRPC\x12]\n" +
 	"\bGetUsers\x12'.elasticsearchservicepb.GetUsersRequest\x1a(.elasticsearchservicepb.GetUsersResponseB\x19Z\x17elasticsearchservicepb/b\x06proto3"
 
@@ -354,24 +752,30 @@ func file_elasticsearch_service_proto_rawDescGZIP() []byte {
 	return file_elasticsearch_service_proto_rawDescData
 }
 
-var file_elasticsearch_service_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_elasticsearch_service_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_elasticsearch_service_proto_goTypes = []any{
 	(*GetUsersRequest)(nil),       // 0: elasticsearchservicepb.GetUsersRequest
 	(*GetUsersResponse)(nil),      // 1: elasticsearchservicepb.GetUsersResponse
 	(*User)(nil),                  // 2: elasticsearchservicepb.User
-	(*timestamppb.Timestamp)(nil), // 3: google.protobuf.Timestamp
+	(*GetProductsRequest)(nil),    // 3: elasticsearchservicepb.GetProductsRequest
+	(*GetProductsResponse)(nil),   // 4: elasticsearchservicepb.GetProductsResponse
+	(*Product)(nil),               // 5: elasticsearchservicepb.Product
+	(*timestamppb.Timestamp)(nil), // 6: google.protobuf.Timestamp
 }
 var file_elasticsearch_service_proto_depIdxs = []int32{
 	2, // 0: elasticsearchservicepb.GetUsersResponse.users:type_name -> elasticsearchservicepb.User
-	3, // 1: elasticsearchservicepb.User.created_at:type_name -> google.protobuf.Timestamp
-	3, // 2: elasticsearchservicepb.User.updated_at:type_name -> google.protobuf.Timestamp
-	0, // 3: elasticsearchservicepb.ElasticsearchServiceGRPC.GetUsers:input_type -> elasticsearchservicepb.GetUsersRequest
-	1, // 4: elasticsearchservicepb.ElasticsearchServiceGRPC.GetUsers:output_type -> elasticsearchservicepb.GetUsersResponse
-	4, // [4:5] is the sub-list for method output_type
-	3, // [3:4] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	6, // 1: elasticsearchservicepb.User.created_at:type_name -> google.protobuf.Timestamp
+	6, // 2: elasticsearchservicepb.User.updated_at:type_name -> google.protobuf.Timestamp
+	5, // 3: elasticsearchservicepb.GetProductsResponse.products:type_name -> elasticsearchservicepb.Product
+	6, // 4: elasticsearchservicepb.Product.created_at:type_name -> google.protobuf.Timestamp
+	6, // 5: elasticsearchservicepb.Product.updated_at:type_name -> google.protobuf.Timestamp
+	0, // 6: elasticsearchservicepb.ElasticsearchServiceGRPC.GetUsers:input_type -> elasticsearchservicepb.GetUsersRequest
+	1, // 7: elasticsearchservicepb.ElasticsearchServiceGRPC.GetUsers:output_type -> elasticsearchservicepb.GetUsersResponse
+	7, // [7:8] is the sub-list for method output_type
+	6, // [6:7] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_elasticsearch_service_proto_init() }
@@ -379,13 +783,15 @@ func file_elasticsearch_service_proto_init() {
 	if File_elasticsearch_service_proto != nil {
 		return
 	}
+	file_elasticsearch_service_proto_msgTypes[0].OneofWrappers = []any{}
+	file_elasticsearch_service_proto_msgTypes[3].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_elasticsearch_service_proto_rawDesc), len(file_elasticsearch_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

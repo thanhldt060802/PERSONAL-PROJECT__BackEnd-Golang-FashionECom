@@ -60,10 +60,7 @@ func (*GetAllUsersRequest) Descriptor() ([]byte, []int) {
 
 type GetAllUsersResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Code          string                 `protobuf:"bytes,1,opt,name=code,proto3" json:"code,omitempty"`
-	Status        int32                  `protobuf:"varint,2,opt,name=status,proto3" json:"status,omitempty"`
-	Message       string                 `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`
-	Users         []*User                `protobuf:"bytes,4,rep,name=users,proto3" json:"users,omitempty"`
+	Users         []*User                `protobuf:"bytes,1,rep,name=users,proto3" json:"users,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -96,27 +93,6 @@ func (x *GetAllUsersResponse) ProtoReflect() protoreflect.Message {
 // Deprecated: Use GetAllUsersResponse.ProtoReflect.Descriptor instead.
 func (*GetAllUsersResponse) Descriptor() ([]byte, []int) {
 	return file_user_service_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *GetAllUsersResponse) GetCode() string {
-	if x != nil {
-		return x.Code
-	}
-	return ""
-}
-
-func (x *GetAllUsersResponse) GetStatus() int32 {
-	if x != nil {
-		return x.Status
-	}
-	return 0
-}
-
-func (x *GetAllUsersResponse) GetMessage() string {
-	if x != nil {
-		return x.Message
-	}
-	return ""
 }
 
 func (x *GetAllUsersResponse) GetUsers() []*User {
@@ -231,12 +207,9 @@ var File_user_service_proto protoreflect.FileDescriptor
 const file_user_service_proto_rawDesc = "" +
 	"\n" +
 	"\x12user_service.proto\x12\ruserservicepb\x1a\x1fgoogle/protobuf/timestamp.proto\"\x14\n" +
-	"\x12GetAllUsersRequest\"\x86\x01\n" +
-	"\x13GetAllUsersResponse\x12\x12\n" +
-	"\x04code\x18\x01 \x01(\tR\x04code\x12\x16\n" +
-	"\x06status\x18\x02 \x01(\x05R\x06status\x12\x18\n" +
-	"\amessage\x18\x03 \x01(\tR\amessage\x12)\n" +
-	"\x05users\x18\x04 \x03(\v2\x13.userservicepb.UserR\x05users\"\x92\x02\n" +
+	"\x12GetAllUsersRequest\"@\n" +
+	"\x13GetAllUsersResponse\x12)\n" +
+	"\x05users\x18\x01 \x03(\v2\x13.userservicepb.UserR\x05users\"\x92\x02\n" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1b\n" +
 	"\tfull_name\x18\x02 \x01(\tR\bfullName\x12\x14\n" +

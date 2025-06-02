@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"thanhldt060802/config"
+	"thanhldt060802/internal/grpc/client/catalogservicepb"
 	"thanhldt060802/internal/grpc/client/userservicepb"
 
 	"google.golang.org/grpc"
@@ -11,13 +12,16 @@ import (
 )
 
 var UserServiceGRPCClient userservicepb.UserServiceGRPCClient
+var CatalogServiceGRPCClient catalogservicepb.CatalogServiceGRPCClient
 
 type serviceGRPCConnectionManager struct {
-	userServiceGRPCConnection *grpc.ClientConn
+	userServiceGRPCConnection    *grpc.ClientConn
+	catalogServiceGRPCConnection *grpc.ClientConn
 }
 
 func (serviceGRPCConnectionManager *serviceGRPCConnectionManager) CloseAll() {
 	serviceGRPCConnectionManager.userServiceGRPCConnection.Close()
+	serviceGRPCConnectionManager.catalogServiceGRPCConnection.Close()
 }
 
 var ServiceGRPCConnectionManager *serviceGRPCConnectionManager
@@ -32,16 +36,30 @@ func InitAllServiceGRPCClients() {
 		config.AppConfig.UserServiceGRPCPort,
 	)
 
-	conn, err := grpc.NewClient(userServiceGRPCServerAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn1, err := grpc.NewClient(userServiceGRPCServerAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("connect to user-service failed: %s", err.Error())
 	}
-	ServiceGRPCConnectionManager.userServiceGRPCConnection = conn
-	UserServiceGRPCClient = userservicepb.NewUserServiceGRPCClient(conn)
+	ServiceGRPCConnectionManager.userServiceGRPCConnection = conn1
+	UserServiceGRPCClient = userservicepb.NewUserServiceGRPCClient(conn1)
 
 	log.Printf("connect to user-service successful")
 
 	// Kết nối catalog-service
+	catalogServiceGRPCServerAddress := fmt.Sprintf(
+		"%s:%s",
+		config.AppConfig.CatalogServiceGRPCHost,
+		config.AppConfig.CatalogServiceGRPCPort,
+	)
+
+	conn2, err := grpc.NewClient(catalogServiceGRPCServerAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("connect to catalog-service failed: %s", err.Error())
+	}
+	ServiceGRPCConnectionManager.catalogServiceGRPCConnection = conn2
+	CatalogServiceGRPCClient = catalogservicepb.NewCatalogServiceGRPCClient(conn2)
+
+	log.Printf("connect to catalog-service successful")
 
 	// Kết nối order-service
 }
