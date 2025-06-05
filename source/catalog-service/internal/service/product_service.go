@@ -3,7 +3,10 @@ package service
 import (
 	"context"
 	"fmt"
+	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/dto"
+	"thanhldt060802/internal/grpc/client/elasticsearchservicepb"
+	"thanhldt060802/internal/grpc/service/catalogservicepb"
 	"thanhldt060802/internal/model"
 	"thanhldt060802/internal/repository"
 	"time"
@@ -17,7 +20,7 @@ type productService struct {
 
 type ProductService interface {
 	// Integrate with Elasticsearch
-	GetAllProducts(ctx context.Context) ([]dto.ProductView, error)
+	GetAllProducts(ctx context.Context) ([]*catalogservicepb.Product, error)
 
 	// Main features
 	GetProductById(ctx context.Context, reqDTO *dto.GetProductByIdRequest) (*dto.ProductView, error)
@@ -26,7 +29,7 @@ type ProductService interface {
 	DeleteProductById(ctx context.Context, reqDTO *dto.DeleteProductByIdRequest) error
 
 	// Elasticsearch integration features
-	// GetProducts()
+	GetProducts(ctx context.Context, reqDTO *dto.GetProductsRequest) ([]dto.ProductView, error)
 }
 
 func NewProductService(productRepository repository.ProductRepository, categoryRepository repository.CategoryRepository, brandRepository repository.BrandRepository) ProductService {
@@ -42,7 +45,7 @@ func NewProductService(productRepository repository.ProductRepository, categoryR
 // Integrate with Elasticsearch
 // ######################################################################################
 
-func (productService *productService) GetAllProducts(ctx context.Context) ([]dto.ProductView, error) {
+func (productService *productService) GetAllProducts(ctx context.Context) ([]*catalogservicepb.Product, error) {
 	products, err := productService.productRepository.GetAll(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("query products from postgresql failed: %s", err.Error())
@@ -58,7 +61,7 @@ func (productService *productService) GetAllProducts(ctx context.Context) ([]dto
 		return nil, fmt.Errorf("query brands from postgresql failed: %s", err.Error())
 	}
 
-	return dto.ToListProductView(products, categories, brands), nil
+	return dto.FromListProductViewToListProductProto(dto.ToListProductView(products, categories, brands)), nil
 }
 
 //
@@ -169,4 +172,36 @@ func (productService *productService) DeleteProductById(ctx context.Context, req
 	// Missing->SyncDeletingToElasticsearch
 
 	return nil
+}
+
+//
+//
+// Elasticsearch integration features
+// ######################################################################################
+
+func (productService *productService) GetProducts(ctx context.Context, reqDTO *dto.GetProductsRequest) ([]dto.ProductView, error) {
+	convertReqDTO := &elasticsearchservicepb.GetProductsRequest{}
+	convertReqDTO.Offset = reqDTO.Offset
+	convertReqDTO.Limit = reqDTO.Limit
+	convertReqDTO.SortBy = reqDTO.SortBy
+	convertReqDTO.Name = reqDTO.Name
+	convertReqDTO.Description = reqDTO.Description
+	convertReqDTO.Sex = reqDTO.Sex
+	convertReqDTO.PriceGte = reqDTO.PriceGTE
+	convertReqDTO.PriceLte = reqDTO.PriceLTE
+	convertReqDTO.DiscountPercentageGte = reqDTO.DiscountPercentageGTE
+	convertReqDTO.DiscountPercentageLte = reqDTO.DiscountPercentageLTE
+	convertReqDTO.StockGte = reqDTO.StockGTE
+	convertReqDTO.StockLte = reqDTO.StockLTE
+	convertReqDTO.CategoryName = reqDTO.CategoryName
+	convertReqDTO.BrandName = reqDTO.BrandName
+	convertReqDTO.CreatedAtGte = reqDTO.CreatedAtGTE
+	convertReqDTO.CreatedAtLte = reqDTO.CreatedAtLTE
+
+	grpcRes, err := infrastructure.ElasticsearchServiceGRPCClient.GetProducts(ctx, convertReqDTO)
+	if err != nil {
+		return nil, fmt.Errorf("get all product from catalog-service failed: %s", err.Error())
+	}
+
+	return dto.FromListProductProtoToListProductView(grpcRes.Products), nil
 }

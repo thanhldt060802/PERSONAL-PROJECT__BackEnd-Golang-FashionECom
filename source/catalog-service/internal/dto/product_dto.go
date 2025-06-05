@@ -1,7 +1,8 @@
 package dto
 
 import (
-	"thanhldt060802/internal/grpc/pb"
+	"thanhldt060802/internal/grpc/client/elasticsearchservicepb"
+	"thanhldt060802/internal/grpc/service/catalogservicepb"
 	"thanhldt060802/internal/model"
 	"time"
 
@@ -63,30 +64,62 @@ func ToListProductView(products []model.Product, categories []model.Category, br
 	return productViews
 }
 
-func ToProductProtoFromProductView(product *ProductView) *pb.Product {
-	return &pb.Product{
-		Id:                 product.Id,
-		Name:               product.Name,
-		Description:        product.Description,
-		Sex:                product.Sex,
-		Price:              product.Price,
-		DiscountPercentage: product.DiscountPercentage,
-		Stock:              product.Stock,
-		ImageUrl:           product.ImageURL,
-		CategoryId:         product.CategoryId,
-		CategoryName:       product.CategoryName,
-		BrandId:            product.BrandId,
-		BrandName:          product.BrandName,
-		CreatedAt:          timestamppb.New(product.CreatedAt),
-		UpdatedAt:          timestamppb.New(product.UpdatedAt),
+// Send
+
+func FromProductViewToProductProto(productView *ProductView) *catalogservicepb.Product {
+	return &catalogservicepb.Product{
+		Id:                 productView.Id,
+		Name:               productView.Name,
+		Description:        productView.Description,
+		Sex:                productView.Sex,
+		Price:              productView.Price,
+		DiscountPercentage: productView.DiscountPercentage,
+		Stock:              productView.Stock,
+		ImageUrl:           productView.ImageURL,
+		CategoryId:         productView.CategoryId,
+		CategoryName:       productView.CategoryName,
+		BrandId:            productView.BrandId,
+		BrandName:          productView.BrandName,
+		CreatedAt:          timestamppb.New(productView.CreatedAt),
+		UpdatedAt:          timestamppb.New(productView.UpdatedAt),
 	}
 }
 
-func ToListProductProtoFromListProductView(products []ProductView) []*pb.Product {
-	productProtos := make([]*pb.Product, len(products))
-	for i, product := range products {
-		productProtos[i] = ToProductProtoFromProductView(&product)
+func FromListProductViewToListProductProto(productViews []ProductView) []*catalogservicepb.Product {
+	productProtos := make([]*catalogservicepb.Product, len(productViews))
+	for i, prproductView := range productViews {
+		productProtos[i] = FromProductViewToProductProto(&prproductView)
 	}
 
 	return productProtos
+}
+
+// Receive
+
+func FromProductProtoToProductView(productProto *elasticsearchservicepb.Product) *ProductView {
+	return &ProductView{
+		Id:                 productProto.Id,
+		Name:               productProto.Name,
+		Description:        productProto.Description,
+		Sex:                productProto.Sex,
+		Price:              productProto.Price,
+		DiscountPercentage: productProto.DiscountPercentage,
+		Stock:              productProto.Stock,
+		ImageURL:           productProto.ImageUrl,
+		CategoryId:         productProto.CategoryId,
+		CategoryName:       productProto.CategoryName,
+		BrandId:            productProto.BrandId,
+		BrandName:          productProto.BrandName,
+		CreatedAt:          productProto.CreatedAt.AsTime(),
+		UpdatedAt:          productProto.UpdatedAt.AsTime(),
+	}
+}
+
+func FromListProductProtoToListProductView(productProtos []*elasticsearchservicepb.Product) []ProductView {
+	productViews := make([]ProductView, len(productProtos))
+	for i, productProto := range productProtos {
+		productViews[i] = *FromProductProtoToProductView(productProto)
+	}
+
+	return productViews
 }

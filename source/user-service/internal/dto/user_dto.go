@@ -2,8 +2,11 @@ package dto
 
 import (
 	"thanhldt060802/internal/grpc/client/elasticsearchservicepb"
+	"thanhldt060802/internal/grpc/service/userservicepb"
 	"thanhldt060802/internal/model"
 	"time"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type UserView struct {
@@ -37,6 +40,30 @@ func ToListUserView(users []model.User) []UserView {
 	}
 
 	return userViews
+}
+
+// Send
+
+func FromUserViewToUserProto(userView *UserView) *userservicepb.User {
+	return &userservicepb.User{
+		Id:        userView.Id,
+		FullName:  userView.FullName,
+		Email:     userView.Email,
+		Username:  userView.Username,
+		Address:   userView.Address,
+		RoleName:  userView.RoleName,
+		CreatedAt: timestamppb.New(userView.CreatedAt),
+		UpdatedAt: timestamppb.New(userView.UpdatedAt),
+	}
+}
+
+func FromListUserViewToListUserProto(userViews []UserView) []*userservicepb.User {
+	userProtos := make([]*userservicepb.User, len(userViews))
+	for i, userView := range userViews {
+		userProtos[i] = FromUserViewToUserProto(&userView)
+	}
+
+	return userProtos
 }
 
 // Receive

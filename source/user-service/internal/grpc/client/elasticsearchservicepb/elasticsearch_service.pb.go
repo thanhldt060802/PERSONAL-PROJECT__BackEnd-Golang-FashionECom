@@ -736,9 +736,10 @@ const file_elasticsearch_service_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt2y\n" +
+	"updated_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt2\xe1\x01\n" +
 	"\x18ElasticsearchServiceGRPC\x12]\n" +
-	"\bGetUsers\x12'.elasticsearchservicepb.GetUsersRequest\x1a(.elasticsearchservicepb.GetUsersResponseB\x19Z\x17elasticsearchservicepb/b\x06proto3"
+	"\bGetUsers\x12'.elasticsearchservicepb.GetUsersRequest\x1a(.elasticsearchservicepb.GetUsersResponse\x12f\n" +
+	"\vGetProducts\x12*.elasticsearchservicepb.GetProductsRequest\x1a+.elasticsearchservicepb.GetProductsResponseB\x19Z\x17elasticsearchservicepb/b\x06proto3"
 
 var (
 	file_elasticsearch_service_proto_rawDescOnce sync.Once
@@ -770,9 +771,11 @@ var file_elasticsearch_service_proto_depIdxs = []int32{
 	6, // 4: elasticsearchservicepb.Product.created_at:type_name -> google.protobuf.Timestamp
 	6, // 5: elasticsearchservicepb.Product.updated_at:type_name -> google.protobuf.Timestamp
 	0, // 6: elasticsearchservicepb.ElasticsearchServiceGRPC.GetUsers:input_type -> elasticsearchservicepb.GetUsersRequest
-	1, // 7: elasticsearchservicepb.ElasticsearchServiceGRPC.GetUsers:output_type -> elasticsearchservicepb.GetUsersResponse
-	7, // [7:8] is the sub-list for method output_type
-	6, // [6:7] is the sub-list for method input_type
+	3, // 7: elasticsearchservicepb.ElasticsearchServiceGRPC.GetProducts:input_type -> elasticsearchservicepb.GetProductsRequest
+	1, // 8: elasticsearchservicepb.ElasticsearchServiceGRPC.GetUsers:output_type -> elasticsearchservicepb.GetUsersResponse
+	4, // 9: elasticsearchservicepb.ElasticsearchServiceGRPC.GetProducts:output_type -> elasticsearchservicepb.GetProductsResponse
+	8, // [8:10] is the sub-list for method output_type
+	6, // [6:8] is the sub-list for method input_type
 	6, // [6:6] is the sub-list for extension type_name
 	6, // [6:6] is the sub-list for extension extendee
 	0, // [0:6] is the sub-list for field type_name

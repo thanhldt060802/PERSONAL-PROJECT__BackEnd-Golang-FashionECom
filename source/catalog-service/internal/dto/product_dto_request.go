@@ -1,5 +1,10 @@
 package dto
 
+//
+//
+// Main features
+// ######################################################################################
+
 type GetProductByIdRequest struct {
 	Id int64 `path:"id" required:"true" doc:"Id of broduct."`
 }
@@ -35,4 +40,29 @@ type UpdateProductByIdRequest struct {
 
 type DeleteProductByIdRequest struct {
 	Id int64 `path:"id" required:"true" doc:"Id of broduct."`
+}
+
+//
+//
+// Elasticsearch integration features
+// ######################################################################################
+
+type GetProductsRequest struct {
+	Offset int32  `query:"offset" default:"0" minimum:"0" example:"0" doc:"Skip item by offset."`
+	Limit  int32  `query:"limit" default:"5" minimum:"1" maximum:"10" example:"10" doc:"Limit item from offset."`
+	SortBy string `query:"sort_by" default:"created_at:asc" example:"full_name:desc,created_at" doc:"Sort by one or more fields separated by commas. For example: sort_by=full_name:desc,created_at will sort by full_name in descending order, then by created_at in ascending order."`
+	// Filter
+	Name                  *string `query:"name" example:"Quần A1" doc:"Filter by name."`
+	Description           *string `query:"description" example:"Quá xịn" doc:"Filter by description."`
+	Sex                   *string `query:"sex" example:"MALE" enum:"MALE,FEMALE,UNISEX" doc:"Filter by sexx."`
+	PriceGTE              *int64  `query:"price_gte" example:"100000" doc:"Filter by price greater than or equals."`
+	PriceLTE              *int64  `query:"price_lte" example:"200000" doc:"Filter by price less than or equals."`
+	DiscountPercentageGTE *int32  `query:"discount_percentage_gte" example:"20" doc:"Filter by discount percentage greater than or equals."`
+	DiscountPercentageLTE *int32  `query:"discount_percentage_lte" example:"30" doc:"Filter by discount percentage less than or equals."`
+	StockGTE              *int32  `query:"stock_gte" example:"50" doc:"Filter by stock greater than or equals."`
+	StockLTE              *int32  `query:"stock_lte" example:"100" doc:"Filter by stock less than or equals."`
+	CategoryName          *string `query:"category_name" example:"Quần" doc:"Filter by category name."`
+	BrandName             *string `query:"brand_name" example:"Gucci" doc:"Filter by brand name."`
+	CreatedAtGTE          *string `query:"created_at_gte" example:"2024-01-15T00:00:00" doc:"Filter by created_at greater than or equal, with format is YYYY-MM-ddTHH:mm:ss."`
+	CreatedAtLTE          *string `query:"created_at_lte" example:"2024-02-05T23:59:59" doc:"Filter by created_at less than or equal, with format is YYYY-MM-ddTHH:mm:ss."`
 }

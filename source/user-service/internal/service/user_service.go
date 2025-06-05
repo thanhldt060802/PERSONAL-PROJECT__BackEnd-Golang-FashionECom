@@ -16,7 +16,6 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type userService struct {
@@ -59,21 +58,7 @@ func (userService *userService) GetAllUsers(ctx context.Context) ([]*userservice
 		return nil, fmt.Errorf("query users from postgresql failed: %s", err.Error())
 	}
 
-	userProtos := []*userservicepb.User{}
-	for _, user := range users {
-		userProtos = append(userProtos, &userservicepb.User{
-			Id:        user.Id,
-			FullName:  user.FullName,
-			Email:     user.Email,
-			Username:  user.Username,
-			Address:   user.Address,
-			RoleName:  user.RoleName,
-			CreatedAt: timestamppb.New(user.CreatedAt),
-			UpdatedAt: timestamppb.New(user.UpdatedAt),
-		})
-	}
-
-	return userProtos, nil
+	return dto.FromListUserViewToListUserProto(dto.ToListUserView(users)), nil
 }
 
 //
@@ -306,7 +291,7 @@ func (userService *userService) GetAllLoggedInAccounts(ctx context.Context) ([]i
 // ######################################################################################
 
 func (userService *userService) GetUsers(ctx context.Context, reqDTO *dto.GetUsersRequest) ([]dto.UserView, error) {
-	convertReqDTO := elasticsearchservicepb.GetUsersRequest{}
+	convertReqDTO := &elasticsearchservicepb.GetUsersRequest{}
 	convertReqDTO.Offset = reqDTO.Offset
 	convertReqDTO.Limit = reqDTO.Limit
 	convertReqDTO.SortBy = reqDTO.SortBy
@@ -318,7 +303,7 @@ func (userService *userService) GetUsers(ctx context.Context, reqDTO *dto.GetUse
 	convertReqDTO.CreatedAtGte = reqDTO.CreatedAtGTE
 	convertReqDTO.CreatedAtLte = reqDTO.CreatedAtLTE
 
-	grpcRes, err := infrastructure.ElasticsearchServiceGRPCClient.GetUsers(ctx, &convertReqDTO)
+	grpcRes, err := infrastructure.ElasticsearchServiceGRPCClient.GetUsers(ctx, convertReqDTO)
 	if err != nil {
 		return nil, fmt.Errorf("get all user from user-service failed: %s", err.Error())
 	}

@@ -8,6 +8,7 @@ import "google/protobuf/timestamp.proto";
 
 service ElasticsearchServiceGRPC {
   rpc GetUsers (GetUsersRequest) returns (GetUsersResponse);
+  rpc GetProducts (GetProductsRequest) returns (GetProductsResponse);
 }
 
 // user-service
