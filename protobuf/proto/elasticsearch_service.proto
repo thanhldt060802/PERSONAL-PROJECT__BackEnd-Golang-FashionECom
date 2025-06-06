@@ -17,13 +17,13 @@ message GetUsersRequest {
     int32 offset = 1;
     int32 limit = 2;
     string sort_by = 3;
-    optional string full_name = 4;
-    optional string email = 5;
-    optional string username = 6;
-    optional string address = 7;
-    optional string role_name = 8;
-    optional string created_at_gte = 9;
-    optional string created_at_lte = 10;
+    string full_name = 4;
+    string email = 5;
+    string username = 6;
+    string address = 7;
+    string role_name = 8;
+    string created_at_gte = 9;
+    string created_at_lte = 10;
 }
 
 message GetUsersResponse {
@@ -47,19 +47,19 @@ message GetProductsRequest {
     int32 offset = 1;
     int32 limit = 2;
     string sort_by = 3;
-    optional string name = 4;
-    optional string description = 5;
-    optional string sex = 6;
-    optional int64 price_gte = 7;
-    optional int64 price_lte = 8;
-    optional int32 discount_percentage_gte = 9;
-    optional int32 discount_percentage_lte = 10;
-    optional int32 stock_gte = 11;
-    optional int32 stock_lte = 12;
-    optional string category_name = 13;
-    optional string brand_name = 14;
-    optional string created_at_gte = 15;
-    optional string created_at_lte = 16;
+    string name = 4;
+    string description = 5;
+    string sex = 6;
+    string price_gte = 7;
+    string price_lte = 8;
+    string discount_percentage_gte = 9;
+    string discount_percentage_lte = 10;
+    string stock_gte = 11;
+    string stock_lte = 12;
+    string category_name = 13;
+    string brand_name = 14;
+    string created_at_gte = 15;
+    string created_at_lte = 16;
 }
 
 message GetProductsResponse {

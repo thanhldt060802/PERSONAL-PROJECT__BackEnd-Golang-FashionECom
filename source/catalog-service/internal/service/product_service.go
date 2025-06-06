@@ -2,7 +2,9 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"strconv"
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/dto"
 	"thanhldt060802/internal/grpc/client/elasticsearchservicepb"
@@ -83,10 +85,13 @@ func (productService *productService) GetProductById(ctx context.Context, reqDTO
 }
 
 func (productService *productService) CreateProduct(ctx context.Context, reqDTO *dto.CreateProductRequest) error {
-	if _, err := productService.categoryRepository.GetById(ctx, reqDTO.Body.CategoryId); err != nil {
+	foundCategory, err := productService.categoryRepository.GetById(ctx, reqDTO.Body.CategoryId)
+	if err != nil {
 		return fmt.Errorf("id of category not found")
 	}
-	if _, err := productService.brandRepository.GetById(ctx, reqDTO.Body.BrandId); err != nil {
+
+	foundBrand, err := productService.brandRepository.GetById(ctx, reqDTO.Body.BrandId)
+	if err != nil {
 		return fmt.Errorf("id of brand not found")
 	}
 
@@ -105,7 +110,11 @@ func (productService *productService) CreateProduct(ctx context.Context, reqDTO 
 		return fmt.Errorf("insert product to postgresql failed: %s", err.Error())
 	}
 
-	// Missing->SyncCreatingToElasticsearch
+	newProductView := dto.ToProductView(&newProduct, foundCategory, foundBrand)
+	payload, _ := json.Marshal(newProductView)
+	if err := infrastructure.RedisClient.Publish(ctx, "catalog-service.created-product", payload).Err(); err != nil {
+		return fmt.Errorf("pulish event catalog-service.created-product failed: %s", err.Error())
+	}
 
 	return nil
 }
@@ -137,17 +146,19 @@ func (productService *productService) UpdateProductById(ctx context.Context, req
 	if reqDTO.Body.ImageURL != nil {
 		foundProduct.ImageURL = *reqDTO.Body.ImageURL
 	}
+	foundCategory, _ := productService.categoryRepository.GetById(ctx, foundProduct.CategoryId)
 	if reqDTO.Body.CategoryId != nil {
-		if _, err := productService.categoryRepository.GetById(ctx, *reqDTO.Body.CategoryId); err != nil {
+		if foundCategory, err = productService.categoryRepository.GetById(ctx, *reqDTO.Body.CategoryId); err != nil {
 			return fmt.Errorf("id of category not found")
 		}
 		foundProduct.CategoryId = *reqDTO.Body.CategoryId
 	}
+	foundBrand, _ := productService.brandRepository.GetById(ctx, foundProduct.BrandId)
 	if reqDTO.Body.BrandId != nil {
-		if _, err := productService.brandRepository.GetById(ctx, *reqDTO.Body.BrandId); err != nil {
+		if foundBrand, err = productService.brandRepository.GetById(ctx, *reqDTO.Body.BrandId); err != nil {
 			return fmt.Errorf("id of brand not found")
 		}
-		foundProduct.CategoryId = *reqDTO.Body.BrandId
+		foundProduct.BrandId = *reqDTO.Body.BrandId
 	}
 	foundProduct.UpdatedAt = time.Now().UTC()
 
@@ -155,7 +166,11 @@ func (productService *productService) UpdateProductById(ctx context.Context, req
 		return fmt.Errorf("update product on postgresql failed: %s", err.Error())
 	}
 
-	// Missing->SyncUpdatingToElasticsearch
+	newProductView := dto.ToProductView(foundProduct, foundCategory, foundBrand)
+	payload, _ := json.Marshal(newProductView)
+	if err := infrastructure.RedisClient.Publish(ctx, "catalog-service.updated-product", payload).Err(); err != nil {
+		return fmt.Errorf("pulish event catalog-service.updated-product failed: %s", err.Error())
+	}
 
 	return nil
 }
@@ -169,7 +184,9 @@ func (productService *productService) DeleteProductById(ctx context.Context, req
 		return fmt.Errorf("delete product from postgresql failed: %s", err.Error())
 	}
 
-	// Missing->SyncDeletingToElasticsearch
+	if err := infrastructure.RedisClient.Publish(ctx, "catalog-service.deleted-product", strconv.FormatInt(reqDTO.Id, 10)).Err(); err != nil {
+		return fmt.Errorf("pulish event product-service.deleted-product failed: %s", err.Error())
+	}
 
 	return nil
 }

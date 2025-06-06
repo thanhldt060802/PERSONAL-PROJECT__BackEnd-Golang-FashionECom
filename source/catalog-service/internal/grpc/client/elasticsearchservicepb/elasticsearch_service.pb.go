@@ -27,13 +27,13 @@ type GetUsersRequest struct {
 	Offset        int32                  `protobuf:"varint,1,opt,name=offset,proto3" json:"offset,omitempty"`
 	Limit         int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
 	SortBy        string                 `protobuf:"bytes,3,opt,name=sort_by,json=sortBy,proto3" json:"sort_by,omitempty"`
-	FullName      *string                `protobuf:"bytes,4,opt,name=full_name,json=fullName,proto3,oneof" json:"full_name,omitempty"`
-	Email         *string                `protobuf:"bytes,5,opt,name=email,proto3,oneof" json:"email,omitempty"`
-	Username      *string                `protobuf:"bytes,6,opt,name=username,proto3,oneof" json:"username,omitempty"`
-	Address       *string                `protobuf:"bytes,7,opt,name=address,proto3,oneof" json:"address,omitempty"`
-	RoleName      *string                `protobuf:"bytes,8,opt,name=role_name,json=roleName,proto3,oneof" json:"role_name,omitempty"`
-	CreatedAtGte  *string                `protobuf:"bytes,9,opt,name=created_at_gte,json=createdAtGte,proto3,oneof" json:"created_at_gte,omitempty"`
-	CreatedAtLte  *string                `protobuf:"bytes,10,opt,name=created_at_lte,json=createdAtLte,proto3,oneof" json:"created_at_lte,omitempty"`
+	FullName      string                 `protobuf:"bytes,4,opt,name=full_name,json=fullName,proto3" json:"full_name,omitempty"`
+	Email         string                 `protobuf:"bytes,5,opt,name=email,proto3" json:"email,omitempty"`
+	Username      string                 `protobuf:"bytes,6,opt,name=username,proto3" json:"username,omitempty"`
+	Address       string                 `protobuf:"bytes,7,opt,name=address,proto3" json:"address,omitempty"`
+	RoleName      string                 `protobuf:"bytes,8,opt,name=role_name,json=roleName,proto3" json:"role_name,omitempty"`
+	CreatedAtGte  string                 `protobuf:"bytes,9,opt,name=created_at_gte,json=createdAtGte,proto3" json:"created_at_gte,omitempty"`
+	CreatedAtLte  string                 `protobuf:"bytes,10,opt,name=created_at_lte,json=createdAtLte,proto3" json:"created_at_lte,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -90,50 +90,50 @@ func (x *GetUsersRequest) GetSortBy() string {
 }
 
 func (x *GetUsersRequest) GetFullName() string {
-	if x != nil && x.FullName != nil {
-		return *x.FullName
+	if x != nil {
+		return x.FullName
 	}
 	return ""
 }
 
 func (x *GetUsersRequest) GetEmail() string {
-	if x != nil && x.Email != nil {
-		return *x.Email
+	if x != nil {
+		return x.Email
 	}
 	return ""
 }
 
 func (x *GetUsersRequest) GetUsername() string {
-	if x != nil && x.Username != nil {
-		return *x.Username
+	if x != nil {
+		return x.Username
 	}
 	return ""
 }
 
 func (x *GetUsersRequest) GetAddress() string {
-	if x != nil && x.Address != nil {
-		return *x.Address
+	if x != nil {
+		return x.Address
 	}
 	return ""
 }
 
 func (x *GetUsersRequest) GetRoleName() string {
-	if x != nil && x.RoleName != nil {
-		return *x.RoleName
+	if x != nil {
+		return x.RoleName
 	}
 	return ""
 }
 
 func (x *GetUsersRequest) GetCreatedAtGte() string {
-	if x != nil && x.CreatedAtGte != nil {
-		return *x.CreatedAtGte
+	if x != nil {
+		return x.CreatedAtGte
 	}
 	return ""
 }
 
 func (x *GetUsersRequest) GetCreatedAtLte() string {
-	if x != nil && x.CreatedAtLte != nil {
-		return *x.CreatedAtLte
+	if x != nil {
+		return x.CreatedAtLte
 	}
 	return ""
 }
@@ -287,19 +287,19 @@ type GetProductsRequest struct {
 	Offset                int32                  `protobuf:"varint,1,opt,name=offset,proto3" json:"offset,omitempty"`
 	Limit                 int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
 	SortBy                string                 `protobuf:"bytes,3,opt,name=sort_by,json=sortBy,proto3" json:"sort_by,omitempty"`
-	Name                  *string                `protobuf:"bytes,4,opt,name=name,proto3,oneof" json:"name,omitempty"`
-	Description           *string                `protobuf:"bytes,5,opt,name=description,proto3,oneof" json:"description,omitempty"`
-	Sex                   *string                `protobuf:"bytes,6,opt,name=sex,proto3,oneof" json:"sex,omitempty"`
-	PriceGte              *int64                 `protobuf:"varint,7,opt,name=price_gte,json=priceGte,proto3,oneof" json:"price_gte,omitempty"`
-	PriceLte              *int64                 `protobuf:"varint,8,opt,name=price_lte,json=priceLte,proto3,oneof" json:"price_lte,omitempty"`
-	DiscountPercentageGte *int32                 `protobuf:"varint,9,opt,name=discount_percentage_gte,json=discountPercentageGte,proto3,oneof" json:"discount_percentage_gte,omitempty"`
-	DiscountPercentageLte *int32                 `protobuf:"varint,10,opt,name=discount_percentage_lte,json=discountPercentageLte,proto3,oneof" json:"discount_percentage_lte,omitempty"`
-	StockGte              *int32                 `protobuf:"varint,11,opt,name=stock_gte,json=stockGte,proto3,oneof" json:"stock_gte,omitempty"`
-	StockLte              *int32                 `protobuf:"varint,12,opt,name=stock_lte,json=stockLte,proto3,oneof" json:"stock_lte,omitempty"`
-	CategoryName          *string                `protobuf:"bytes,13,opt,name=category_name,json=categoryName,proto3,oneof" json:"category_name,omitempty"`
-	BrandName             *string                `protobuf:"bytes,14,opt,name=brand_name,json=brandName,proto3,oneof" json:"brand_name,omitempty"`
-	CreatedAtGte          *string                `protobuf:"bytes,15,opt,name=created_at_gte,json=createdAtGte,proto3,oneof" json:"created_at_gte,omitempty"`
-	CreatedAtLte          *string                `protobuf:"bytes,16,opt,name=created_at_lte,json=createdAtLte,proto3,oneof" json:"created_at_lte,omitempty"`
+	Name                  string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
+	Description           string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
+	Sex                   string                 `protobuf:"bytes,6,opt,name=sex,proto3" json:"sex,omitempty"`
+	PriceGte              string                 `protobuf:"bytes,7,opt,name=price_gte,json=priceGte,proto3" json:"price_gte,omitempty"`
+	PriceLte              string                 `protobuf:"bytes,8,opt,name=price_lte,json=priceLte,proto3" json:"price_lte,omitempty"`
+	DiscountPercentageGte string                 `protobuf:"bytes,9,opt,name=discount_percentage_gte,json=discountPercentageGte,proto3" json:"discount_percentage_gte,omitempty"`
+	DiscountPercentageLte string                 `protobuf:"bytes,10,opt,name=discount_percentage_lte,json=discountPercentageLte,proto3" json:"discount_percentage_lte,omitempty"`
+	StockGte              string                 `protobuf:"bytes,11,opt,name=stock_gte,json=stockGte,proto3" json:"stock_gte,omitempty"`
+	StockLte              string                 `protobuf:"bytes,12,opt,name=stock_lte,json=stockLte,proto3" json:"stock_lte,omitempty"`
+	CategoryName          string                 `protobuf:"bytes,13,opt,name=category_name,json=categoryName,proto3" json:"category_name,omitempty"`
+	BrandName             string                 `protobuf:"bytes,14,opt,name=brand_name,json=brandName,proto3" json:"brand_name,omitempty"`
+	CreatedAtGte          string                 `protobuf:"bytes,15,opt,name=created_at_gte,json=createdAtGte,proto3" json:"created_at_gte,omitempty"`
+	CreatedAtLte          string                 `protobuf:"bytes,16,opt,name=created_at_lte,json=createdAtLte,proto3" json:"created_at_lte,omitempty"`
 	unknownFields         protoimpl.UnknownFields
 	sizeCache             protoimpl.SizeCache
 }
@@ -356,92 +356,92 @@ func (x *GetProductsRequest) GetSortBy() string {
 }
 
 func (x *GetProductsRequest) GetName() string {
-	if x != nil && x.Name != nil {
-		return *x.Name
+	if x != nil {
+		return x.Name
 	}
 	return ""
 }
 
 func (x *GetProductsRequest) GetDescription() string {
-	if x != nil && x.Description != nil {
-		return *x.Description
+	if x != nil {
+		return x.Description
 	}
 	return ""
 }
 
 func (x *GetProductsRequest) GetSex() string {
-	if x != nil && x.Sex != nil {
-		return *x.Sex
+	if x != nil {
+		return x.Sex
 	}
 	return ""
 }
 
-func (x *GetProductsRequest) GetPriceGte() int64 {
-	if x != nil && x.PriceGte != nil {
-		return *x.PriceGte
+func (x *GetProductsRequest) GetPriceGte() string {
+	if x != nil {
+		return x.PriceGte
 	}
-	return 0
+	return ""
 }
 
-func (x *GetProductsRequest) GetPriceLte() int64 {
-	if x != nil && x.PriceLte != nil {
-		return *x.PriceLte
+func (x *GetProductsRequest) GetPriceLte() string {
+	if x != nil {
+		return x.PriceLte
 	}
-	return 0
+	return ""
 }
 
-func (x *GetProductsRequest) GetDiscountPercentageGte() int32 {
-	if x != nil && x.DiscountPercentageGte != nil {
-		return *x.DiscountPercentageGte
+func (x *GetProductsRequest) GetDiscountPercentageGte() string {
+	if x != nil {
+		return x.DiscountPercentageGte
 	}
-	return 0
+	return ""
 }
 
-func (x *GetProductsRequest) GetDiscountPercentageLte() int32 {
-	if x != nil && x.DiscountPercentageLte != nil {
-		return *x.DiscountPercentageLte
+func (x *GetProductsRequest) GetDiscountPercentageLte() string {
+	if x != nil {
+		return x.DiscountPercentageLte
 	}
-	return 0
+	return ""
 }
 
-func (x *GetProductsRequest) GetStockGte() int32 {
-	if x != nil && x.StockGte != nil {
-		return *x.StockGte
+func (x *GetProductsRequest) GetStockGte() string {
+	if x != nil {
+		return x.StockGte
 	}
-	return 0
+	return ""
 }
 
-func (x *GetProductsRequest) GetStockLte() int32 {
-	if x != nil && x.StockLte != nil {
-		return *x.StockLte
+func (x *GetProductsRequest) GetStockLte() string {
+	if x != nil {
+		return x.StockLte
 	}
-	return 0
+	return ""
 }
 
 func (x *GetProductsRequest) GetCategoryName() string {
-	if x != nil && x.CategoryName != nil {
-		return *x.CategoryName
+	if x != nil {
+		return x.CategoryName
 	}
 	return ""
 }
 
 func (x *GetProductsRequest) GetBrandName() string {
-	if x != nil && x.BrandName != nil {
-		return *x.BrandName
+	if x != nil {
+		return x.BrandName
 	}
 	return ""
 }
 
 func (x *GetProductsRequest) GetCreatedAtGte() string {
-	if x != nil && x.CreatedAtGte != nil {
-		return *x.CreatedAtGte
+	if x != nil {
+		return x.CreatedAtGte
 	}
 	return ""
 }
 
 func (x *GetProductsRequest) GetCreatedAtLte() string {
-	if x != nil && x.CreatedAtLte != nil {
-		return *x.CreatedAtLte
+	if x != nil {
+		return x.CreatedAtLte
 	}
 	return ""
 }
@@ -642,29 +642,19 @@ var File_elasticsearch_service_proto protoreflect.FileDescriptor
 
 const file_elasticsearch_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1belasticsearch_service.proto\x12\x16elasticsearchservicepb\x1a\x1fgoogle/protobuf/timestamp.proto\"\xb2\x03\n" +
+	"\x1belasticsearch_service.proto\x12\x16elasticsearchservicepb\x1a\x1fgoogle/protobuf/timestamp.proto\"\xaa\x02\n" +
 	"\x0fGetUsersRequest\x12\x16\n" +
 	"\x06offset\x18\x01 \x01(\x05R\x06offset\x12\x14\n" +
 	"\x05limit\x18\x02 \x01(\x05R\x05limit\x12\x17\n" +
-	"\asort_by\x18\x03 \x01(\tR\x06sortBy\x12 \n" +
-	"\tfull_name\x18\x04 \x01(\tH\x00R\bfullName\x88\x01\x01\x12\x19\n" +
-	"\x05email\x18\x05 \x01(\tH\x01R\x05email\x88\x01\x01\x12\x1f\n" +
-	"\busername\x18\x06 \x01(\tH\x02R\busername\x88\x01\x01\x12\x1d\n" +
-	"\aaddress\x18\a \x01(\tH\x03R\aaddress\x88\x01\x01\x12 \n" +
-	"\trole_name\x18\b \x01(\tH\x04R\broleName\x88\x01\x01\x12)\n" +
-	"\x0ecreated_at_gte\x18\t \x01(\tH\x05R\fcreatedAtGte\x88\x01\x01\x12)\n" +
+	"\asort_by\x18\x03 \x01(\tR\x06sortBy\x12\x1b\n" +
+	"\tfull_name\x18\x04 \x01(\tR\bfullName\x12\x14\n" +
+	"\x05email\x18\x05 \x01(\tR\x05email\x12\x1a\n" +
+	"\busername\x18\x06 \x01(\tR\busername\x12\x18\n" +
+	"\aaddress\x18\a \x01(\tR\aaddress\x12\x1b\n" +
+	"\trole_name\x18\b \x01(\tR\broleName\x12$\n" +
+	"\x0ecreated_at_gte\x18\t \x01(\tR\fcreatedAtGte\x12$\n" +
 	"\x0ecreated_at_lte\x18\n" +
-	" \x01(\tH\x06R\fcreatedAtLte\x88\x01\x01B\f\n" +
-	"\n" +
-	"_full_nameB\b\n" +
-	"\x06_emailB\v\n" +
-	"\t_usernameB\n" +
-	"\n" +
-	"\b_addressB\f\n" +
-	"\n" +
-	"_role_nameB\x11\n" +
-	"\x0f_created_at_gteB\x11\n" +
-	"\x0f_created_at_lte\"F\n" +
+	" \x01(\tR\fcreatedAtLte\"F\n" +
 	"\x10GetUsersResponse\x122\n" +
 	"\x05users\x18\x01 \x03(\v2\x1c.elasticsearchservicepb.UserR\x05users\"\x92\x02\n" +
 	"\x04User\x12\x0e\n" +
@@ -677,44 +667,26 @@ const file_elasticsearch_service_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xb0\x06\n" +
+	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x97\x04\n" +
 	"\x12GetProductsRequest\x12\x16\n" +
 	"\x06offset\x18\x01 \x01(\x05R\x06offset\x12\x14\n" +
 	"\x05limit\x18\x02 \x01(\x05R\x05limit\x12\x17\n" +
-	"\asort_by\x18\x03 \x01(\tR\x06sortBy\x12\x17\n" +
-	"\x04name\x18\x04 \x01(\tH\x00R\x04name\x88\x01\x01\x12%\n" +
-	"\vdescription\x18\x05 \x01(\tH\x01R\vdescription\x88\x01\x01\x12\x15\n" +
-	"\x03sex\x18\x06 \x01(\tH\x02R\x03sex\x88\x01\x01\x12 \n" +
-	"\tprice_gte\x18\a \x01(\x03H\x03R\bpriceGte\x88\x01\x01\x12 \n" +
-	"\tprice_lte\x18\b \x01(\x03H\x04R\bpriceLte\x88\x01\x01\x12;\n" +
-	"\x17discount_percentage_gte\x18\t \x01(\x05H\x05R\x15discountPercentageGte\x88\x01\x01\x12;\n" +
+	"\asort_by\x18\x03 \x01(\tR\x06sortBy\x12\x12\n" +
+	"\x04name\x18\x04 \x01(\tR\x04name\x12 \n" +
+	"\vdescription\x18\x05 \x01(\tR\vdescription\x12\x10\n" +
+	"\x03sex\x18\x06 \x01(\tR\x03sex\x12\x1b\n" +
+	"\tprice_gte\x18\a \x01(\tR\bpriceGte\x12\x1b\n" +
+	"\tprice_lte\x18\b \x01(\tR\bpriceLte\x126\n" +
+	"\x17discount_percentage_gte\x18\t \x01(\tR\x15discountPercentageGte\x126\n" +
 	"\x17discount_percentage_lte\x18\n" +
-	" \x01(\x05H\x06R\x15discountPercentageLte\x88\x01\x01\x12 \n" +
-	"\tstock_gte\x18\v \x01(\x05H\aR\bstockGte\x88\x01\x01\x12 \n" +
-	"\tstock_lte\x18\f \x01(\x05H\bR\bstockLte\x88\x01\x01\x12(\n" +
-	"\rcategory_name\x18\r \x01(\tH\tR\fcategoryName\x88\x01\x01\x12\"\n" +
+	" \x01(\tR\x15discountPercentageLte\x12\x1b\n" +
+	"\tstock_gte\x18\v \x01(\tR\bstockGte\x12\x1b\n" +
+	"\tstock_lte\x18\f \x01(\tR\bstockLte\x12#\n" +
+	"\rcategory_name\x18\r \x01(\tR\fcategoryName\x12\x1d\n" +
 	"\n" +
-	"brand_name\x18\x0e \x01(\tH\n" +
-	"R\tbrandName\x88\x01\x01\x12)\n" +
-	"\x0ecreated_at_gte\x18\x0f \x01(\tH\vR\fcreatedAtGte\x88\x01\x01\x12)\n" +
-	"\x0ecreated_at_lte\x18\x10 \x01(\tH\fR\fcreatedAtLte\x88\x01\x01B\a\n" +
-	"\x05_nameB\x0e\n" +
-	"\f_descriptionB\x06\n" +
-	"\x04_sexB\f\n" +
-	"\n" +
-	"_price_gteB\f\n" +
-	"\n" +
-	"_price_lteB\x1a\n" +
-	"\x18_discount_percentage_gteB\x1a\n" +
-	"\x18_discount_percentage_lteB\f\n" +
-	"\n" +
-	"_stock_gteB\f\n" +
-	"\n" +
-	"_stock_lteB\x10\n" +
-	"\x0e_category_nameB\r\n" +
-	"\v_brand_nameB\x11\n" +
-	"\x0f_created_at_gteB\x11\n" +
-	"\x0f_created_at_lte\"R\n" +
+	"brand_name\x18\x0e \x01(\tR\tbrandName\x12$\n" +
+	"\x0ecreated_at_gte\x18\x0f \x01(\tR\fcreatedAtGte\x12$\n" +
+	"\x0ecreated_at_lte\x18\x10 \x01(\tR\fcreatedAtLte\"R\n" +
 	"\x13GetProductsResponse\x12;\n" +
 	"\bproducts\x18\x01 \x03(\v2\x1f.elasticsearchservicepb.ProductR\bproducts\"\xd1\x03\n" +
 	"\aProduct\x12\x0e\n" +
@@ -786,8 +758,6 @@ func file_elasticsearch_service_proto_init() {
 	if File_elasticsearch_service_proto != nil {
 		return
 	}
-	file_elasticsearch_service_proto_msgTypes[0].OneofWrappers = []any{}
-	file_elasticsearch_service_proto_msgTypes[3].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

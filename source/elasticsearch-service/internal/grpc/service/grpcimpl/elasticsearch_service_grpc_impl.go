@@ -8,11 +8,15 @@ import (
 
 type ElasticsearchServiceGRPCImpl struct {
 	elasticsearchservicepb.UnimplementedElasticsearchServiceGRPCServer
-	userService service.UserService
+	userService    service.UserService
+	catalogService service.CatalogService
 }
 
-func NewElasticsearchServiceGRPCImpl(userService service.UserService) *ElasticsearchServiceGRPCImpl {
-	return &ElasticsearchServiceGRPCImpl{userService: userService}
+func NewElasticsearchServiceGRPCImpl(userService service.UserService, catalogService service.CatalogService) *ElasticsearchServiceGRPCImpl {
+	return &ElasticsearchServiceGRPCImpl{
+		userService:    userService,
+		catalogService: catalogService,
+	}
 }
 
 func (elasticsearchServiceGRPCImpl *ElasticsearchServiceGRPCImpl) GetUsers(ctx context.Context, reqDTO *elasticsearchservicepb.GetUsersRequest) (*elasticsearchservicepb.GetUsersResponse, error) {
@@ -23,5 +27,16 @@ func (elasticsearchServiceGRPCImpl *ElasticsearchServiceGRPCImpl) GetUsers(ctx c
 
 	res := &elasticsearchservicepb.GetUsersResponse{}
 	res.Users = userProtos
+	return res, nil
+}
+
+func (elasticsearchServiceGRPCImpl *ElasticsearchServiceGRPCImpl) GetProducts(ctx context.Context, reqDTO *elasticsearchservicepb.GetProductsRequest) (*elasticsearchservicepb.GetProductsResponse, error) {
+	productProtos, err := elasticsearchServiceGRPCImpl.catalogService.GetProducts(ctx, reqDTO)
+	if err != nil {
+		return nil, err
+	}
+
+	res := &elasticsearchservicepb.GetProductsResponse{}
+	res.Products = productProtos
 	return res, nil
 }

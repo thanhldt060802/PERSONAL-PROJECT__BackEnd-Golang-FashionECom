@@ -16,7 +16,7 @@ func main() {
 	infrastructure.InitAllServiceGRPCClients()
 	defer infrastructure.ServiceGRPCConnectionManager.CloseAll()
 
-	grpcimpl.StartGRPCServer(grpcimpl.NewElasticsearchServiceGRPCImpl(service.NewUserService()))
+	grpcimpl.StartGRPCServer(grpcimpl.NewElasticsearchServiceGRPCImpl(nil, service.NewCatalogService()))
 
 	select {}
 

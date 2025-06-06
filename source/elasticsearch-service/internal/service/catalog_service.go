@@ -234,7 +234,7 @@ func (catalogService *catalogService) GetProducts(ctx context.Context, reqDTO *e
 	mustConditions := []map[string]interface{}{}
 
 	// If filtering by name
-	if reqDTO.Name != nil {
+	if reqDTO.Name != "" {
 		mustConditions = append(mustConditions, map[string]interface{}{
 			"match": map[string]interface{}{
 				"name": reqDTO.Name,
@@ -243,7 +243,7 @@ func (catalogService *catalogService) GetProducts(ctx context.Context, reqDTO *e
 	}
 
 	// If filtering by description
-	if reqDTO.Description != nil {
+	if reqDTO.Description != "" {
 		mustConditions = append(mustConditions, map[string]interface{}{
 			"match": map[string]interface{}{
 				"description": reqDTO.Description,
@@ -252,7 +252,7 @@ func (catalogService *catalogService) GetProducts(ctx context.Context, reqDTO *e
 	}
 
 	// If filtering by sex
-	if reqDTO.Sex != nil {
+	if reqDTO.Sex != "" {
 		mustConditions = append(mustConditions, map[string]interface{}{
 			"match": map[string]interface{}{
 				"sex": reqDTO.Sex,
@@ -262,11 +262,13 @@ func (catalogService *catalogService) GetProducts(ctx context.Context, reqDTO *e
 
 	// If filtering by price in range or partial range
 	priceRange := map[string]interface{}{}
-	if reqDTO.PriceGte != nil {
-		priceRange["gte"] = reqDTO.PriceGte
+	if reqDTO.PriceGte != "" {
+		value, _ := strconv.ParseInt(reqDTO.PriceGte, 10, 64)
+		priceRange["gte"] = value
 	}
-	if reqDTO.PriceLte != nil {
-		priceRange["lte"] = reqDTO.PriceLte
+	if reqDTO.PriceLte != "" {
+		value, _ := strconv.ParseInt(reqDTO.PriceLte, 10, 64)
+		priceRange["lte"] = value
 	}
 	if len(priceRange) > 0 {
 		mustConditions = append(mustConditions, map[string]interface{}{
@@ -278,11 +280,13 @@ func (catalogService *catalogService) GetProducts(ctx context.Context, reqDTO *e
 
 	// If filtering by discount_percentage in range or partial range
 	discountPercentageRange := map[string]interface{}{}
-	if reqDTO.DiscountPercentageGte != nil {
-		discountPercentageRange["gte"] = reqDTO.DiscountPercentageGte
+	if reqDTO.DiscountPercentageGte != "" {
+		value, _ := strconv.ParseInt(reqDTO.DiscountPercentageGte, 10, 64)
+		discountPercentageRange["gte"] = value
 	}
-	if reqDTO.DiscountPercentageLte != nil {
-		discountPercentageRange["lte"] = reqDTO.DiscountPercentageLte
+	if reqDTO.DiscountPercentageLte != "" {
+		value, _ := strconv.ParseInt(reqDTO.DiscountPercentageLte, 10, 64)
+		discountPercentageRange["lte"] = value
 	}
 	if len(discountPercentageRange) > 0 {
 		mustConditions = append(mustConditions, map[string]interface{}{
@@ -294,11 +298,13 @@ func (catalogService *catalogService) GetProducts(ctx context.Context, reqDTO *e
 
 	// If filtering by stock in range or partial range
 	stockRange := map[string]interface{}{}
-	if reqDTO.StockGte != nil {
-		stockRange["gte"] = reqDTO.StockGte
+	if reqDTO.StockGte != "" {
+		value, _ := strconv.ParseInt(reqDTO.StockGte, 10, 64)
+		stockRange["gte"] = value
 	}
-	if reqDTO.StockLte != nil {
-		stockRange["lte"] = reqDTO.StockLte
+	if reqDTO.StockLte != "" {
+		value, _ := strconv.ParseInt(reqDTO.StockLte, 10, 64)
+		stockRange["lte"] = value
 	}
 	if len(stockRange) > 0 {
 		mustConditions = append(mustConditions, map[string]interface{}{
@@ -309,7 +315,7 @@ func (catalogService *catalogService) GetProducts(ctx context.Context, reqDTO *e
 	}
 
 	// If filtering by category_name
-	if reqDTO.CategoryName != nil {
+	if reqDTO.CategoryName != "" {
 		mustConditions = append(mustConditions, map[string]interface{}{
 			"match": map[string]interface{}{
 				"category_name": reqDTO.CategoryName,
@@ -318,7 +324,7 @@ func (catalogService *catalogService) GetProducts(ctx context.Context, reqDTO *e
 	}
 
 	// If filtering by brand_name
-	if reqDTO.BrandName != nil {
+	if reqDTO.BrandName != "" {
 		mustConditions = append(mustConditions, map[string]interface{}{
 			"match": map[string]interface{}{
 				"brand_name": reqDTO.BrandName,
@@ -328,10 +334,10 @@ func (catalogService *catalogService) GetProducts(ctx context.Context, reqDTO *e
 
 	// If filtering by created_at in range or partial range
 	createdAtRange := map[string]interface{}{}
-	if reqDTO.CreatedAtGte != nil {
+	if reqDTO.CreatedAtGte != "" {
 		createdAtRange["gte"] = reqDTO.CreatedAtGte
 	}
-	if reqDTO.CreatedAtLte != nil {
+	if reqDTO.CreatedAtLte != "" {
 		createdAtRange["lte"] = reqDTO.CreatedAtLte
 	}
 	if len(createdAtRange) > 0 {

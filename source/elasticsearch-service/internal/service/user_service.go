@@ -234,7 +234,7 @@ func (userService *userService) GetUsers(ctx context.Context, reqDTO *elasticsea
 	mustConditions := []map[string]interface{}{}
 
 	// If filtering by full_name
-	if reqDTO.FullName != nil {
+	if reqDTO.FullName != "" {
 		mustConditions = append(mustConditions, map[string]interface{}{
 			"match": map[string]interface{}{
 				"full_name": reqDTO.FullName,
@@ -243,7 +243,7 @@ func (userService *userService) GetUsers(ctx context.Context, reqDTO *elasticsea
 	}
 
 	// If filtering by email
-	if reqDTO.Email != nil {
+	if reqDTO.Email != "" {
 		mustConditions = append(mustConditions, map[string]interface{}{
 			"match": map[string]interface{}{
 				"email": reqDTO.Email,
@@ -252,7 +252,7 @@ func (userService *userService) GetUsers(ctx context.Context, reqDTO *elasticsea
 	}
 
 	// If filtering by username
-	if reqDTO.Username != nil {
+	if reqDTO.Username != "" {
 		mustConditions = append(mustConditions, map[string]interface{}{
 			"match": map[string]interface{}{
 				"username": reqDTO.Username,
@@ -261,7 +261,7 @@ func (userService *userService) GetUsers(ctx context.Context, reqDTO *elasticsea
 	}
 
 	// If filtering by address
-	if reqDTO.Address != nil {
+	if reqDTO.Address != "" {
 		mustConditions = append(mustConditions, map[string]interface{}{
 			"match": map[string]interface{}{
 				"address": reqDTO.Address,
@@ -270,7 +270,7 @@ func (userService *userService) GetUsers(ctx context.Context, reqDTO *elasticsea
 	}
 
 	// If filtering by role_name
-	if reqDTO.RoleName != nil {
+	if reqDTO.RoleName != "" {
 		mustConditions = append(mustConditions, map[string]interface{}{
 			"match": map[string]interface{}{
 				"role_name": reqDTO.RoleName,
@@ -280,10 +280,10 @@ func (userService *userService) GetUsers(ctx context.Context, reqDTO *elasticsea
 
 	// If filtering by created_at in range or partial range
 	createdAtRange := map[string]interface{}{}
-	if reqDTO.CreatedAtGte != nil {
+	if reqDTO.CreatedAtGte != "" {
 		createdAtRange["gte"] = reqDTO.CreatedAtGte
 	}
-	if reqDTO.CreatedAtLte != nil {
+	if reqDTO.CreatedAtLte != "" {
 		createdAtRange["lte"] = reqDTO.CreatedAtLte
 	}
 	if len(createdAtRange) > 0 {

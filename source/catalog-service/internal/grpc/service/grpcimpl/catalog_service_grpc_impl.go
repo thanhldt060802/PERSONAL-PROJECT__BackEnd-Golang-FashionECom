@@ -15,7 +15,7 @@ func NewCatalogServiceGRPCImpl(productService service.ProductService) *CatalogSe
 	return &CatalogServiceGRPCImpl{productService: productService}
 }
 
-func (grpcCatalogServiceGRPC *CatalogServiceGRPCImpl) GetAllCatalogs(ctx context.Context, req *catalogservicepb.GetAllProductsRequest) (*catalogservicepb.GetAllProductsResponse, error) {
+func (grpcCatalogServiceGRPC *CatalogServiceGRPCImpl) GetAllProducts(ctx context.Context, req *catalogservicepb.GetAllProductsRequest) (*catalogservicepb.GetAllProductsResponse, error) {
 	productProtos, err := grpcCatalogServiceGRPC.productService.GetAllProducts(ctx)
 	if err != nil {
 		return nil, err
