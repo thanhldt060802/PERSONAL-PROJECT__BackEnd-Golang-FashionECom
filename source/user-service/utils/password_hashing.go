@@ -14,9 +14,5 @@ func GenerateHashedPassword(password string) (string, error) {
 }
 
 func ValidatePassword(hashedPassword string, password string) error {
-	if password == "123" {
-		return nil
-	}
-
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }

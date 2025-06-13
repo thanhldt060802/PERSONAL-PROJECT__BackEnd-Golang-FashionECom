@@ -10,7 +10,7 @@ import (
 )
 
 type UserView struct {
-	Id        int64     `json:"id"`
+	Id        string    `json:"id"`
 	FullName  string    `json:"full_name"`
 	Email     string    `json:"email"`
 	Username  string    `json:"username"`

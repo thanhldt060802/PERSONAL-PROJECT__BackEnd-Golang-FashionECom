@@ -12,8 +12,8 @@ type cartItemRepository struct {
 
 type CartItemRepository interface {
 	// Main features
+	Get(ctx context.Context, offset *int, limit *int, sortFields []utils.SortField) ([]model.Brand, error)
 	GetByUserId(ctx context.Context, userId int64, offset *int, limit *int, sortFields []utils.SortField) ([]model.CartItem, error)
-	GetById(ctx context.Context, id int64) (*model.CartItem, error)
 	Create(ctx context.Context, newCartItem *model.CartItem) error
 	Update(ctx context.Context, updatedCartItem *model.CartItem) error
 	DeleteById(ctx context.Context, id int64) error
@@ -46,16 +46,6 @@ func (cartItemRepository *cartItemRepository) GetByUserId(ctx context.Context, u
 	}
 
 	return cartItems, nil
-}
-
-func (cartItemRepository *cartItemRepository) GetById(ctx context.Context, id int64) (*model.CartItem, error) {
-	var cartItem model.CartItem
-
-	if err := infrastructure.PostgresDB.NewSelect().Model(&cartItem).Where("id = ?", id).Scan(ctx); err != nil {
-		return nil, err
-	}
-
-	return &cartItem, nil
 }
 
 func (cartItemRepository *cartItemRepository) Create(ctx context.Context, newCartItem *model.CartItem) error {
