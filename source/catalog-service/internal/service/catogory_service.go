@@ -81,7 +81,8 @@ func (categoryService *categoryService) UpdateCategoryById(ctx context.Context, 
 		}
 		foundCategory.Name = *reqDTO.Body.Name
 	}
-	foundCategory.UpdatedAt = time.Now().UTC()
+	timeUpdate := time.Now().UTC()
+	foundCategory.UpdatedAt = &timeUpdate
 
 	if err := categoryService.categoryRepository.Update(ctx, foundCategory); err != nil {
 		return fmt.Errorf("update category on postgresql failed: %s", err.Error())

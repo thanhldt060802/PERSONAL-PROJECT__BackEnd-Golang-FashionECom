@@ -184,7 +184,7 @@ func (x *GetUsersResponse) GetUsers() []*User {
 
 type User struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	FullName      string                 `protobuf:"bytes,2,opt,name=full_name,json=fullName,proto3" json:"full_name,omitempty"`
 	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
 	Username      string                 `protobuf:"bytes,4,opt,name=username,proto3" json:"username,omitempty"`
@@ -226,11 +226,11 @@ func (*User) Descriptor() ([]byte, []int) {
 	return file_elasticsearch_service_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *User) GetId() int64 {
+func (x *User) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return 0
+	return ""
 }
 
 func (x *User) GetFullName() string {
@@ -492,7 +492,7 @@ func (x *GetProductsResponse) GetProducts() []*Product {
 
 type Product struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
-	Id                 int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id                 string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name               string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Description        string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
 	Sex                string                 `protobuf:"bytes,4,opt,name=sex,proto3" json:"sex,omitempty"`
@@ -500,9 +500,9 @@ type Product struct {
 	DiscountPercentage int32                  `protobuf:"varint,6,opt,name=discount_percentage,json=discountPercentage,proto3" json:"discount_percentage,omitempty"`
 	Stock              int32                  `protobuf:"varint,7,opt,name=stock,proto3" json:"stock,omitempty"`
 	ImageUrl           string                 `protobuf:"bytes,8,opt,name=image_url,json=imageUrl,proto3" json:"image_url,omitempty"`
-	CategoryId         int64                  `protobuf:"varint,9,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
+	CategoryId         string                 `protobuf:"bytes,9,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
 	CategoryName       string                 `protobuf:"bytes,10,opt,name=category_name,json=categoryName,proto3" json:"category_name,omitempty"`
-	BrandId            int64                  `protobuf:"varint,11,opt,name=brand_id,json=brandId,proto3" json:"brand_id,omitempty"`
+	BrandId            string                 `protobuf:"bytes,11,opt,name=brand_id,json=brandId,proto3" json:"brand_id,omitempty"`
 	BrandName          string                 `protobuf:"bytes,12,opt,name=brand_name,json=brandName,proto3" json:"brand_name,omitempty"`
 	CreatedAt          *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt          *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
@@ -540,11 +540,11 @@ func (*Product) Descriptor() ([]byte, []int) {
 	return file_elasticsearch_service_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *Product) GetId() int64 {
+func (x *Product) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return 0
+	return ""
 }
 
 func (x *Product) GetName() string {
@@ -596,11 +596,11 @@ func (x *Product) GetImageUrl() string {
 	return ""
 }
 
-func (x *Product) GetCategoryId() int64 {
+func (x *Product) GetCategoryId() string {
 	if x != nil {
 		return x.CategoryId
 	}
-	return 0
+	return ""
 }
 
 func (x *Product) GetCategoryName() string {
@@ -610,11 +610,11 @@ func (x *Product) GetCategoryName() string {
 	return ""
 }
 
-func (x *Product) GetBrandId() int64 {
+func (x *Product) GetBrandId() string {
 	if x != nil {
 		return x.BrandId
 	}
-	return 0
+	return ""
 }
 
 func (x *Product) GetBrandName() string {
@@ -658,7 +658,7 @@ const file_elasticsearch_service_proto_rawDesc = "" +
 	"\x10GetUsersResponse\x122\n" +
 	"\x05users\x18\x01 \x03(\v2\x1c.elasticsearchservicepb.UserR\x05users\"\x92\x02\n" +
 	"\x04User\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1b\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\tfull_name\x18\x02 \x01(\tR\bfullName\x12\x14\n" +
 	"\x05email\x18\x03 \x01(\tR\x05email\x12\x1a\n" +
 	"\busername\x18\x04 \x01(\tR\busername\x12\x18\n" +
@@ -690,7 +690,7 @@ const file_elasticsearch_service_proto_rawDesc = "" +
 	"\x13GetProductsResponse\x12;\n" +
 	"\bproducts\x18\x01 \x03(\v2\x1f.elasticsearchservicepb.ProductR\bproducts\"\xd1\x03\n" +
 	"\aProduct\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x10\n" +
 	"\x03sex\x18\x04 \x01(\tR\x03sex\x12\x14\n" +
@@ -698,11 +698,11 @@ const file_elasticsearch_service_proto_rawDesc = "" +
 	"\x13discount_percentage\x18\x06 \x01(\x05R\x12discountPercentage\x12\x14\n" +
 	"\x05stock\x18\a \x01(\x05R\x05stock\x12\x1b\n" +
 	"\timage_url\x18\b \x01(\tR\bimageUrl\x12\x1f\n" +
-	"\vcategory_id\x18\t \x01(\x03R\n" +
+	"\vcategory_id\x18\t \x01(\tR\n" +
 	"categoryId\x12#\n" +
 	"\rcategory_name\x18\n" +
 	" \x01(\tR\fcategoryName\x12\x19\n" +
-	"\bbrand_id\x18\v \x01(\x03R\abrandId\x12\x1d\n" +
+	"\bbrand_id\x18\v \x01(\tR\abrandId\x12\x1d\n" +
 	"\n" +
 	"brand_name\x18\f \x01(\tR\tbrandName\x129\n" +
 	"\n" +

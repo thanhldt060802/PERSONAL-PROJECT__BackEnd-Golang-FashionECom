@@ -7,7 +7,7 @@ type GetBrandsRequest struct {
 }
 
 type GetBrandByIdRequest struct {
-	Id int64 `path:"id" required:"true" doc:"Id of brand."`
+	Id string `path:"id" required:"true" doc:"Id of brand."`
 }
 
 type CreateBrandRequest struct {
@@ -18,7 +18,7 @@ type CreateBrandRequest struct {
 }
 
 type UpdateBrandByIdRequest struct {
-	Id   int64 `path:"id" required:"true" doc:"Id of brand."`
+	Id   string `path:"id" required:"true" doc:"Id of brand."`
 	Body struct {
 		Name        *string `json:"name,omitempty" minLength:"1" doc:"Name of brand (unique)."`
 		Description *string `json:"description,omitempty" minLength:"1" doc:"Description of brand."`
@@ -26,5 +26,5 @@ type UpdateBrandByIdRequest struct {
 }
 
 type DeleteBrandByIdRequest struct {
-	Id int64 `path:"id" required:"true" doc:"Id of brand."`
+	Id string `path:"id" required:"true" doc:"Id of brand."`
 }

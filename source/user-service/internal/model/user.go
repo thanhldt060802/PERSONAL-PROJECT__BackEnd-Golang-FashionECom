@@ -9,13 +9,13 @@ import (
 type User struct {
 	bun.BaseModel `bun:"table:users"`
 
-	Id             string    `bun:"id,pk"`
-	FullName       string    `bun:"full_name,notnull"`
-	Email          string    `bun:"email,notnull"`
-	Username       string    `bun:"username,notnull"`
-	HashedPassword string    `bun:"hashed_password,notnull"`
-	Address        string    `bun:"address,notnull"`
-	RoleName       string    `bun:"role_name,notnull"`
-	CreatedAt      time.Time `bun:"created_at,notnull,default:current_timestamp"`
-	UpdatedAt      time.Time `bun:"updated_at,notnull,default:current_timestamp"`
+	Id             string     `bun:"id,pk"`
+	FullName       string     `bun:"full_name,notnull"`
+	Email          string     `bun:"email,notnull"`
+	Username       string     `bun:"username,notnull"`
+	HashedPassword string     `bun:"hashed_password,notnull"`
+	Address        string     `bun:"address,notnull"`
+	RoleName       string     `bun:"role_name,notnull"`
+	CreatedAt      *time.Time `bun:"created_at,notnull,default:current_timestamp"`
+	UpdatedAt      *time.Time `bun:"updated_at,notnull,default:current_timestamp"`
 }

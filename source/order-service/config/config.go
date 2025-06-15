@@ -24,11 +24,6 @@ type Config struct {
 	RedisHost     string
 	RedisPort     string
 	RedisPassword string
-
-	ElasticsearchHost     string
-	ElasticsearchPort     string
-	ElasticsearchUsername string
-	ElasticsearchPassword string
 }
 
 var AppConfig *Config
@@ -53,11 +48,6 @@ func InitConfig() {
 		RedisHost:     GetEnv("REDIS_HOST", "localhost"),
 		RedisPort:     GetEnv("REDIS_PORT", "6379"),
 		RedisPassword: GetEnv("REDIS_PASSWORD", ""),
-
-		ElasticsearchHost:     GetEnv("ELASTICSEARCH_HOST", "localhost"),
-		ElasticsearchPort:     GetEnv("ELASTICSEARCH_PORT", "9200"),
-		ElasticsearchUsername: GetEnv("ELASTICSEARCH_USERNAME", "elastic"),
-		ElasticsearchPassword: GetEnv("ELASTICSEARCH_PASSWORD", ""),
 	}
 
 	// Validate constraint environment variable value

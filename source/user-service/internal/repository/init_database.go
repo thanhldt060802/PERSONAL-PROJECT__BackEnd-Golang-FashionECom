@@ -7,12 +7,11 @@ import (
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/model"
 	"thanhldt060802/utils"
-	"time"
 
 	"github.com/google/uuid"
 )
 
-func InitDatabase() {
+func InitTableUsers() {
 	ctx := context.Background()
 
 	var exists bool
@@ -28,6 +27,10 @@ func InitDatabase() {
 	}
 
 	if !exists {
+		if _, err := infrastructure.PostgresDB.NewCreateTable().Model(&model.User{}).Exec(ctx); err != nil {
+			log.Fatal("Create table users on PostgreSQL failed: ", err)
+		}
+
 		userData := []*model.User{}
 
 		adminHashedPassword, _ := utils.GenerateHashedPassword("123")
@@ -39,8 +42,6 @@ func InitDatabase() {
 			HashedPassword: adminHashedPassword,
 			Address:        "Củ chi",
 			RoleName:       "ADMIN",
-			CreatedAt:      time.Now(),
-			UpdatedAt:      time.Now(),
 		})
 
 		for i := range 20 {
@@ -53,13 +54,11 @@ func InitDatabase() {
 				HashedPassword: userHashedPassword,
 				Address:        fmt.Sprintf("Address Of User %v", i+1),
 				RoleName:       "CUSTOMER",
-				CreatedAt:      time.Now(),
-				UpdatedAt:      time.Now(),
 			})
 		}
 
 		if _, err := infrastructure.PostgresDB.NewInsert().Model(&userData).Exec(ctx); err != nil {
-			log.Fatal("Create table users on PostgreSQL failed: ", err)
+			log.Fatal("Create data for table users on PostgreSQL failed: ", err)
 		}
 	}
 }

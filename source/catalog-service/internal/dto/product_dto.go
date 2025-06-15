@@ -10,7 +10,7 @@ import (
 )
 
 type ProductView struct {
-	Id                 int64     `json:"id"`
+	Id                 string    `json:"id"`
 	Name               string    `json:"name"`
 	Description        string    `json:"description"`
 	Sex                string    `json:"sex"`
@@ -18,9 +18,9 @@ type ProductView struct {
 	DiscountPercentage int32     `json:"discount_percentage"`
 	Stock              int32     `json:"stock"`
 	ImageURL           string    `json:"image_url"`
-	CategoryId         int64     `json:"category_id"`
+	CategoryId         string    `json:"category_id"`
 	CategoryName       string    `json:"category_name"`
-	BrandId            int64     `json:"brand_id"`
+	BrandId            string    `json:"brand_id"`
 	BrandName          string    `json:"brand_name"`
 	CreatedAt          time.Time `json:"created_at"`
 	UpdatedAt          time.Time `json:"updated_at"`
@@ -40,18 +40,18 @@ func ToProductView(product *model.Product, category *model.Category, brand *mode
 		CategoryName:       category.Name,
 		BrandId:            product.BrandId,
 		BrandName:          brand.Name,
-		CreatedAt:          product.CreatedAt,
-		UpdatedAt:          product.UpdatedAt,
+		CreatedAt:          *product.CreatedAt,
+		UpdatedAt:          *product.UpdatedAt,
 	}
 }
 
 func ToListProductView(products []model.Product, categories []model.Category, brands []model.Brand) []ProductView {
-	categoryMap := map[int64]*model.Category{}
+	categoryMap := map[string]*model.Category{}
 	for _, category := range categories {
 		categoryMap[category.Id] = &category
 	}
 
-	brandMap := map[int64]*model.Brand{}
+	brandMap := map[string]*model.Brand{}
 	for _, brand := range brands {
 		brandMap[brand.Id] = &brand
 	}

@@ -37,7 +37,7 @@ func (jwtAuthMiddleware *JWTAuthMiddleware) Authentication(ctx huma.Context, nex
 	}
 
 	var userData struct {
-		UserId   int64  `json:"user_id"`
+		UserId   string `json:"user_id"`
 		RoleName string `json:"role_name"`
 	}
 	json.Unmarshal([]byte(userDataJson), &userData)

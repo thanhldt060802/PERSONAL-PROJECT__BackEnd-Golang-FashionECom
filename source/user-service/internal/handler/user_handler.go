@@ -252,7 +252,7 @@ func (userHandler *UserHandler) LoginAccount(ctx context.Context, reqDTO *dto.Lo
 }
 
 func (userHandler *UserHandler) LogoutAccount(ctx context.Context, _ *struct{}) (*dto.SuccessResponse, error) {
-	if err := userHandler.userService.LogoutAccount(ctx, ctx.Value("user_id").(int64)); err != nil {
+	if err := userHandler.userService.LogoutAccount(ctx, ctx.Value("user_id").(string)); err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusInternalServerError
 		res.Code = "ERR_INTERNAL_SERVER"
@@ -293,7 +293,7 @@ func (userHandler *UserHandler) RegisterAccount(ctx context.Context, reqDTO *dto
 
 func (userHandler *UserHandler) GetAccount(ctx context.Context, _ *struct{}) (*dto.BodyResponse[dto.UserView], error) {
 	convertReqDTO := &dto.GetUserByIdRequest{}
-	convertReqDTO.Id = ctx.Value("user_id").(int64)
+	convertReqDTO.Id = ctx.Value("user_id").(string)
 
 	foundUser, err := userHandler.userService.GetUserById(ctx, convertReqDTO)
 	if err != nil {
@@ -314,7 +314,7 @@ func (userHandler *UserHandler) GetAccount(ctx context.Context, _ *struct{}) (*d
 
 func (userHandler *UserHandler) UpdateAccount(ctx context.Context, reqDTO *dto.UpdateAccountRequest) (*dto.SuccessResponse, error) {
 	convertReqDTO := &dto.UpdateUserByIdRequest{}
-	convertReqDTO.Id = ctx.Value("user_id").(int64)
+	convertReqDTO.Id = ctx.Value("user_id").(string)
 	convertReqDTO.Body.FullName = reqDTO.Body.FullName
 	convertReqDTO.Body.Email = reqDTO.Body.Email
 	convertReqDTO.Body.Password = reqDTO.Body.Password

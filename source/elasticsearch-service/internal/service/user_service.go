@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/dto"
@@ -104,7 +103,7 @@ func (userService *userService) syncAllAvailableUsers() error {
 			// Add data to BulkIndexer
 			err = indexer.Add(context.Background(), esutil.BulkIndexerItem{
 				Action:     "index",
-				DocumentID: strconv.FormatInt(user.Id, 10),
+				DocumentID: user.Id,
 				Body:       bytes.NewReader(userJSON),
 				OnFailure: func(ctx context.Context, item esutil.BulkIndexerItem, resp esutil.BulkIndexerResponseItem, err error) {
 					if err != nil {
@@ -150,7 +149,7 @@ func (userService *userService) syncCreatingUserLoop() {
 			res, err := infrastructure.ElasticsearchClient.Index(
 				"users",
 				esutil.NewJSONReader(newUserView),
-				infrastructure.ElasticsearchClient.Index.WithDocumentID(strconv.FormatInt(newUserView.Id, 10)),
+				infrastructure.ElasticsearchClient.Index.WithDocumentID(newUserView.Id),
 				infrastructure.ElasticsearchClient.Index.WithRefresh("true"),
 			)
 			if err != nil {
@@ -184,7 +183,7 @@ func (userService *userService) syncUpdatingUserLoop() {
 			res, err := infrastructure.ElasticsearchClient.Index(
 				"users",
 				esutil.NewJSONReader(updatedUserView),
-				infrastructure.ElasticsearchClient.Index.WithDocumentID(strconv.FormatInt(updatedUserView.Id, 10)),
+				infrastructure.ElasticsearchClient.Index.WithDocumentID(updatedUserView.Id),
 				infrastructure.ElasticsearchClient.Index.WithRefresh("true"),
 			)
 			if err != nil {

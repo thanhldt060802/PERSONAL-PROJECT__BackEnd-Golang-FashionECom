@@ -104,7 +104,7 @@ func (catalogService *catalogService) syncAllAvailableProducts() error {
 			// Add data to BulkIndexer
 			err = indexer.Add(context.Background(), esutil.BulkIndexerItem{
 				Action:     "index",
-				DocumentID: strconv.FormatInt(product.Id, 10),
+				DocumentID: product.Id,
 				Body:       bytes.NewReader(productJSON),
 				OnFailure: func(ctx context.Context, item esutil.BulkIndexerItem, resp esutil.BulkIndexerResponseItem, err error) {
 					if err != nil {
@@ -150,7 +150,7 @@ func (catalogService *catalogService) syncCreatingProductLoop() {
 			res, err := infrastructure.ElasticsearchClient.Index(
 				"products",
 				esutil.NewJSONReader(newProductView),
-				infrastructure.ElasticsearchClient.Index.WithDocumentID(strconv.FormatInt(newProductView.Id, 10)),
+				infrastructure.ElasticsearchClient.Index.WithDocumentID(newProductView.Id),
 				infrastructure.ElasticsearchClient.Index.WithRefresh("true"),
 			)
 			if err != nil {
@@ -184,7 +184,7 @@ func (catalogService *catalogService) syncUpdatingProductLoop() {
 			res, err := infrastructure.ElasticsearchClient.Index(
 				"products",
 				esutil.NewJSONReader(updatedProductView),
-				infrastructure.ElasticsearchClient.Index.WithDocumentID(strconv.FormatInt(updatedProductView.Id, 10)),
+				infrastructure.ElasticsearchClient.Index.WithDocumentID(updatedProductView.Id),
 				infrastructure.ElasticsearchClient.Index.WithRefresh("true"),
 			)
 			if err != nil {

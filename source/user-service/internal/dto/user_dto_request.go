@@ -6,7 +6,7 @@ package dto
 // ######################################################################################
 
 type GetUserByIdRequest struct {
-	Id int64 `path:"id" required:"true" doc:"Id of user."`
+	Id string `path:"id" required:"true" doc:"Id of user."`
 }
 
 type CreateUserRequest struct {
@@ -21,7 +21,7 @@ type CreateUserRequest struct {
 }
 
 type UpdateUserByIdRequest struct {
-	Id   int64 `path:"id" required:"true" doc:"Id of user."`
+	Id   string `path:"id" required:"true" doc:"Id of user."`
 	Body struct {
 		FullName *string `json:"fullname,omitempty" minLength:"1" doc:"Full name of user."`
 		Email    *string `json:"email,omitempty" minLength:"1" format:"email" doc:"Email of user."`
@@ -32,7 +32,7 @@ type UpdateUserByIdRequest struct {
 }
 
 type DeleteUserByIdRequest struct {
-	Id int64 `path:"id" required:"true" doc:"Id of user."`
+	Id string `path:"id" required:"true" doc:"Id of user."`
 }
 
 //
@@ -67,7 +67,7 @@ type UpdateAccountRequest struct {
 }
 
 type DeleteLoggedInAccountRequest struct {
-	Id int64 `path:"id" required:"true" doc:"Id of user."`
+	Id string `path:"id" required:"true" doc:"Id of user."`
 }
 
 //

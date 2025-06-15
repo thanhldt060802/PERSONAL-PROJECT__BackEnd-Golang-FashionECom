@@ -4,7 +4,7 @@ var Product = `
 {
   "mappings": {
     "properties": {
-      "id": { "type": "long" },
+      "id": { "type": "text" },
       "name": {
           "type": "text",
           "analyzer": "standard",
@@ -30,7 +30,7 @@ var Product = `
       "discount_percentage": { "type": "integer" },
 	    "stock": { "type": "integer" },
 	    "image_url": { "type": "text" },
-	    "category_id": { "type": "long" },
+	    "category_id": { "type": "text" },
       "category_name": {
           "type": "text",
           "analyzer": "standard",
@@ -38,7 +38,7 @@ var Product = `
             "keyword": { "type": "keyword" }
           }
         },
-	    "brand_id": { "type": "long" },
+	    "brand_id": { "type": "text" },
       "brand_name": {
           "type": "text",
           "analyzer": "standard",

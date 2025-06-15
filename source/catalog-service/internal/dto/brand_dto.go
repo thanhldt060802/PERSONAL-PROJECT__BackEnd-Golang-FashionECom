@@ -6,7 +6,7 @@ import (
 )
 
 type BrandView struct {
-	Id          int64     `json:"id"`
+	Id          string    `json:"id"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
 	CreatedAt   time.Time `json:"created_at"`
@@ -18,8 +18,8 @@ func ToBrandView(brand *model.Brand) *BrandView {
 		Id:          brand.Id,
 		Name:        brand.Name,
 		Description: brand.Description,
-		CreatedAt:   brand.CreatedAt,
-		UpdatedAt:   brand.UpdatedAt,
+		CreatedAt:   *brand.CreatedAt,
+		UpdatedAt:   *brand.UpdatedAt,
 	}
 }
 

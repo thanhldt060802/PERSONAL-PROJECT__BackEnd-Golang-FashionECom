@@ -6,7 +6,7 @@ import (
 )
 
 type CategoryView struct {
-	Id        int64     `json:"id"`
+	Id        string    `json:"id"`
 	Name      string    `json:"name"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -16,8 +16,8 @@ func ToCategoryView(category *model.Category) *CategoryView {
 	return &CategoryView{
 		Id:        category.Id,
 		Name:      category.Name,
-		CreatedAt: category.CreatedAt,
-		UpdatedAt: category.UpdatedAt,
+		CreatedAt: *category.CreatedAt,
+		UpdatedAt: *category.UpdatedAt,
 	}
 }
 

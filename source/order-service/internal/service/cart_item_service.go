@@ -16,8 +16,8 @@ type cartItemService struct {
 
 type CartItemService interface {
 	// Main features
+
 	GetCartItemsByUserId(ctx context.Context, reqDTO *dto.GetCartItemsByUserIdRequest) ([]dto.CartItemView, error)
-	GetCartItemById(ctx context.Context, id int64) (*dto.CartItemView, error)
 	CreateCartItem(ctx context.Context, reqDTO *dto.CreateCartItemRequest) error
 	UpdateCartItemById(ctx context.Context, reqDTO *dto.UpdateCartItemByIdRequest) error
 	DeleteCartItemById(ctx context.Context, reqDTO *dto.DeleteCartItemByIdRequest) error
@@ -43,15 +43,6 @@ func (cartItemService *cartItemService) GetCartItemsByUserId(ctx context.Context
 	}
 
 	return dto.ToListCartItemView(cartItems), nil
-}
-
-func (cartItemService *cartItemService) GetCartItemById(ctx context.Context, id int64) (*dto.CartItemView, error) {
-	foundCartItem, err := cartItemService.cartItemRepository.GetById(ctx, id)
-	if err != nil {
-		return nil, fmt.Errorf("id of cart item is not valid: %s", err.Error())
-	}
-
-	return dto.ToCartItemView(foundCartItem), nil
 }
 
 func (cartItemService *cartItemService) CreateCartItem(ctx context.Context, reqDTO *dto.CreateCartItemRequest) error {

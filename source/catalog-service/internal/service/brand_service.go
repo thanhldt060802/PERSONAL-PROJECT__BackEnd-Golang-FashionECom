@@ -85,7 +85,8 @@ func (brandService *brandService) UpdateBrandById(ctx context.Context, reqDTO *d
 	if reqDTO.Body.Description != nil {
 		foundBrand.Description = *reqDTO.Body.Description
 	}
-	foundBrand.UpdatedAt = time.Now().UTC()
+	timeUpdate := time.Now().UTC()
+	foundBrand.UpdatedAt = &timeUpdate
 
 	if err := brandService.brandRepository.Update(ctx, foundBrand); err != nil {
 		return fmt.Errorf("update brand on postgresql failed: %s", err.Error())

@@ -6,6 +6,8 @@ import (
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/model"
 	"thanhldt060802/utils"
+
+	"github.com/google/uuid"
 )
 
 type categoryRepository struct {
@@ -14,11 +16,11 @@ type categoryRepository struct {
 type CategoryRepository interface {
 	// Main features
 	Get(ctx context.Context, offset *int, limit *int, sortFields []utils.SortField) ([]model.Category, error)
-	GetById(ctx context.Context, id int64) (*model.Category, error)
+	GetById(ctx context.Context, id string) (*model.Category, error)
 	GetByName(ctx context.Context, name string) (*model.Category, error)
 	Create(ctx context.Context, newCategory *model.Category) error
 	Update(ctx context.Context, updatedCategory *model.Category) error
-	DeleteById(ctx context.Context, id int64) error
+	DeleteById(ctx context.Context, id string) error
 }
 
 func NewCategoryRepository() CategoryRepository {
@@ -54,7 +56,7 @@ func (categoryRepository *categoryRepository) Get(ctx context.Context, offset *i
 	return categories, nil
 }
 
-func (categoryRepository *categoryRepository) GetById(ctx context.Context, id int64) (*model.Category, error) {
+func (categoryRepository *categoryRepository) GetById(ctx context.Context, id string) (*model.Category, error) {
 	var category model.Category
 
 	if err := infrastructure.PostgresDB.NewSelect().Model(&category).Where("id = ?", id).Scan(ctx); err != nil {
@@ -75,6 +77,7 @@ func (categoryRepository *categoryRepository) GetByName(ctx context.Context, nam
 }
 
 func (categoryRepository *categoryRepository) Create(ctx context.Context, newCategory *model.Category) error {
+	newCategory.Id = uuid.New().String()
 	_, err := infrastructure.PostgresDB.NewInsert().Model(newCategory).Exec(ctx)
 	return err
 }
@@ -84,7 +87,7 @@ func (categoryRepository *categoryRepository) Update(ctx context.Context, update
 	return err
 }
 
-func (categoryRepository *categoryRepository) DeleteById(ctx context.Context, id int64) error {
+func (categoryRepository *categoryRepository) DeleteById(ctx context.Context, id string) error {
 	_, err := infrastructure.PostgresDB.NewDelete().Model(&model.Category{}).Where("id = ?", id).Exec(ctx)
 	return err
 }

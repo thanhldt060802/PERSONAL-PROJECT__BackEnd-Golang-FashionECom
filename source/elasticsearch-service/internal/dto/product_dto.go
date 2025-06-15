@@ -9,7 +9,7 @@ import (
 )
 
 type ProductView struct {
-	Id                 int64     `json:"id"`
+	Id                 string    `json:"id"`
 	Name               string    `json:"name"`
 	Description        string    `json:"description"`
 	Sex                string    `json:"sex"`
@@ -17,9 +17,9 @@ type ProductView struct {
 	DiscountPercentage int32     `json:"discount_percentage"`
 	Stock              int32     `json:"stock"`
 	ImageURL           string    `json:"image_url"`
-	CategoryId         int64     `json:"category_id"`
+	CategoryId         string    `json:"category_id"`
 	CategoryName       string    `json:"category_name"`
-	BrandId            int64     `json:"brand_id"`
+	BrandId            string    `json:"brand_id"`
 	BrandName          string    `json:"brand_name"`
 	CreatedAt          time.Time `json:"created_at"`
 	UpdatedAt          time.Time `json:"updated_at"`

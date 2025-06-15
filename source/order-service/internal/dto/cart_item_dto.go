@@ -6,9 +6,9 @@ import (
 )
 
 type CartItemView struct {
-	Id        int64     `json:"id"`
-	UserId    int64     `json:"user_id"`
-	ProductId int64     `json:"product_id"`
+	Id        string    `json:"id"`
+	UserId    string    `json:"user_id"`
+	ProductId string    `json:"product_id"`
 	Quantity  int32     `json:"quantity"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -20,8 +20,8 @@ func ToCartItemView(cartItem *model.CartItem) *CartItemView {
 		UserId:    cartItem.UserId,
 		ProductId: cartItem.ProductId,
 		Quantity:  cartItem.Quantity,
-		CreatedAt: cartItem.CreatedAt,
-		UpdatedAt: cartItem.UpdatedAt,
+		CreatedAt: *cartItem.CreatedAt,
+		UpdatedAt: *cartItem.UpdatedAt,
 	}
 }
 

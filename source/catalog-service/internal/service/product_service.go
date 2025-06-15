@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/dto"
 	"thanhldt060802/internal/grpc/client/elasticsearchservicepb"
@@ -160,7 +159,8 @@ func (productService *productService) UpdateProductById(ctx context.Context, req
 		}
 		foundProduct.BrandId = *reqDTO.Body.BrandId
 	}
-	foundProduct.UpdatedAt = time.Now().UTC()
+	timeUpdate := time.Now().UTC()
+	foundProduct.UpdatedAt = &timeUpdate
 
 	if err := productService.productRepository.Update(ctx, foundProduct); err != nil {
 		return fmt.Errorf("update product on postgresql failed: %s", err.Error())
@@ -184,7 +184,7 @@ func (productService *productService) DeleteProductById(ctx context.Context, req
 		return fmt.Errorf("delete product from postgresql failed: %s", err.Error())
 	}
 
-	if err := infrastructure.RedisClient.Publish(ctx, "catalog-service.deleted-product", strconv.FormatInt(reqDTO.Id, 10)).Err(); err != nil {
+	if err := infrastructure.RedisClient.Publish(ctx, "catalog-service.deleted-product", reqDTO.Id).Err(); err != nil {
 		return fmt.Errorf("pulish event product-service.deleted-product failed: %s", err.Error())
 	}
 

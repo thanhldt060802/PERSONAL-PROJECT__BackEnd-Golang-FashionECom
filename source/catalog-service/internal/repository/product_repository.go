@@ -4,6 +4,8 @@ import (
 	"context"
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/model"
+
+	"github.com/google/uuid"
 )
 
 type productRepository struct {
@@ -14,10 +16,10 @@ type ProductRepository interface {
 	GetAll(ctx context.Context) ([]model.Product, error)
 
 	// Main features
-	GetById(ctx context.Context, id int64) (*model.Product, error)
+	GetById(ctx context.Context, id string) (*model.Product, error)
 	Create(ctx context.Context, newProduct *model.Product) error
 	Update(ctx context.Context, updatedProduct *model.Product) error
-	DeleteById(ctx context.Context, id int64) error
+	DeleteById(ctx context.Context, id string) error
 }
 
 func NewProductRepository() ProductRepository {
@@ -44,7 +46,7 @@ func (productRepository *productRepository) GetAll(ctx context.Context) ([]model
 // Main features
 // ######################################################################################
 
-func (productRepository *productRepository) GetById(ctx context.Context, id int64) (*model.Product, error) {
+func (productRepository *productRepository) GetById(ctx context.Context, id string) (*model.Product, error) {
 	var product model.Product
 
 	if err := infrastructure.PostgresDB.NewSelect().Model(&product).Where("id = ?", id).Scan(ctx); err != nil {
@@ -65,6 +67,7 @@ func (productRepository *productRepository) GetByName(ctx context.Context, name 
 }
 
 func (productRepository *productRepository) Create(ctx context.Context, newProduct *model.Product) error {
+	newProduct.Id = uuid.New().String()
 	_, err := infrastructure.PostgresDB.NewInsert().Model(newProduct).Returning("*").Exec(ctx)
 	return err
 }
@@ -74,7 +77,7 @@ func (productRepository *productRepository) Update(ctx context.Context, updatedP
 	return err
 }
 
-func (productRepository *productRepository) DeleteById(ctx context.Context, id int64) error {
+func (productRepository *productRepository) DeleteById(ctx context.Context, id string) error {
 	_, err := infrastructure.PostgresDB.NewDelete().Model(&model.Product{}).Where("id = ?", id).Exec(ctx)
 	return err
 }

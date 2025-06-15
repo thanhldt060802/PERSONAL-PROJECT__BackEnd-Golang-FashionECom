@@ -104,7 +104,7 @@ func (x *GetAllUsersResponse) GetUsers() []*User {
 
 type User struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	FullName      string                 `protobuf:"bytes,2,opt,name=full_name,json=fullName,proto3" json:"full_name,omitempty"`
 	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
 	Username      string                 `protobuf:"bytes,4,opt,name=username,proto3" json:"username,omitempty"`
@@ -146,11 +146,11 @@ func (*User) Descriptor() ([]byte, []int) {
 	return file_user_service_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *User) GetId() int64 {
+func (x *User) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return 0
+	return ""
 }
 
 func (x *User) GetFullName() string {
@@ -211,7 +211,7 @@ const file_user_service_proto_rawDesc = "" +
 	"\x13GetAllUsersResponse\x12)\n" +
 	"\x05users\x18\x01 \x03(\v2\x13.userservicepb.UserR\x05users\"\x92\x02\n" +
 	"\x04User\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1b\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\tfull_name\x18\x02 \x01(\tR\bfullName\x12\x14\n" +
 	"\x05email\x18\x03 \x01(\tR\x05email\x12\x1a\n" +
 	"\busername\x18\x04 \x01(\tR\busername\x12\x18\n" +

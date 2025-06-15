@@ -1,7 +1,7 @@
 package dto
 
 type GetInvoicesByUserIdRequest struct {
-	UserId int64  `path:"user_id" required:"true" doc:"Id of user."`
+	UserId string `path:"user_id" required:"true" doc:"Id of user."`
 	Offset int    `query:"offset" default:"0" minimum:"0" example:"0" doc:"Skip item by offset."`
 	Limit  int    `query:"limit" default:"5" minimum:"1" maximum:"10" example:"10" doc:"Limit item from offset."`
 	SortBy string `query:"sort_by" default:"created_at:asc" example:"total_amount:desc,created_at" doc:"Sort by one or more fields separated by commas. For example: sort_by=total_amount:desc,created_at will sort by total_amount in descending order, then by created_at in ascending order."`

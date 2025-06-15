@@ -1,5 +1,7 @@
 package dto
 
+//
+//
 // Get response
 // ################################################################################
 
@@ -12,7 +14,6 @@ type PaginationBodyResponseList[T any] struct {
 	}
 }
 
-// Optional for Creating, Updating and Deleting response
 type BodyResponse[T any] struct {
 	Body struct {
 		Code    string `json:"code" example:"string"`
@@ -21,8 +22,8 @@ type BodyResponse[T any] struct {
 	}
 }
 
-// ################################################################################
-
+//
+//
 // Create, Update and Delete response
 // ################################################################################
 
@@ -33,8 +34,8 @@ type SuccessResponse struct {
 	}
 }
 
-// ################################################################################
-
+//
+//
 // Error response
 // ################################################################################
 
@@ -53,5 +54,3 @@ func (err *ErrorResponse) Error() string {
 func (err *ErrorResponse) GetStatus() int {
 	return err.Status
 }
-
-// ################################################################################

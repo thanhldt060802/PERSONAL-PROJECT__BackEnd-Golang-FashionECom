@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"thanhldt060802/config"
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/dto"
@@ -34,7 +33,7 @@ type UserService interface {
 
 	// Extra feature
 	LoginAccount(ctx context.Context, reqDTO *dto.LoginAccountRequest) (string, error)
-	LogoutAccount(ctx context.Context, id int64) error
+	LogoutAccount(ctx context.Context, id string) error
 	GetAllLoggedInAccounts(ctx context.Context) ([]int64, error)
 
 	// Elasticsearch integration features
@@ -137,7 +136,8 @@ func (userService *userService) UpdateUserById(ctx context.Context, reqDTO *dto.
 	if reqDTO.Body.RoleName != nil {
 		foundUser.RoleName = *reqDTO.Body.RoleName
 	}
-	foundUser.UpdatedAt = time.Now().UTC()
+	timeUpdate := time.Now().UTC()
+	foundUser.UpdatedAt = &timeUpdate
 
 	if err := userService.userRepository.Update(ctx, foundUser); err != nil {
 		return fmt.Errorf("update user on postgresql failed: %s", err.Error())
@@ -163,7 +163,7 @@ func (userService *userService) DeleteUserById(ctx context.Context, reqDTO *dto.
 		return fmt.Errorf("delete user from postgresql failed: %s", err.Error())
 	}
 
-	if err := infrastructure.RedisClient.Publish(ctx, "user-service.deleted-user", strconv.FormatInt(reqDTO.Id, 10)).Err(); err != nil {
+	if err := infrastructure.RedisClient.Publish(ctx, "user-service.deleted-user", reqDTO.Id).Err(); err != nil {
 		return fmt.Errorf("pulish event user-service.deleted-user failed: %s", err.Error())
 	}
 
@@ -181,7 +181,7 @@ func (userService *userService) LoginAccount(ctx context.Context, reqDTO *dto.Lo
 		return "", fmt.Errorf("username of user is not valid")
 	}
 
-	redisKey := fmt.Sprintf("%d:token", foundUser.Id)
+	redisKey := fmt.Sprintf("%s:token", foundUser.Id)
 	tokenStr, err := infrastructure.RedisClient.Get(ctx, redisKey).Result()
 	if err == redis.Nil {
 		if utils.ValidatePassword(foundUser.HashedPassword, reqDTO.Body.Password) != nil {
@@ -207,7 +207,7 @@ func (userService *userService) LoginAccount(ctx context.Context, reqDTO *dto.Lo
 			return "", fmt.Errorf("unexpected response from redis - status: %s", status)
 		}
 
-		redisKey = fmt.Sprintf("%d:token", foundUser.Id)
+		redisKey = fmt.Sprintf("%s:token", foundUser.Id)
 		status, err = infrastructure.RedisClient.SetEx(ctx, redisKey, tokenStr, config.AppConfig.TokenExpireMinutesValue()).Result()
 		if err != nil {
 			return "", fmt.Errorf("save logged in account to redis failed: %s", err.Error())
@@ -222,8 +222,8 @@ func (userService *userService) LoginAccount(ctx context.Context, reqDTO *dto.Lo
 	return tokenStr, nil
 }
 
-func (userService *userService) LogoutAccount(ctx context.Context, id int64) error {
-	redisKey := fmt.Sprintf("%d:token", id)
+func (userService *userService) LogoutAccount(ctx context.Context, id string) error {
+	redisKey := fmt.Sprintf("%s:token", id)
 	tokenStr, err := infrastructure.RedisClient.Get(ctx, redisKey).Result()
 	if err == redis.Nil {
 		return fmt.Errorf("logged in account is not valid")

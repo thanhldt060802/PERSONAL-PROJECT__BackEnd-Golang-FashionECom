@@ -4,7 +4,7 @@ var User = `
 {
   "mappings": {
     "properties": {
-      "id": { "type": "long" },
+      "id": { "type": "text" },
       "full_name": {
           "type": "text",
           "analyzer": "standard",

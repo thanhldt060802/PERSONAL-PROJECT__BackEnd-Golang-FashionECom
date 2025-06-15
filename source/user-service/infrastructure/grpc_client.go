@@ -53,7 +53,7 @@ func InitAllServiceGRPCClients() {
 				return
 			}
 
-			log.Printf("Waiting for user-service (%s) to be ready...", elasticsearchServiceGRPCServerAddress)
+			log.Printf("Waiting for elasticsearch-service (%s) to be ready...", elasticsearchServiceGRPCServerAddress)
 			time.Sleep(1 * time.Second)
 		}
 	}()

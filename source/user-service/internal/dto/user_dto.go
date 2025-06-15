@@ -28,8 +28,8 @@ func ToUserView(user *model.User) *UserView {
 		Username:  user.Username,
 		Address:   user.Address,
 		RoleName:  user.RoleName,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
+		CreatedAt: *user.CreatedAt,
+		UpdatedAt: *user.UpdatedAt,
 	}
 }
 

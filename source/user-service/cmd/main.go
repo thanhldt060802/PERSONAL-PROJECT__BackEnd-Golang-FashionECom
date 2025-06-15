@@ -37,12 +37,13 @@ func main() {
 	config.InitConfig()
 	infrastructure.InitPostgesDB()
 	defer infrastructure.PostgresDB.Close()
+	repository.InitTableUsers()
 	infrastructure.InitRedisClient()
 	defer infrastructure.RedisClient.Close()
 	infrastructure.InitAllServiceGRPCClients()
 	defer infrastructure.ServiceGRPCConnectionManager.CloseAll()
 
-	humaCfg := huma.DefaultConfig("FashionECom - User Service", "v1.0.0")
+	humaCfg := huma.DefaultConfig("User Service", "v1.0.0")
 	humaCfg.DocsPath = ""
 	humaCfg.JSONSchemaDialect = ""
 	humaCfg.CreateHooks = nil

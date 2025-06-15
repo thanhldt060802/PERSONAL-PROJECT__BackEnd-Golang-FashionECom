@@ -4,6 +4,8 @@ import (
 	"context"
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/model"
+
+	"github.com/google/uuid"
 )
 
 type userRepository struct {
@@ -14,12 +16,12 @@ type UserRepository interface {
 	GetAll(ctx context.Context) ([]model.User, error)
 
 	// Main features
-	GetById(ctx context.Context, id int64) (*model.User, error)
+	GetById(ctx context.Context, id string) (*model.User, error)
 	GetByUsername(ctx context.Context, username string) (*model.User, error)
 	GetByEmail(ctx context.Context, email string) (*model.User, error)
 	Create(ctx context.Context, newUser *model.User) error
 	Update(ctx context.Context, updatedUser *model.User) error
-	DeleteById(ctx context.Context, id int64) error
+	DeleteById(ctx context.Context, id string) error
 }
 
 func NewUserRepository() UserRepository {
@@ -46,7 +48,7 @@ func (userRepository *userRepository) GetAll(ctx context.Context) ([]model.User,
 // Main features
 // ######################################################################################
 
-func (userRepository *userRepository) GetById(ctx context.Context, id int64) (*model.User, error) {
+func (userRepository *userRepository) GetById(ctx context.Context, id string) (*model.User, error) {
 	var user model.User
 
 	if err := infrastructure.PostgresDB.NewSelect().Model(&user).Where("id = ?", id).Scan(ctx); err != nil {
@@ -77,6 +79,7 @@ func (userRepository *userRepository) GetByEmail(ctx context.Context, email stri
 }
 
 func (userRepository *userRepository) Create(ctx context.Context, newUser *model.User) error {
+	newUser.Id = uuid.New().String()
 	_, err := infrastructure.PostgresDB.NewInsert().Model(newUser).Returning("*").Exec(ctx)
 	return err
 }
@@ -86,7 +89,7 @@ func (userRepository *userRepository) Update(ctx context.Context, updatedUser *m
 	return err
 }
 
-func (userRepository *userRepository) DeleteById(ctx context.Context, id int64) error {
+func (userRepository *userRepository) DeleteById(ctx context.Context, id string) error {
 	_, err := infrastructure.PostgresDB.NewDelete().Model(&model.User{}).Where("id = ?", id).Exec(ctx)
 	return err
 }

@@ -6,8 +6,8 @@ import (
 )
 
 type InvoiceView struct {
-	Id          int64               `json:"id"`
-	UserId      int64               `json:"user_id"`
+	Id          string              `json:"id"`
+	UserId      string              `json:"user_id"`
 	TotalAmount int64               `json:"total_amount"`
 	Stautus     string              `json:"status"`
 	CreatedAt   time.Time           `json:"created_at"`
@@ -16,12 +16,12 @@ type InvoiceView struct {
 }
 
 type InvoiceDetailView struct {
-	Id                 int64 `json:"id"`
-	ProductId          int64 `json:"product_id"`
-	Price              int64 `json:"price"`
-	DiscountPercentage int32 `json:"discount_percentage"`
-	Quantity           int32 `json:"quantity"`
-	TotalPrice         int64 `json:"total_price"`
+	Id                 string `json:"id"`
+	ProductId          string `json:"product_id"`
+	Price              int64  `json:"price"`
+	DiscountPercentage int32  `json:"discount_percentage"`
+	Quantity           int32  `json:"quantity"`
+	TotalPrice         int64  `json:"total_price"`
 }
 
 func ToInvoiceView(invoice *model.Invoice, details []InvoiceDetailView) *InvoiceView {
@@ -30,8 +30,8 @@ func ToInvoiceView(invoice *model.Invoice, details []InvoiceDetailView) *Invoice
 		UserId:      invoice.UserId,
 		TotalAmount: invoice.TotalAmount,
 		Stautus:     invoice.Status,
-		CreatedAt:   invoice.CreatedAt,
-		UpdatedAt:   invoice.UpdatedAt,
+		CreatedAt:   *invoice.CreatedAt,
+		UpdatedAt:   *invoice.UpdatedAt,
 		Details:     details,
 	}
 }

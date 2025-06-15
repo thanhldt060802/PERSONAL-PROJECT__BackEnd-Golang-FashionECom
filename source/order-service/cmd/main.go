@@ -39,7 +39,7 @@ func main() {
 	infrastructure.InitRedisClient()
 	defer infrastructure.RedisClient.Close()
 
-	humaCfg := huma.DefaultConfig("FashionECom - Order Service", "v1.0.0")
+	humaCfg := huma.DefaultConfig("FashionECom - Cart Service", "v1.0.0")
 	humaCfg.DocsPath = ""
 	humaCfg.JSONSchemaDialect = ""
 	humaCfg.CreateHooks = nil
@@ -74,12 +74,11 @@ func main() {
 
 	jwtAuthMiddleware := middleware.NewAuthMiddleware()
 
-	invoiceDetailRepository := repository.NewInvoiceDetailRepository()
-	invoiceRepository := repository.NewInvoiceRepository(invoiceDetailRepository)
+	cartItemRepository := repository.NewCartItemRepository()
 
-	invoiceService := service.NewInvoiceService(invoiceRepository, invoiceDetailRepository)
+	cartItemService := service.NewCartItemService(cartItemRepository)
 
-	handler.NewInvoiceHandler(api, invoiceService, jwtAuthMiddleware)
+	handler.NewCartItemHandler(api, cartItemService, jwtAuthMiddleware)
 
 	r.Run(":" + config.AppConfig.AppPort)
 
