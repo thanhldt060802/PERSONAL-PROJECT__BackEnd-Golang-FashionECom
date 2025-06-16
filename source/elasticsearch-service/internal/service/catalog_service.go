@@ -233,7 +233,25 @@ func (catalogService *catalogService) syncDeletingProductLoop() {
 func (catalogService *catalogService) GetProducts(ctx context.Context, reqDTO *elasticsearchservicepb.GetProductsRequest) ([]*elasticsearchservicepb.Product, error) {
 	mustConditions := []map[string]interface{}{}
 
-	// If filtering by name
+	// If filtering by category_id
+	if reqDTO.CategoryId != "" {
+		mustConditions = append(mustConditions, map[string]interface{}{
+			"term": map[string]interface{}{
+				"category_id.keyword": reqDTO.CategoryId,
+			},
+		})
+	}
+
+	// If filtering by brand_id
+	if reqDTO.BrandId != "" {
+		mustConditions = append(mustConditions, map[string]interface{}{
+			"term": map[string]interface{}{
+				"brand_id.keyword": reqDTO.BrandId,
+			},
+		})
+	}
+
+	// If searching by name
 	if reqDTO.Name != "" {
 		mustConditions = append(mustConditions, map[string]interface{}{
 			"match": map[string]interface{}{
@@ -242,7 +260,7 @@ func (catalogService *catalogService) GetProducts(ctx context.Context, reqDTO *e
 		})
 	}
 
-	// If filtering by description
+	// If searching by description
 	if reqDTO.Description != "" {
 		mustConditions = append(mustConditions, map[string]interface{}{
 			"match": map[string]interface{}{
@@ -251,7 +269,7 @@ func (catalogService *catalogService) GetProducts(ctx context.Context, reqDTO *e
 		})
 	}
 
-	// If filtering by sex
+	// If searching by sex
 	if reqDTO.Sex != "" {
 		mustConditions = append(mustConditions, map[string]interface{}{
 			"match": map[string]interface{}{
@@ -260,7 +278,7 @@ func (catalogService *catalogService) GetProducts(ctx context.Context, reqDTO *e
 		})
 	}
 
-	// If filtering by price in range or partial range
+	// If searching by price in range or partial range
 	priceRange := map[string]interface{}{}
 	if reqDTO.PriceGte != "" {
 		value, _ := strconv.ParseInt(reqDTO.PriceGte, 10, 64)
@@ -278,7 +296,7 @@ func (catalogService *catalogService) GetProducts(ctx context.Context, reqDTO *e
 		})
 	}
 
-	// If filtering by discount_percentage in range or partial range
+	// If searching by discount_percentage in range or partial range
 	discountPercentageRange := map[string]interface{}{}
 	if reqDTO.DiscountPercentageGte != "" {
 		value, _ := strconv.ParseInt(reqDTO.DiscountPercentageGte, 10, 64)
@@ -296,7 +314,7 @@ func (catalogService *catalogService) GetProducts(ctx context.Context, reqDTO *e
 		})
 	}
 
-	// If filtering by stock in range or partial range
+	// If searching by stock in range or partial range
 	stockRange := map[string]interface{}{}
 	if reqDTO.StockGte != "" {
 		value, _ := strconv.ParseInt(reqDTO.StockGte, 10, 64)
@@ -314,7 +332,7 @@ func (catalogService *catalogService) GetProducts(ctx context.Context, reqDTO *e
 		})
 	}
 
-	// If filtering by category_name
+	// If searching by category_name
 	if reqDTO.CategoryName != "" {
 		mustConditions = append(mustConditions, map[string]interface{}{
 			"match": map[string]interface{}{
@@ -323,7 +341,7 @@ func (catalogService *catalogService) GetProducts(ctx context.Context, reqDTO *e
 		})
 	}
 
-	// If filtering by brand_name
+	// If searching by brand_name
 	if reqDTO.BrandName != "" {
 		mustConditions = append(mustConditions, map[string]interface{}{
 			"match": map[string]interface{}{
@@ -332,7 +350,7 @@ func (catalogService *catalogService) GetProducts(ctx context.Context, reqDTO *e
 		})
 	}
 
-	// If filtering by created_at in range or partial range
+	// If searching by created_at in range or partial range
 	createdAtRange := map[string]interface{}{}
 	if reqDTO.CreatedAtGte != "" {
 		createdAtRange["gte"] = reqDTO.CreatedAtGte
@@ -349,7 +367,7 @@ func (catalogService *catalogService) GetProducts(ctx context.Context, reqDTO *e
 		})
 	}
 
-	// If not filtering -> get all
+	// If not searching -> get all
 	if len(mustConditions) == 0 {
 		mustConditions = append(mustConditions, map[string]interface{}{
 			"match_all": map[string]interface{}{},

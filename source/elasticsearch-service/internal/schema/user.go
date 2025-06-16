@@ -47,7 +47,7 @@ var User = `
 }`
 
 var UserStandardizeSortFieldMap = map[string]string{
-	"id":         "id",
+	"id":         "id.keyword",
 	"full_name":  "full_name.keyword",
 	"email":      "email.keyword",
 	"username":   "username.keyword",

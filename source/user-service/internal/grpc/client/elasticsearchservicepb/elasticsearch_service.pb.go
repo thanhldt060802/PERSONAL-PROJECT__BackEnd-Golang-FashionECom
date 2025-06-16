@@ -287,19 +287,21 @@ type GetProductsRequest struct {
 	Offset                int32                  `protobuf:"varint,1,opt,name=offset,proto3" json:"offset,omitempty"`
 	Limit                 int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
 	SortBy                string                 `protobuf:"bytes,3,opt,name=sort_by,json=sortBy,proto3" json:"sort_by,omitempty"`
-	Name                  string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
-	Description           string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
-	Sex                   string                 `protobuf:"bytes,6,opt,name=sex,proto3" json:"sex,omitempty"`
-	PriceGte              string                 `protobuf:"bytes,7,opt,name=price_gte,json=priceGte,proto3" json:"price_gte,omitempty"`
-	PriceLte              string                 `protobuf:"bytes,8,opt,name=price_lte,json=priceLte,proto3" json:"price_lte,omitempty"`
-	DiscountPercentageGte string                 `protobuf:"bytes,9,opt,name=discount_percentage_gte,json=discountPercentageGte,proto3" json:"discount_percentage_gte,omitempty"`
-	DiscountPercentageLte string                 `protobuf:"bytes,10,opt,name=discount_percentage_lte,json=discountPercentageLte,proto3" json:"discount_percentage_lte,omitempty"`
-	StockGte              string                 `protobuf:"bytes,11,opt,name=stock_gte,json=stockGte,proto3" json:"stock_gte,omitempty"`
-	StockLte              string                 `protobuf:"bytes,12,opt,name=stock_lte,json=stockLte,proto3" json:"stock_lte,omitempty"`
-	CategoryName          string                 `protobuf:"bytes,13,opt,name=category_name,json=categoryName,proto3" json:"category_name,omitempty"`
-	BrandName             string                 `protobuf:"bytes,14,opt,name=brand_name,json=brandName,proto3" json:"brand_name,omitempty"`
-	CreatedAtGte          string                 `protobuf:"bytes,15,opt,name=created_at_gte,json=createdAtGte,proto3" json:"created_at_gte,omitempty"`
-	CreatedAtLte          string                 `protobuf:"bytes,16,opt,name=created_at_lte,json=createdAtLte,proto3" json:"created_at_lte,omitempty"`
+	CategoryId            string                 `protobuf:"bytes,4,opt,name=category_id,json=categoryId,proto3" json:"category_id,omitempty"`
+	BrandId               string                 `protobuf:"bytes,5,opt,name=brand_id,json=brandId,proto3" json:"brand_id,omitempty"`
+	Name                  string                 `protobuf:"bytes,6,opt,name=name,proto3" json:"name,omitempty"`
+	Description           string                 `protobuf:"bytes,7,opt,name=description,proto3" json:"description,omitempty"`
+	Sex                   string                 `protobuf:"bytes,8,opt,name=sex,proto3" json:"sex,omitempty"`
+	PriceGte              string                 `protobuf:"bytes,9,opt,name=price_gte,json=priceGte,proto3" json:"price_gte,omitempty"`
+	PriceLte              string                 `protobuf:"bytes,10,opt,name=price_lte,json=priceLte,proto3" json:"price_lte,omitempty"`
+	DiscountPercentageGte string                 `protobuf:"bytes,11,opt,name=discount_percentage_gte,json=discountPercentageGte,proto3" json:"discount_percentage_gte,omitempty"`
+	DiscountPercentageLte string                 `protobuf:"bytes,12,opt,name=discount_percentage_lte,json=discountPercentageLte,proto3" json:"discount_percentage_lte,omitempty"`
+	StockGte              string                 `protobuf:"bytes,13,opt,name=stock_gte,json=stockGte,proto3" json:"stock_gte,omitempty"`
+	StockLte              string                 `protobuf:"bytes,14,opt,name=stock_lte,json=stockLte,proto3" json:"stock_lte,omitempty"`
+	CategoryName          string                 `protobuf:"bytes,15,opt,name=category_name,json=categoryName,proto3" json:"category_name,omitempty"`
+	BrandName             string                 `protobuf:"bytes,16,opt,name=brand_name,json=brandName,proto3" json:"brand_name,omitempty"`
+	CreatedAtGte          string                 `protobuf:"bytes,17,opt,name=created_at_gte,json=createdAtGte,proto3" json:"created_at_gte,omitempty"`
+	CreatedAtLte          string                 `protobuf:"bytes,18,opt,name=created_at_lte,json=createdAtLte,proto3" json:"created_at_lte,omitempty"`
 	unknownFields         protoimpl.UnknownFields
 	sizeCache             protoimpl.SizeCache
 }
@@ -351,6 +353,20 @@ func (x *GetProductsRequest) GetLimit() int32 {
 func (x *GetProductsRequest) GetSortBy() string {
 	if x != nil {
 		return x.SortBy
+	}
+	return ""
+}
+
+func (x *GetProductsRequest) GetCategoryId() string {
+	if x != nil {
+		return x.CategoryId
+	}
+	return ""
+}
+
+func (x *GetProductsRequest) GetBrandId() string {
+	if x != nil {
+		return x.BrandId
 	}
 	return ""
 }
@@ -667,26 +683,29 @@ const file_elasticsearch_service_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x97\x04\n" +
+	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xd3\x04\n" +
 	"\x12GetProductsRequest\x12\x16\n" +
 	"\x06offset\x18\x01 \x01(\x05R\x06offset\x12\x14\n" +
 	"\x05limit\x18\x02 \x01(\x05R\x05limit\x12\x17\n" +
-	"\asort_by\x18\x03 \x01(\tR\x06sortBy\x12\x12\n" +
-	"\x04name\x18\x04 \x01(\tR\x04name\x12 \n" +
-	"\vdescription\x18\x05 \x01(\tR\vdescription\x12\x10\n" +
-	"\x03sex\x18\x06 \x01(\tR\x03sex\x12\x1b\n" +
-	"\tprice_gte\x18\a \x01(\tR\bpriceGte\x12\x1b\n" +
-	"\tprice_lte\x18\b \x01(\tR\bpriceLte\x126\n" +
-	"\x17discount_percentage_gte\x18\t \x01(\tR\x15discountPercentageGte\x126\n" +
-	"\x17discount_percentage_lte\x18\n" +
-	" \x01(\tR\x15discountPercentageLte\x12\x1b\n" +
-	"\tstock_gte\x18\v \x01(\tR\bstockGte\x12\x1b\n" +
-	"\tstock_lte\x18\f \x01(\tR\bstockLte\x12#\n" +
-	"\rcategory_name\x18\r \x01(\tR\fcategoryName\x12\x1d\n" +
+	"\asort_by\x18\x03 \x01(\tR\x06sortBy\x12\x1f\n" +
+	"\vcategory_id\x18\x04 \x01(\tR\n" +
+	"categoryId\x12\x19\n" +
+	"\bbrand_id\x18\x05 \x01(\tR\abrandId\x12\x12\n" +
+	"\x04name\x18\x06 \x01(\tR\x04name\x12 \n" +
+	"\vdescription\x18\a \x01(\tR\vdescription\x12\x10\n" +
+	"\x03sex\x18\b \x01(\tR\x03sex\x12\x1b\n" +
+	"\tprice_gte\x18\t \x01(\tR\bpriceGte\x12\x1b\n" +
+	"\tprice_lte\x18\n" +
+	" \x01(\tR\bpriceLte\x126\n" +
+	"\x17discount_percentage_gte\x18\v \x01(\tR\x15discountPercentageGte\x126\n" +
+	"\x17discount_percentage_lte\x18\f \x01(\tR\x15discountPercentageLte\x12\x1b\n" +
+	"\tstock_gte\x18\r \x01(\tR\bstockGte\x12\x1b\n" +
+	"\tstock_lte\x18\x0e \x01(\tR\bstockLte\x12#\n" +
+	"\rcategory_name\x18\x0f \x01(\tR\fcategoryName\x12\x1d\n" +
 	"\n" +
-	"brand_name\x18\x0e \x01(\tR\tbrandName\x12$\n" +
-	"\x0ecreated_at_gte\x18\x0f \x01(\tR\fcreatedAtGte\x12$\n" +
-	"\x0ecreated_at_lte\x18\x10 \x01(\tR\fcreatedAtLte\"R\n" +
+	"brand_name\x18\x10 \x01(\tR\tbrandName\x12$\n" +
+	"\x0ecreated_at_gte\x18\x11 \x01(\tR\fcreatedAtGte\x12$\n" +
+	"\x0ecreated_at_lte\x18\x12 \x01(\tR\fcreatedAtLte\"R\n" +
 	"\x13GetProductsResponse\x12;\n" +
 	"\bproducts\x18\x01 \x03(\v2\x1f.elasticsearchservicepb.ProductR\bproducts\"\xd1\x03\n" +
 	"\aProduct\x12\x0e\n" +

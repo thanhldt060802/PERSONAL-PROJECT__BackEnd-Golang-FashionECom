@@ -47,19 +47,21 @@ message GetProductsRequest {
     int32 offset = 1;
     int32 limit = 2;
     string sort_by = 3;
-    string name = 4;
-    string description = 5;
-    string sex = 6;
-    string price_gte = 7;
-    string price_lte = 8;
-    string discount_percentage_gte = 9;
-    string discount_percentage_lte = 10;
-    string stock_gte = 11;
-    string stock_lte = 12;
-    string category_name = 13;
-    string brand_name = 14;
-    string created_at_gte = 15;
-    string created_at_lte = 16;
+    string category_id = 4;
+    string brand_id = 5;
+    string name = 6;
+    string description =7;
+    string sex = 8;
+    string price_gte = 9;
+    string price_lte = 10;
+    string discount_percentage_gte = 11;
+    string discount_percentage_lte = 12;
+    string stock_gte = 13;
+    string stock_lte = 14;
+    string category_name = 15;
+    string brand_name = 16;
+    string created_at_gte = 17;
+    string created_at_lte = 18;
 }
 
 message GetProductsResponse {

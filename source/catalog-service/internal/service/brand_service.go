@@ -37,7 +37,7 @@ func NewBrandService(brandRepository repository.BrandRepository) BrandService {
 func (brandService *brandService) GetBrands(ctx context.Context, redDTO *dto.GetBrandsRequest) ([]dto.BrandView, error) {
 	sortFields := utils.ParseSorter(redDTO.SortBy)
 
-	brands, err := brandService.brandRepository.Get(ctx, &redDTO.Offset, &redDTO.Limit, sortFields)
+	brands, err := brandService.brandRepository.Get(ctx, sortFields)
 	if err != nil {
 		return nil, fmt.Errorf("query brands from postgresql failed: %s", err.Error())
 	}

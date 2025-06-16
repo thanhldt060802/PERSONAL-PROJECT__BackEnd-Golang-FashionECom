@@ -15,7 +15,7 @@ type categoryRepository struct {
 
 type CategoryRepository interface {
 	// Main features
-	Get(ctx context.Context, offset *int, limit *int, sortFields []utils.SortField) ([]model.Category, error)
+	Get(ctx context.Context, sortFields []utils.SortField) ([]model.Category, error)
 	GetById(ctx context.Context, id string) (*model.Category, error)
 	GetByName(ctx context.Context, name string) (*model.Category, error)
 	Create(ctx context.Context, newCategory *model.Category) error
@@ -32,18 +32,10 @@ func NewCategoryRepository() CategoryRepository {
 // Main features
 // ######################################################################################
 
-func (categoryRepository *categoryRepository) Get(ctx context.Context, offset *int, limit *int, sortFields []utils.SortField) ([]model.Category, error) {
+func (categoryRepository *categoryRepository) Get(ctx context.Context, sortFields []utils.SortField) ([]model.Category, error) {
 	var categories []model.Category
 
 	query := infrastructure.PostgresDB.NewSelect().Model(&categories)
-
-	if offset != nil {
-		query = query.Offset(*offset)
-	}
-
-	if limit != nil {
-		query = query.Limit(*limit)
-	}
 
 	for _, sortField := range sortFields {
 		query = query.Order(fmt.Sprintf("%s %s", sortField.Field, sortField.Direction))

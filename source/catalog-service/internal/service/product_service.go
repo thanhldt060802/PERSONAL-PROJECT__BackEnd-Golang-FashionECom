@@ -52,12 +52,12 @@ func (productService *productService) GetAllProducts(ctx context.Context) ([]*ca
 		return nil, fmt.Errorf("query products from postgresql failed: %s", err.Error())
 	}
 
-	categories, err := productService.categoryRepository.Get(ctx, nil, nil, nil)
+	categories, err := productService.categoryRepository.Get(ctx, nil)
 	if err != nil {
 		return nil, fmt.Errorf("query categories from postgresql failed: %s", err.Error())
 	}
 
-	brands, err := productService.brandRepository.Get(ctx, nil, nil, nil)
+	brands, err := productService.brandRepository.Get(ctx, nil)
 	if err != nil {
 		return nil, fmt.Errorf("query brands from postgresql failed: %s", err.Error())
 	}
@@ -201,6 +201,8 @@ func (productService *productService) GetProducts(ctx context.Context, reqDTO *d
 	convertReqDTO.Offset = reqDTO.Offset
 	convertReqDTO.Limit = reqDTO.Limit
 	convertReqDTO.SortBy = reqDTO.SortBy
+	convertReqDTO.CategoryId = reqDTO.CategoryId
+	convertReqDTO.BrandId = reqDTO.BrandId
 	convertReqDTO.Name = reqDTO.Name
 	convertReqDTO.Description = reqDTO.Description
 	convertReqDTO.Sex = reqDTO.Sex

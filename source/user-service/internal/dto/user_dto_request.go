@@ -79,7 +79,7 @@ type GetUsersRequest struct {
 	Offset int32  `query:"offset" default:"0" minimum:"0" example:"0" doc:"Skip item by offset."`
 	Limit  int32  `query:"limit" default:"5" minimum:"1" maximum:"10" example:"10" doc:"Limit item from offset."`
 	SortBy string `query:"sort_by" default:"created_at:asc" example:"full_name:desc,created_at" doc:"Sort by one or more fields separated by commas. For example: sort_by=full_name:desc,created_at will sort by full_name in descending order, then by created_at in ascending order."`
-	// Filter
+	// Search
 	FullName     string `query:"full_name" example:"Thành Lê" doc:"Filter by full name."`
 	Email        string `query:"email" example:"thanhle" doc:"Filter by email."`
 	Username     string `query:"username" example:"thanhle" doc:"Filter by username."`

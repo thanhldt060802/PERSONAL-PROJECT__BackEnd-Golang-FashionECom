@@ -82,7 +82,7 @@ func NewCategoryHandler(api huma.API, categoryService service.CategoryService, j
 // Main features
 // ######################################################################################
 
-func (categoryHandler *CategoryHandler) GetAllCategories(ctx context.Context, reqDTO *dto.GetCategoriesRequest) (*dto.BodyResponse[[]dto.CategoryView], error) {
+func (categoryHandler *CategoryHandler) GetAllCategories(ctx context.Context, reqDTO *dto.GetCategoriesRequest) (*dto.PaginationBodyResponseList[dto.CategoryView], error) {
 	categories, err := categoryHandler.categoryService.GetCategories(ctx, reqDTO)
 	if err != nil {
 		res := &dto.ErrorResponse{}
@@ -93,10 +93,11 @@ func (categoryHandler *CategoryHandler) GetAllCategories(ctx context.Context, re
 		return nil, res
 	}
 
-	res := &dto.BodyResponse[[]dto.CategoryView]{}
+	res := &dto.PaginationBodyResponseList[dto.CategoryView]{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Get all categories successful"
 	res.Body.Data = categories
+	res.Body.Total = len(categories)
 	return res, nil
 }
 

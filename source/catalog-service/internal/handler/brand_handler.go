@@ -82,7 +82,7 @@ func NewBrandHandler(api huma.API, brandService service.BrandService, jwtAuthMid
 // Main features
 // ######################################################################################
 
-func (brandHandler *BrandHandler) GetBrands(ctx context.Context, reqDTO *dto.GetBrandsRequest) (*dto.BodyResponse[[]dto.BrandView], error) {
+func (brandHandler *BrandHandler) GetBrands(ctx context.Context, reqDTO *dto.GetBrandsRequest) (*dto.PaginationBodyResponseList[dto.BrandView], error) {
 	brands, err := brandHandler.brandService.GetBrands(ctx, reqDTO)
 	if err != nil {
 		res := &dto.ErrorResponse{}
@@ -93,10 +93,11 @@ func (brandHandler *BrandHandler) GetBrands(ctx context.Context, reqDTO *dto.Get
 		return nil, res
 	}
 
-	res := &dto.BodyResponse[[]dto.BrandView]{}
+	res := &dto.PaginationBodyResponseList[dto.BrandView]{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Get all brands successful"
 	res.Body.Data = brands
+	res.Body.Total = len(brands)
 	return res, nil
 }
 
