@@ -26,6 +26,11 @@ func NewCartItemHandler(api huma.API, cartItemService service.CartItemService, j
 	// Main features
 	// ######################################################################################
 
+	//
+	//
+	// Main features
+	// ######################################################################################
+
 	// Get account cart items
 	huma.Register(api, huma.Operation{
 		Method:      http.MethodGet,
@@ -74,9 +79,100 @@ func NewCartItemHandler(api huma.API, cartItemService service.CartItemService, j
 // Main features
 // ######################################################################################
 
-func (cartItemHandler *CartItemHandler) GetAccountCartItems(ctx context.Context, reqDTO *dto.GetAccountCartItemsRequest) (*dto.BodyResponse[[]dto.CartItemView], error) {
+func (cartItemHandler *CartItemHandler) GetCartItems(ctx context.Context, reqDTO *dto.GetCartItemsRequest) (*dto.PaginationBodyResponseList[dto.CartItemView], error) {
+	cartItems, err := cartItemHandler.cartItemService.GetCartItems(ctx, reqDTO)
+	if err != nil {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusInternalServerError
+		res.Code = "ERR_INTERNAL_SERVER"
+		res.Message = "Get cart items failed"
+		res.Details = []string{err.Error()}
+		return nil, res
+	}
+
+	res := &dto.PaginationBodyResponseList[dto.CartItemView]{}
+	res.Body.Code = "OK"
+	res.Body.Message = "Get cart items successful"
+	res.Body.Data = cartItems
+	res.Body.Total = len(cartItems)
+	return res, nil
+}
+
+func (cartItemHandler *CartItemHandler) GetCartItemsByUserId(ctx context.Context, reqDTO *dto.GetCartItemsByUserIdRequest) (*dto.PaginationBodyResponseList[dto.CartItemView], error) {
+	cartItems, err := cartItemHandler.cartItemService.GetCartItemsByUserId(ctx, reqDTO)
+	if err != nil {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusInternalServerError
+		res.Code = "ERR_INTERNAL_SERVER"
+		res.Message = "Get cart items by user id failed"
+		res.Details = []string{err.Error()}
+		return nil, res
+	}
+
+	res := &dto.PaginationBodyResponseList[dto.CartItemView]{}
+	res.Body.Code = "OK"
+	res.Body.Message = "Get cart items by user id successful"
+	res.Body.Data = cartItems
+	res.Body.Total = len(cartItems)
+	return res, nil
+}
+
+func (cartItemHandler *CartItemHandler) CreateCartItem(ctx context.Context, reqDTO *dto.CreateCartItemRequest) (*dto.SuccessResponse, error) {
+	if err := cartItemHandler.cartItemService.CreateCartItem(ctx, reqDTO); err != nil {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusBadRequest
+		res.Code = "ERR_BAD_REQUEST"
+		res.Message = "Create cart item failed"
+		res.Details = []string{err.Error()}
+		return nil, res
+	}
+
+	res := &dto.SuccessResponse{}
+	res.Body.Code = "OK"
+	res.Body.Message = "Create cart item successful"
+	return res, nil
+}
+
+func (cartItemHandler *CartItemHandler) UpdateCartItemById(ctx context.Context, reqDTO *dto.UpdateCartItemByIdRequest) (*dto.SuccessResponse, error) {
+	if err := cartItemHandler.cartItemService.UpdateCartItemById(ctx, reqDTO); err != nil {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusBadRequest
+		res.Code = "ERR_BAD_REQUEST"
+		res.Message = "Update cart item by id failed"
+		res.Details = []string{err.Error()}
+		return nil, res
+	}
+
+	res := &dto.SuccessResponse{}
+	res.Body.Code = "OK"
+	res.Body.Message = "Update cart item by id successful"
+	return res, nil
+}
+
+func (cartItemHandler *CartItemHandler) DeleteCartItemById(ctx context.Context, reqDTO *dto.DeleteCartItemByIdRequest) (*dto.SuccessResponse, error) {
+	if err := cartItemHandler.cartItemService.DeleteCartItemById(ctx, reqDTO); err != nil {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusBadRequest
+		res.Code = "ERR_BAD_REQUEST"
+		res.Message = "Delete cart item by id failed"
+		res.Details = []string{err.Error()}
+		return nil, res
+	}
+
+	res := &dto.SuccessResponse{}
+	res.Body.Code = "OK"
+	res.Body.Message = "Delete cart item by id successful"
+	return res, nil
+}
+
+//
+//
+// Extra features
+// ######################################################################################
+
+func (cartItemHandler *CartItemHandler) GetMyCartItems(ctx context.Context, reqDTO *dto.GetMyCartItemsRequest) (*dto.PaginationBodyResponseList[dto.CartItemView], error) {
 	convertReqDTO := &dto.GetCartItemsByUserIdRequest{}
-	convertReqDTO.UserId = ctx.Value("user_id").(int64)
+	convertReqDTO.UserId = ctx.Value("user_id").(string)
 	convertReqDTO.Offset = reqDTO.Offset
 	convertReqDTO.Limit = reqDTO.Limit
 	convertReqDTO.SortBy = reqDTO.SortBy
@@ -86,35 +182,36 @@ func (cartItemHandler *CartItemHandler) GetAccountCartItems(ctx context.Context,
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusInternalServerError
 		res.Code = "ERR_INTERNAL_SERVER"
-		res.Message = "Get account cart items failed"
+		res.Message = "Get my cart items failed"
 		res.Details = []string{err.Error()}
 		return nil, res
 	}
 
-	res := &dto.BodyResponse[[]dto.CartItemView]{}
+	res := &dto.PaginationBodyResponseList[dto.CartItemView]{}
 	res.Body.Code = "OK"
-	res.Body.Message = "Get account cart items successful"
+	res.Body.Message = "Get my cart items successful"
 	res.Body.Data = cartItems
+	res.Body.Total = len(cartItems)
 	return res, nil
 }
 
-func (cartItemHandler *CartItemHandler) CreateAccountCartItem(ctx context.Context, reqDTO *dto.CreateAccountCartItemRequest) (*dto.SuccessResponse, error) {
+func (cartItemHandler *CartItemHandler) CreateMyCartItem(ctx context.Context, reqDTO *dto.CreateMyCartItemRequest) (*dto.SuccessResponse, error) {
 	convertReqDTO := &dto.CreateCartItemRequest{}
-	convertReqDTO.Body.UserId = ctx.Value("user_id").(int64)
+	convertReqDTO.Body.UserId = ctx.Value("user_id").(string)
 	convertReqDTO.Body.ProductId = reqDTO.Body.ProductId
 
 	if err := cartItemHandler.cartItemService.CreateCartItem(ctx, convertReqDTO); err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusBadRequest
 		res.Code = "ERR_BAD_REQUEST"
-		res.Message = "Create account cart item failed"
+		res.Message = "Create my cart item failed"
 		res.Details = []string{err.Error()}
 		return nil, res
 	}
 
 	res := &dto.SuccessResponse{}
 	res.Body.Code = "OK"
-	res.Body.Message = "Create account cart item successful"
+	res.Body.Message = "Create my cart item successful"
 	return res, nil
 }
 

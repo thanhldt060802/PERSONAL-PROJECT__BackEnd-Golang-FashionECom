@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/model"
 	"thanhldt060802/utils"
@@ -14,11 +15,12 @@ type cartItemRepository struct {
 
 type CartItemRepository interface {
 	// Main features
-	Get(ctx context.Context, offset *int, limit *int, sortFields []utils.SortField) ([]model.CartItem, error)
-	GetByUserId(ctx context.Context, userId string, offset *int, limit *int, sortFields []utils.SortField) ([]model.CartItem, error)
+	Get(ctx context.Context, offset int, limit int, sortFields []utils.SortField) ([]model.CartItem, error)
+	GetByUserId(ctx context.Context, userId string, offset int, limit int, sortFields []utils.SortField) ([]model.CartItem, error)
+	GetByIdAndUserId(ctx context.Context, id string, userId string) (*model.CartItem, error)
 	Create(ctx context.Context, newCartItem *model.CartItem) error
 	Update(ctx context.Context, updatedCartItem *model.CartItem) error
-	DeleteById(ctx context.Context, id string) error
+	DeleteByIdAndUserId(ctx context.Context, id string, userId string) error
 }
 
 func NewCartItemRepository() CartItemRepository {
@@ -30,17 +32,15 @@ func NewCartItemRepository() CartItemRepository {
 // Main features
 // ######################################################################################
 
-func (cartItemRepository *cartItemRepository) Get(ctx context.Context, offset *int, limit *int, sortFields []utils.SortField) ([]model.CartItem, error) {
+func (cartItemRepository *cartItemRepository) Get(ctx context.Context, offset int, limit int, sortFields []utils.SortField) ([]model.CartItem, error) {
 	var cartItems []model.CartItem
 
-	query := infrastructure.PostgresDB.NewSelect().Model(&cartItems)
+	query := infrastructure.PostgresDB.NewSelect().Model(&cartItems).
+		Offset(offset).
+		Limit(limit)
 
-	if offset != nil {
-		query = query.Offset(*offset)
-	}
-
-	if limit != nil {
-		query = query.Limit(*limit)
+	for _, sortField := range sortFields {
+		query = query.Order(fmt.Sprintf("%s %s", sortField.Field, sortField.Direction))
 	}
 
 	if err := query.Scan(ctx); err != nil {
@@ -50,17 +50,15 @@ func (cartItemRepository *cartItemRepository) Get(ctx context.Context, offset *i
 	return cartItems, nil
 }
 
-func (cartItemRepository *cartItemRepository) GetByUserId(ctx context.Context, userId string, offset *int, limit *int, sortFields []utils.SortField) ([]model.CartItem, error) {
+func (cartItemRepository *cartItemRepository) GetByUserId(ctx context.Context, userId string, offset int, limit int, sortFields []utils.SortField) ([]model.CartItem, error) {
 	var cartItems []model.CartItem
 
-	query := infrastructure.PostgresDB.NewSelect().Model(&cartItems).Where("user_id = ?", userId)
+	query := infrastructure.PostgresDB.NewSelect().Model(&cartItems).Where("user_id = ?", userId).
+		Offset(offset).
+		Limit(limit)
 
-	if offset != nil {
-		query = query.Offset(*offset)
-	}
-
-	if limit != nil {
-		query = query.Limit(*limit)
+	for _, sortField := range sortFields {
+		query = query.Order(fmt.Sprintf("%s %s", sortField.Field, sortField.Direction))
 	}
 
 	if err := query.Scan(ctx); err != nil {
@@ -68,6 +66,16 @@ func (cartItemRepository *cartItemRepository) GetByUserId(ctx context.Context, u
 	}
 
 	return cartItems, nil
+}
+
+func (cartItemRepository *cartItemRepository) GetByIdAndUserId(ctx context.Context, id string, userId string) (*model.CartItem, error) {
+	var cartItem model.CartItem
+
+	if err := infrastructure.PostgresDB.NewSelect().Model(&cartItem).Where("id = ? AND user_id = ?", id, userId).Scan(ctx); err != nil {
+		return nil, err
+	}
+
+	return &cartItem, nil
 }
 
 func (cartItemRepository *cartItemRepository) Create(ctx context.Context, newCartItem *model.CartItem) error {
@@ -81,7 +89,7 @@ func (cartItemRepository *cartItemRepository) Update(ctx context.Context, update
 	return err
 }
 
-func (cartItemRepository *cartItemRepository) DeleteById(ctx context.Context, id string) error {
-	_, err := infrastructure.PostgresDB.NewDelete().Model(&model.CartItem{}).Where("id = ?", id).Exec(ctx)
+func (cartItemRepository *cartItemRepository) DeleteByIdAndUserId(ctx context.Context, id string, userId string) error {
+	_, err := infrastructure.PostgresDB.NewDelete().Model(&model.CartItem{}).Where("id = ? AND user_id = ?", id, userId).Exec(ctx)
 	return err
 }

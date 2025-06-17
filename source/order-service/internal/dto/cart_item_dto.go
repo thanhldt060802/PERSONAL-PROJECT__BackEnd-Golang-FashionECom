@@ -2,16 +2,13 @@ package dto
 
 import (
 	"thanhldt060802/internal/model"
-	"time"
 )
 
 type CartItemView struct {
-	Id        string    `json:"id"`
-	UserId    string    `json:"user_id"`
-	ProductId string    `json:"product_id"`
-	Quantity  int32     `json:"quantity"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	Id        string `json:"id"`
+	UserId    string `json:"user_id"`
+	ProductId string `json:"product_id"`
+	Quantity  int32  `json:"quantity"`
 }
 
 func ToCartItemView(cartItem *model.CartItem) *CartItemView {
@@ -20,8 +17,6 @@ func ToCartItemView(cartItem *model.CartItem) *CartItemView {
 		UserId:    cartItem.UserId,
 		ProductId: cartItem.ProductId,
 		Quantity:  cartItem.Quantity,
-		CreatedAt: *cartItem.CreatedAt,
-		UpdatedAt: *cartItem.UpdatedAt,
 	}
 }
 
