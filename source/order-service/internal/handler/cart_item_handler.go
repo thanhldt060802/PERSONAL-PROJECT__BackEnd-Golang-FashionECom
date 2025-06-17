@@ -133,35 +133,35 @@ func (cartItemHandler *CartItemHandler) CreateCartItem(ctx context.Context, reqD
 	return res, nil
 }
 
-func (cartItemHandler *CartItemHandler) UpdateCartItemById(ctx context.Context, reqDTO *dto.UpdateCartItemByIdRequest) (*dto.SuccessResponse, error) {
-	if err := cartItemHandler.cartItemService.UpdateCartItemById(ctx, reqDTO); err != nil {
+func (cartItemHandler *CartItemHandler) UpdateCartItemByIdAndUserId(ctx context.Context, reqDTO *dto.UpdateCartItemByIdAndUserIdRequest) (*dto.SuccessResponse, error) {
+	if err := cartItemHandler.cartItemService.UpdateCartItemByIdAndUserId(ctx, reqDTO); err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusBadRequest
 		res.Code = "ERR_BAD_REQUEST"
-		res.Message = "Update cart item by id failed"
+		res.Message = "Update cart item by id and user id failed"
 		res.Details = []string{err.Error()}
 		return nil, res
 	}
 
 	res := &dto.SuccessResponse{}
 	res.Body.Code = "OK"
-	res.Body.Message = "Update cart item by id successful"
+	res.Body.Message = "Update cart item by id and user id successful"
 	return res, nil
 }
 
-func (cartItemHandler *CartItemHandler) DeleteCartItemById(ctx context.Context, reqDTO *dto.DeleteCartItemByIdRequest) (*dto.SuccessResponse, error) {
-	if err := cartItemHandler.cartItemService.DeleteCartItemById(ctx, reqDTO); err != nil {
+func (cartItemHandler *CartItemHandler) DeleteCartItemByIdAndUserId(ctx context.Context, reqDTO *dto.DeleteCartItemByIdAndUserIdRequest) (*dto.SuccessResponse, error) {
+	if err := cartItemHandler.cartItemService.DeleteCartItemByIdAndUserId(ctx, reqDTO); err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusBadRequest
 		res.Code = "ERR_BAD_REQUEST"
-		res.Message = "Delete cart item by id failed"
+		res.Message = "Delete cart item by id and user id failed"
 		res.Details = []string{err.Error()}
 		return nil, res
 	}
 
 	res := &dto.SuccessResponse{}
 	res.Body.Code = "OK"
-	res.Body.Message = "Delete cart item by id successful"
+	res.Body.Message = "Delete cart item by id and user id successful"
 	return res, nil
 }
 
@@ -215,73 +215,37 @@ func (cartItemHandler *CartItemHandler) CreateMyCartItem(ctx context.Context, re
 	return res, nil
 }
 
-func (cartItemHandler *CartItemHandler) UpdateAccountCartItemById(ctx context.Context, reqDTO *dto.UpdateAccountCartItemByIdRequest) (*dto.SuccessResponse, error) {
-	foundCartItem, err := cartItemHandler.cartItemService.GetCartItemById(ctx, reqDTO.Id)
-	if err != nil {
-		res := &dto.ErrorResponse{}
-		res.Status = http.StatusBadRequest
-		res.Code = "ERR_BAD_REQUEST"
-		res.Message = "Update account cart item by id failed"
-		res.Details = []string{err.Error()}
-		return nil, res
-	}
-
-	if foundCartItem.UserId != ctx.Value("user_id").(int64) {
-		res := &dto.ErrorResponse{}
-		res.Status = http.StatusForbidden
-		res.Code = "ERR_FORBIDDEN"
-		res.Message = "Update cart item by id failed"
-		res.Details = []string{"id of cart item is not owned"}
-		return nil, res
-	}
-
-	convertReqDTO := &dto.UpdateCartItemByIdRequest{}
+func (cartItemHandler *CartItemHandler) UpdateMyCartItemById(ctx context.Context, reqDTO *dto.UpdateMyCartItemByIdRequest) (*dto.SuccessResponse, error) {
+	convertReqDTO := &dto.UpdateCartItemByIdAndUserIdRequest{}
 	convertReqDTO.Id = reqDTO.Id
+	convertReqDTO.UserId = ctx.Value("user_id").(string)
 	convertReqDTO.Body.Quantity = reqDTO.Body.Quantity
 
-	if err := cartItemHandler.cartItemService.UpdateCartItemById(ctx, convertReqDTO); err != nil {
+	if err := cartItemHandler.cartItemService.UpdateCartItemByIdAndUserId(ctx, convertReqDTO); err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusBadRequest
 		res.Code = "ERR_BAD_REQUEST"
-		res.Message = "Update account cart item by id failed"
+		res.Message = "Update my cart item by id failed"
 		res.Details = []string{err.Error()}
 		return nil, res
 	}
 
 	res := &dto.SuccessResponse{}
 	res.Body.Code = "OK"
-	res.Body.Message = "Update account cart item by id successful"
+	res.Body.Message = "Update my cart item by id successful"
 	return res, nil
 }
 
-func (cartItemHandler *CartItemHandler) DeleteCartItemById(ctx context.Context, reqDTO *dto.DeleteAccountCartItemByIdRequest) (*dto.SuccessResponse, error) {
-	foundCartItem, err := cartItemHandler.cartItemService.GetCartItemById(ctx, reqDTO.Id)
-	if err != nil {
-		res := &dto.ErrorResponse{}
-		res.Status = http.StatusBadRequest
-		res.Code = "ERR_BAD_REQUEST"
-		res.Message = "Delete cart item by id failed"
-		res.Details = []string{err.Error()}
-		return nil, res
-	}
-
-	if foundCartItem.UserId != ctx.Value("user_id").(int64) {
-		res := &dto.ErrorResponse{}
-		res.Status = http.StatusForbidden
-		res.Code = "ERR_FORBIDDEN"
-		res.Message = "Delete cart item by id failed"
-		res.Details = []string{"id of cart item is not owned"}
-		return nil, res
-	}
-
-	convertReqDTO := &dto.DeleteCartItemByIdRequest{}
+func (cartItemHandler *CartItemHandler) DeleteMyCartItemById(ctx context.Context, reqDTO *dto.DeleteMyCartItemByIdRequest) (*dto.SuccessResponse, error) {
+	convertReqDTO := &dto.DeleteCartItemByIdAndUserIdRequest{}
 	convertReqDTO.Id = reqDTO.Id
+	convertReqDTO.UserId = ctx.Value("user_id").(string)
 
-	if err := cartItemHandler.cartItemService.DeleteCartItemById(ctx, convertReqDTO); err != nil {
+	if err := cartItemHandler.cartItemService.DeleteCartItemByIdAndUserId(ctx, convertReqDTO); err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusBadRequest
 		res.Code = "ERR_BAD_REQUEST"
-		res.Message = "Delete cart item by id failed"
+		res.Message = "Delete my cart item by id failed"
 		res.Details = []string{err.Error()}
 		return nil, res
 	}

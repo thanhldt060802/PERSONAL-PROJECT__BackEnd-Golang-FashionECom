@@ -63,6 +63,5 @@ type UpdateMyCartItemByIdRequest struct {
 }
 
 type DeleteMyCartItemByIdRequest struct {
-	Id     string `path:"id" required:"true" doc:"Id of cart item."`
-	UserId string `path:"user_id" required:"true" minimun:"1" doc:"User id of cart item."`
+	Id string `path:"id" required:"true" doc:"Id of cart item."`
 }

@@ -41,6 +41,8 @@ func (cartItemService *cartItemService) GetCartItems(ctx context.Context, reqDTO
 		return nil, fmt.Errorf("query cart items from postgresql failed: %s", err.Error())
 	}
 
+	// Missing->EnrichInformation
+
 	return dto.ToListCartItemView(cartItems), nil
 }
 
@@ -51,6 +53,8 @@ func (cartItemService *cartItemService) GetCartItemsByUserId(ctx context.Context
 	if err != nil {
 		return nil, fmt.Errorf("query cart items from postgresql failed: %s", err.Error())
 	}
+
+	// Missing->EnrichInformation
 
 	return dto.ToListCartItemView(cartItems), nil
 }
@@ -73,7 +77,7 @@ func (cartItemService *cartItemService) CreateCartItem(ctx context.Context, reqD
 func (cartItemService *cartItemService) UpdateCartItemByIdAndUserId(ctx context.Context, reqDTO *dto.UpdateCartItemByIdAndUserIdRequest) error {
 	foundCartItem, err := cartItemService.cartItemRepository.GetByIdAndUserId(ctx, reqDTO.Id, reqDTO.UserId)
 	if err != nil {
-		return fmt.Errorf("id of cart item is not valid: %s", err.Error())
+		return fmt.Errorf("id or user id of cart item is not valid: %s", err.Error())
 	}
 
 	if reqDTO.Body.Quantity != nil {
@@ -89,7 +93,7 @@ func (cartItemService *cartItemService) UpdateCartItemByIdAndUserId(ctx context.
 
 func (cartItemService *cartItemService) DeleteCartItemByIdAndUserId(ctx context.Context, reqDTO *dto.DeleteCartItemByIdAndUserIdRequest) error {
 	if _, err := cartItemService.cartItemRepository.GetByIdAndUserId(ctx, reqDTO.Id, reqDTO.UserId); err != nil {
-		return fmt.Errorf("id of cart item is not valid")
+		return fmt.Errorf("id or user id of cart item is not valid")
 	}
 
 	if err := cartItemService.cartItemRepository.DeleteByIdAndUserId(ctx, reqDTO.Id, reqDTO.UserId); err != nil {
