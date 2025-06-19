@@ -15,8 +15,8 @@ func NewUserServiceGRPCImpl(userService service.UserService) *UserServiceGRPCImp
 	return &UserServiceGRPCImpl{userService: userService}
 }
 
-func (grpcUserServiceGRPC *UserServiceGRPCImpl) GetAllUsers(ctx context.Context, req *userservicepb.GetAllUsersRequest) (*userservicepb.GetAllUsersResponse, error) {
-	userProtos, err := grpcUserServiceGRPC.userService.GetAllUsers(ctx)
+func (userServiceGRPC *UserServiceGRPCImpl) GetAllUsers(ctx context.Context, req *userservicepb.GetAllUsersRequest) (*userservicepb.GetAllUsersResponse, error) {
+	userProtos, err := userServiceGRPC.userService.GetAllUsers(ctx)
 	if err != nil {
 		return nil, err
 	}

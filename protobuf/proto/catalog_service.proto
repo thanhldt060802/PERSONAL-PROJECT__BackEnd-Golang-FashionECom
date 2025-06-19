@@ -8,13 +8,29 @@ import "google/protobuf/timestamp.proto";
 
 service CatalogServiceGRPC {
   rpc GetAllProducts (GetAllProductsRequest) returns (GetAllProductsResponse);
+  rpc GetProductsByListId (GetProductsByListIdRequest) returns (GetProductsByListIdResponse);
+  rpc UpdateProductsByListInvoiceDetail (UpdateProductsByListInvoiceDetailRequest) returns (UpdateProductsByListInvoiceDetailResponse);
 }
 
 message GetAllProductsRequest {}
 
+message GetProductsByListIdRequest {
+  repeated string list_id = 1;
+}
+
+message UpdateProductsByListInvoiceDetailRequest {
+  repeated InvoiceDetail invoice_details = 1;
+}
+
 message GetAllProductsResponse {
   repeated Product products = 1;
 }
+
+message GetProductsByListIdResponse {
+  repeated Product products = 1;
+}
+
+message UpdateProductsByListInvoiceDetailResponse {}
 
 message Product {
   string id = 1;
@@ -31,4 +47,9 @@ message Product {
   string brand_name = 12;   
   google.protobuf.Timestamp created_at = 13;
   google.protobuf.Timestamp updated_at = 14;
+}
+
+message InvoiceDetail {
+  string product_id = 1;
+  int32 quantity = 2;
 }

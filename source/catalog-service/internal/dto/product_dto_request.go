@@ -69,3 +69,21 @@ type GetProductsRequest struct {
 	CreatedAtGTE          string `query:"created_at_gte" example:"2024-01-15T00:00:00" doc:"Search by created_at greater than or equal, with format is YYYY-MM-ddTHH:mm:ss."`
 	CreatedAtLTE          string `query:"created_at_lte" example:"2024-02-05T23:59:59" doc:"Search by created_at less than or equal, with format is YYYY-MM-ddTHH:mm:ss."`
 }
+
+//
+//
+// Extra GRPC integration features
+// ######################################################################################
+
+type GetProductsByListIdRequest struct {
+	Ids []string
+}
+
+type UpdateProductsByListInvoiceDetail struct {
+	InvoiceDetails []InvoiceDetail
+}
+
+type InvoiceDetail struct {
+	ProductId string
+	Quantity  int32
+}

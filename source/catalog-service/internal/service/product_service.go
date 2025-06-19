@@ -7,7 +7,6 @@ import (
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/dto"
 	"thanhldt060802/internal/grpc/client/elasticsearchservicepb"
-	"thanhldt060802/internal/grpc/service/catalogservicepb"
 	"thanhldt060802/internal/model"
 	"thanhldt060802/internal/repository"
 	"time"
@@ -21,7 +20,7 @@ type productService struct {
 
 type ProductService interface {
 	// Integrate with Elasticsearch
-	GetAllProducts(ctx context.Context) ([]*catalogservicepb.Product, error)
+	GetAllProducts(ctx context.Context) ([]dto.ProductView, error)
 
 	// Main features
 	GetProductById(ctx context.Context, reqDTO *dto.GetProductByIdRequest) (*dto.ProductView, error)
@@ -46,7 +45,7 @@ func NewProductService(productRepository repository.ProductRepository, categoryR
 // Integrate with Elasticsearch
 // ######################################################################################
 
-func (productService *productService) GetAllProducts(ctx context.Context) ([]*catalogservicepb.Product, error) {
+func (productService *productService) GetAllProducts(ctx context.Context) ([]dto.ProductView, error) {
 	products, err := productService.productRepository.GetAll(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("query products from postgresql failed: %s", err.Error())
@@ -62,7 +61,7 @@ func (productService *productService) GetAllProducts(ctx context.Context) ([]*ca
 		return nil, fmt.Errorf("query brands from postgresql failed: %s", err.Error())
 	}
 
-	return dto.FromListProductViewToListProductProto(dto.ToListProductView(products, categories, brands)), nil
+	return dto.ToListProductView(products, categories, brands), nil
 }
 
 //
