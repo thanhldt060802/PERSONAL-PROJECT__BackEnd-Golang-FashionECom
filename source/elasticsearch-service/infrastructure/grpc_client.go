@@ -3,63 +3,95 @@ package infrastructure
 import (
 	"fmt"
 	"log"
+	"net"
 	"thanhldt060802/config"
 	"thanhldt060802/internal/grpc/client/catalogservicepb"
 	"thanhldt060802/internal/grpc/client/userservicepb"
+	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+var UserServiceGRPCConnection *grpc.ClientConn
+var CatalogServiceGRPCConnection *grpc.ClientConn
+
 var UserServiceGRPCClient userservicepb.UserServiceGRPCClient
 var CatalogServiceGRPCClient catalogservicepb.CatalogServiceGRPCClient
 
-type serviceGRPCConnectionManager struct {
-	userServiceGRPCConnection    *grpc.ClientConn
-	catalogServiceGRPCConnection *grpc.ClientConn
-}
-
-func (serviceGRPCConnectionManager *serviceGRPCConnectionManager) CloseAll() {
-	serviceGRPCConnectionManager.userServiceGRPCConnection.Close()
-	serviceGRPCConnectionManager.catalogServiceGRPCConnection.Close()
-}
-
-var ServiceGRPCConnectionManager *serviceGRPCConnectionManager
+var UserServiceGRPCClientConnectionEvent chan struct{} = make(chan struct{}, 1)
+var CatalogServiceGRPCClientConnectionEvent chan struct{} = make(chan struct{}, 1)
 
 func InitAllServiceGRPCClients() {
-	ServiceGRPCConnectionManager = &serviceGRPCConnectionManager{}
-
 	// Kết nối user-service
-	userServiceGRPCServerAddress := fmt.Sprintf(
-		"%s:%s",
-		config.AppConfig.UserServiceGRPCHost,
-		config.AppConfig.UserServiceGRPCPort,
-	)
+	if config.AppConfig.SyncAvailableDataFromUserService == "true" {
+		go func() {
+			userServiceGRPCServerAddress := net.JoinHostPort(config.AppConfig.UserServiceGRPCHost, config.AppConfig.UserServiceGRPCPort)
+			for {
+				testingConn, err := net.DialTimeout("tcp", userServiceGRPCServerAddress, 2*time.Second)
+				if err == nil {
+					testingConn.Close()
 
-	conn1, err := grpc.NewClient(userServiceGRPCServerAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		log.Fatalf("connect to user-service failed: %s", err.Error())
+					userServiceGRPCServerAddress := fmt.Sprintf(
+						"%s:%s",
+						config.AppConfig.UserServiceGRPCHost,
+						config.AppConfig.UserServiceGRPCPort,
+					)
+
+					conn, err := grpc.NewClient(userServiceGRPCServerAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+					if err != nil {
+						log.Fatalf("connect to user-service failed: %s", err.Error())
+					}
+					UserServiceGRPCConnection = conn
+					UserServiceGRPCClient = userservicepb.NewUserServiceGRPCClient(conn)
+
+					log.Printf("Connect to user-service successful")
+
+					UserServiceGRPCClientConnectionEvent <- struct{}{}
+
+					return
+				}
+
+				log.Printf("Waiting for user-service (%s) to be ready...", userServiceGRPCServerAddress)
+				time.Sleep(1 * time.Second)
+			}
+		}()
 	}
-	ServiceGRPCConnectionManager.userServiceGRPCConnection = conn1
-	UserServiceGRPCClient = userservicepb.NewUserServiceGRPCClient(conn1)
-
-	log.Printf("connect to user-service successful")
 
 	// Kết nối catalog-service
-	catalogServiceGRPCServerAddress := fmt.Sprintf(
-		"%s:%s",
-		config.AppConfig.CatalogServiceGRPCHost,
-		config.AppConfig.CatalogServiceGRPCPort,
-	)
+	if config.AppConfig.SyncAvailableDataFromCatalogService == "true" {
+		go func() {
+			catalogServiceGRPCServerAddress := net.JoinHostPort(config.AppConfig.CatalogServiceGRPCHost, config.AppConfig.CatalogServiceGRPCPort)
+			for {
+				testingConn, err := net.DialTimeout("tcp", catalogServiceGRPCServerAddress, 2*time.Second)
+				if err == nil {
+					testingConn.Close()
 
-	conn2, err := grpc.NewClient(catalogServiceGRPCServerAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		log.Fatalf("connect to catalog-service failed: %s", err.Error())
+					catalogServiceGRPCServerAddress := fmt.Sprintf(
+						"%s:%s",
+						config.AppConfig.CatalogServiceGRPCHost,
+						config.AppConfig.CatalogServiceGRPCPort,
+					)
+
+					conn, err := grpc.NewClient(catalogServiceGRPCServerAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+					if err != nil {
+						log.Fatalf("connect to catalog-service failed: %s", err.Error())
+					}
+					CatalogServiceGRPCConnection = conn
+					CatalogServiceGRPCClient = catalogservicepb.NewCatalogServiceGRPCClient(conn)
+
+					log.Printf("Connect to catalog-service successful")
+
+					CatalogServiceGRPCClientConnectionEvent <- struct{}{}
+
+					return
+				}
+
+				log.Printf("Waiting for catalog-service (%s) to be ready...", catalogServiceGRPCServerAddress)
+				time.Sleep(1 * time.Second)
+			}
+		}()
 	}
-	ServiceGRPCConnectionManager.catalogServiceGRPCConnection = conn2
-	CatalogServiceGRPCClient = catalogservicepb.NewCatalogServiceGRPCClient(conn2)
-
-	log.Printf("connect to catalog-service successful")
 
 	// Kết nối order-service
 }

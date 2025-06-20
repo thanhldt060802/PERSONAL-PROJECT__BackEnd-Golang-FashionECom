@@ -38,6 +38,8 @@ func main() {
 	defer infrastructure.PostgresDB.Close()
 	infrastructure.InitRedisClient()
 	defer infrastructure.RedisClient.Close()
+	infrastructure.InitAllServiceGRPCClients()
+	defer infrastructure.ServiceGRPCConnectionManager.CloseAll()
 
 	humaCfg := huma.DefaultConfig("FashionECom - Cart Service", "v1.0.0")
 	humaCfg.DocsPath = ""

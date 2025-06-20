@@ -22,33 +22,42 @@ type catalogService struct {
 }
 
 type CatalogService interface {
-	syncAllAvailableProducts() error
+	SyncAllAvailableProducts() error
 
 	GetProducts(ctx context.Context, reqDTO *elasticsearchservicepb.GetProductsRequest) ([]*elasticsearchservicepb.Product, error)
 	syncCreatingProductLoop()
 	syncUpdatingProductLoop()
 	syncDeletingProductLoop()
-
-	// StatisticsNumberOfProductsCreated(ctx context.Context, reqDTO *dto.StatisticsNumberOfProductsCreatedRequest) (*dto.NumberOfProductsCreatedReport, error)
 }
 
-func NewCatalogService() CatalogService {
+func NewCatalogService(sync string) CatalogService {
 	catalogService := &catalogService{}
 
-	if err := catalogService.syncAllAvailableProducts(); err != nil {
-		log.Printf("Sync all available products the first time failed: %s", err.Error())
-	} else {
-		log.Printf("Sync all available products the first time successful")
-	}
+	go func() {
+		if sync == "true" {
+			for range infrastructure.CatalogServiceGRPCClientConnectionEvent {
+				close(infrastructure.CatalogServiceGRPCClientConnectionEvent)
+				break
+			}
 
-	go catalogService.syncCreatingProductLoop()
-	go catalogService.syncUpdatingProductLoop()
-	go catalogService.syncDeletingProductLoop()
+			if err := catalogService.SyncAllAvailableProducts(); err != nil {
+				log.Printf("Sync all available products the first time failed: %s", err.Error())
+			} else {
+				log.Printf("Sync all available products the first time successful")
+			}
+
+			infrastructure.CatalogServiceGRPCConnection.Close()
+		}
+
+		go catalogService.syncCreatingProductLoop()
+		go catalogService.syncUpdatingProductLoop()
+		go catalogService.syncDeletingProductLoop()
+	}()
 
 	return catalogService
 }
 
-func (catalogService *catalogService) syncAllAvailableProducts() error {
+func (catalogService *catalogService) SyncAllAvailableProducts() error {
 	// Check if index already exists on Elasticsearch
 	existsRes, err := infrastructure.ElasticsearchClient.Indices.Exists([]string{"products"})
 	if err != nil {
@@ -56,81 +65,90 @@ func (catalogService *catalogService) syncAllAvailableProducts() error {
 	}
 	defer existsRes.Body.Close()
 
-	// If index does not exists on Elasticsearch
-	if existsRes.StatusCode == 404 {
-		grpcRes, err := infrastructure.CatalogServiceGRPCClient.GetAllProducts(context.Background(), &catalogservicepb.GetAllProductsRequest{})
+	// If index exists on Elasticsearch
+	if existsRes.StatusCode == 200 {
+		// Delete index on Elasticsearch
+		res, err := infrastructure.ElasticsearchClient.Indices.Delete([]string{"products"})
 		if err != nil {
-			return fmt.Errorf("get all product from catalog-service failed: %s", err.Error())
-		}
-		products := grpcRes.Products
-
-		// Create index on Elasticsearch using custom schema
-		res, err := infrastructure.ElasticsearchClient.Indices.Create("products",
-			infrastructure.ElasticsearchClient.Indices.Create.WithBody(bytes.NewReader([]byte(schema.Product))))
-		if err != nil {
-			return err
+			log.Fatalf("Cannot delete index products: %s", err)
 		}
 		defer res.Body.Close()
 
 		if res.IsError() {
-			return fmt.Errorf("create products index on elasticsearch failed: %s", res.String())
+			return fmt.Errorf("delete products index on elasticsearch failed: %s", res.String())
+		}
+	}
+
+	// Create index on Elasticsearch using custom schema
+	res, err := infrastructure.ElasticsearchClient.Indices.Create("products",
+		infrastructure.ElasticsearchClient.Indices.Create.WithBody(bytes.NewReader([]byte(schema.Product))))
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	if res.IsError() {
+		return fmt.Errorf("create products index on elasticsearch failed: %s", res.String())
+	}
+
+	grpcRes, err := infrastructure.CatalogServiceGRPCClient.GetAllProducts(context.Background(), &catalogservicepb.GetAllProductsRequest{})
+	if err != nil {
+		return fmt.Errorf("get all product from catalog-service failed: %s", err.Error())
+	}
+	products := grpcRes.Products
+
+	hasFailure := false
+	var closeBulkIndexer error
+
+	// Create BulkIndexer for above index to index to Elasticsearch
+	indexer, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
+		Client: infrastructure.ElasticsearchClient,
+		Index:  "products",
+	})
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := indexer.Close(context.Background()); err != nil {
+			closeBulkIndexer = fmt.Errorf("close bulk indexer failed: %s", err.Error())
+		}
+	}()
+
+	// Add all available data on PostgreSQL to BulkIndexer
+	for _, product := range products {
+		// Convert data to JSON data
+		productJSON, err := json.Marshal(dto.FromProductProtoToProductView(product))
+		if err != nil {
+			return err
 		}
 
-		hasFailure := false
-		var closeBulkIndexer error
-
-		// Create BulkIndexer for above index to index to Elasticsearch
-		indexer, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
-			Client: infrastructure.ElasticsearchClient,
-			Index:  "products",
+		// Add data to BulkIndexer
+		err = indexer.Add(context.Background(), esutil.BulkIndexerItem{
+			Action:     "index",
+			DocumentID: product.Id,
+			Body:       bytes.NewReader(productJSON),
+			OnFailure: func(ctx context.Context, item esutil.BulkIndexerItem, resp esutil.BulkIndexerResponseItem, err error) {
+				if err != nil {
+					log.Printf("Bulk index failed: %s", err.Error())
+				} else {
+					log.Printf("Index product with id = %s failed: %s", item.DocumentID, resp.Error.Reason)
+				}
+				hasFailure = true
+			},
 		})
 		if err != nil {
 			return err
 		}
-		defer func() {
-			if err := indexer.Close(context.Background()); err != nil {
-				closeBulkIndexer = fmt.Errorf("close bulk indexer failed: %s", err.Error())
-			}
-		}()
-
-		// Add all available data on PostgreSQL to BulkIndexer
-		for _, product := range products {
-			// Convert data to JSON data
-			productJSON, err := json.Marshal(dto.FromProductProtoToProductView(product))
-			if err != nil {
-				return err
-			}
-
-			// Add data to BulkIndexer
-			err = indexer.Add(context.Background(), esutil.BulkIndexerItem{
-				Action:     "index",
-				DocumentID: product.Id,
-				Body:       bytes.NewReader(productJSON),
-				OnFailure: func(ctx context.Context, item esutil.BulkIndexerItem, resp esutil.BulkIndexerResponseItem, err error) {
-					if err != nil {
-						log.Printf("Bulk index failed: %s", err.Error())
-					} else {
-						log.Printf("Index product with id = %s failed: %s", item.DocumentID, resp.Error.Reason)
-					}
-					hasFailure = true
-				},
-			})
-			if err != nil {
-				return err
-			}
-		}
-
-		if hasFailure {
-			return fmt.Errorf("sync all available products to elasticsearch failed: index product to bulk")
-		}
-		if closeBulkIndexer != nil {
-			return fmt.Errorf("sync all available products to elasticsearch failed: %s", closeBulkIndexer.Error())
-		}
-
-		return nil
 	}
 
-	return fmt.Errorf("products index on elasticsearch already exists after first syncing all")
+	if hasFailure {
+		return fmt.Errorf("sync all available products to elasticsearch failed: index product to bulk")
+	}
+	if closeBulkIndexer != nil {
+		return fmt.Errorf("sync all available products to elasticsearch failed: %s", closeBulkIndexer.Error())
+	}
+
+	return nil
 }
 
 func (catalogService *catalogService) syncCreatingProductLoop() {

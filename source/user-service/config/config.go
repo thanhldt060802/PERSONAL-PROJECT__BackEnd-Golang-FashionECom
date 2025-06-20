@@ -27,8 +27,8 @@ type Config struct {
 
 	UserServiceGRPCHost          string
 	UserServiceGRPCPort          string
-	ElasticSearchServiceGRPCHost string
-	ElasticSearchServiceGRPCPort string
+	ElasticsearchServiceGRPCHost string
+	ElasticsearchServiceGRPCPort string
 }
 
 var AppConfig *Config
@@ -56,8 +56,8 @@ func InitConfig() {
 
 		UserServiceGRPCHost:          GetEnv("USER_SERVICE_GRPC_HOST", "localhost"),
 		UserServiceGRPCPort:          GetEnv("USER_SERVICE_GRPC_PORT", "50050"),
-		ElasticSearchServiceGRPCHost: GetEnv("ELASTICSEARCH_SERVICE_GRPC_HOST", "localhost"),
-		ElasticSearchServiceGRPCPort: GetEnv("ELASTICSEARCH_SERVICE_GRPC_PORT", "50050"),
+		ElasticsearchServiceGRPCHost: GetEnv("ELASTICSEARCH_SERVICE_GRPC_HOST", "localhost"),
+		ElasticsearchServiceGRPCPort: GetEnv("ELASTICSEARCH_SERVICE_GRPC_PORT", "50050"),
 	}
 
 	// Validate constraint environment variable value

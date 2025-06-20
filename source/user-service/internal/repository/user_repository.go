@@ -12,9 +12,6 @@ type userRepository struct {
 }
 
 type UserRepository interface {
-	// Integrate with Elasticsearch
-	GetAll(ctx context.Context) ([]model.User, error)
-
 	// Main features
 	GetById(ctx context.Context, id string) (*model.User, error)
 	GetByUsername(ctx context.Context, username string) (*model.User, error)
@@ -22,25 +19,13 @@ type UserRepository interface {
 	Create(ctx context.Context, newUser *model.User) error
 	Update(ctx context.Context, updatedUser *model.User) error
 	DeleteById(ctx context.Context, id string) error
+
+	// Elasticsearch integrattion features (init data for elasticsearch-service)
+	GetAll(ctx context.Context) ([]model.User, error)
 }
 
 func NewUserRepository() UserRepository {
 	return &userRepository{}
-}
-
-//
-//
-// Integrate with Elasticsearch
-// ######################################################################################
-
-func (userRepository *userRepository) GetAll(ctx context.Context) ([]model.User, error) {
-	var users []model.User
-
-	if err := infrastructure.PostgresDB.NewSelect().Model(&users).Scan(ctx); err != nil {
-		return nil, err
-	}
-
-	return users, nil
 }
 
 //
@@ -92,4 +77,19 @@ func (userRepository *userRepository) Update(ctx context.Context, updatedUser *m
 func (userRepository *userRepository) DeleteById(ctx context.Context, id string) error {
 	_, err := infrastructure.PostgresDB.NewDelete().Model(&model.User{}).Where("id = ?", id).Exec(ctx)
 	return err
+}
+
+//
+//
+// Elasticsearch integrattion features (init data for elasticsearch-service)
+// ######################################################################################
+
+func (userRepository *userRepository) GetAll(ctx context.Context) ([]model.User, error) {
+	var users []model.User
+
+	if err := infrastructure.PostgresDB.NewSelect().Model(&users).Scan(ctx); err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }

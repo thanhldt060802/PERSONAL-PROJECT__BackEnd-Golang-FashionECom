@@ -28,33 +28,31 @@ func (catalogServiceGRPC *CatalogServiceGRPCImpl) GetAllProducts(ctx context.Con
 }
 
 func (catalogServiceGRPC *CatalogServiceGRPCImpl) GetProductsByListId(ctx context.Context, req *catalogservicepb.GetProductsByListIdRequest) (*catalogservicepb.GetProductsByListIdResponse, error) {
-	productProtos := []*catalogservicepb.Product{}
-	for _, id := range req.ListId {
-		reqDTO := &dto.GetProductByIdRequest{}
-		reqDTO.Id = id
+	convertReqDTO := &dto.GetProductsByListIdRequest{}
+	convertReqDTO.Ids = req.Ids
 
-		product, err := catalogServiceGRPC.productService.GetProductById(ctx, reqDTO)
-		if err != nil {
-			return nil, err
-		}
-		productProtos = append(productProtos, dto.FromProductViewToProductProto(product))
+	products, err := catalogServiceGRPC.productService.GetProductsByListId(ctx, convertReqDTO)
+	if err != nil {
+		return nil, err
 	}
 
 	res := &catalogservicepb.GetProductsByListIdResponse{}
-	res.Products = productProtos
+	res.Products = dto.FromListProductViewToListProductProto(products)
 	return res, nil
 }
 
 func (catalogServiceGRPC *CatalogServiceGRPCImpl) UpdateProductsByListInvoiceDetail(ctx context.Context, req *catalogservicepb.UpdateProductsByListInvoiceDetailRequest) (*catalogservicepb.UpdateProductsByListInvoiceDetailResponse, error) {
-	for _, invoiceDetail := range req.InvoiceDetails {
-		reqDTO := &dto.UpdateProductByIdRequest{}
-		reqDTO.Id = invoiceDetail.ProductId
-		stock := *reqDTO.Body.Stock - invoiceDetail.Quantity
-		reqDTO.Body.Stock = &stock
+	convertReqDTO := &dto.UpdateProductStocksByListInvoiceDetailRequest{}
+	convertReqDTO.InvoiceDetails = make([]dto.InvoiceDetail, len(req.InvoiceDetails))
+	for _, invoiceDetailProto := range req.InvoiceDetails {
+		convertReqDTO.InvoiceDetails = append(convertReqDTO.InvoiceDetails, dto.InvoiceDetail{
+			ProductId: invoiceDetailProto.ProductId,
+			Quantity:  invoiceDetailProto.Quantity,
+		})
+	}
 
-		if err := catalogServiceGRPC.productService.UpdateProductById(ctx, reqDTO); err != nil {
-			return nil, err
-		}
+	if err := catalogServiceGRPC.productService.UpdateProductStocksByListInvoiceDetail(ctx, convertReqDTO); err != nil {
+		return nil, err
 	}
 
 	res := &catalogservicepb.UpdateProductsByListInvoiceDetailResponse{}

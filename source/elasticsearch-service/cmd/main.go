@@ -14,9 +14,11 @@ func main() {
 	infrastructure.InitRedisClient()
 	defer infrastructure.RedisClient.Close()
 	infrastructure.InitAllServiceGRPCClients()
-	defer infrastructure.ServiceGRPCConnectionManager.CloseAll()
 
-	grpcimpl.StartGRPCServer(grpcimpl.NewElasticsearchServiceGRPCImpl(nil, service.NewCatalogService()))
+	grpcimpl.StartGRPCServer(grpcimpl.NewElasticsearchServiceGRPCImpl(
+		service.NewUserService(config.AppConfig.SyncAvailableDataFromUserService),
+		service.NewCatalogService(config.AppConfig.SyncAvailableDataFromCatalogService),
+	))
 
 	select {}
 

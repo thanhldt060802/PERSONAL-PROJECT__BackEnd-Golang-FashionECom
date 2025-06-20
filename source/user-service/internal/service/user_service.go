@@ -8,7 +8,6 @@ import (
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/dto"
 	"thanhldt060802/internal/grpc/client/elasticsearchservicepb"
-	"thanhldt060802/internal/grpc/service/userservicepb"
 	"thanhldt060802/internal/model"
 	"thanhldt060802/internal/repository"
 	"thanhldt060802/utils"
@@ -22,9 +21,6 @@ type userService struct {
 }
 
 type UserService interface {
-	// Integrate with Elasticsearch
-	GetAllUsers(ctx context.Context) ([]*userservicepb.User, error)
-
 	// Main features
 	GetUserById(ctx context.Context, reqDTO *dto.GetUserByIdRequest) (*dto.UserView, error)
 	CreateUser(ctx context.Context, reqDTO *dto.CreateUserRequest) error
@@ -36,6 +32,9 @@ type UserService interface {
 	LogoutAccount(ctx context.Context, id string) error
 	GetAllLoggedInAccounts(ctx context.Context) ([]int64, error)
 
+	// Elasticsearch integration features (init data for elasticsearch-service)
+	GetAllUsers(ctx context.Context) ([]dto.UserView, error)
+
 	// Elasticsearch integration features
 	GetUsers(ctx context.Context, reqDTO *dto.GetUsersRequest) ([]dto.UserView, error)
 }
@@ -44,20 +43,6 @@ func NewUserService(userRepository repository.UserRepository) UserService {
 	return &userService{
 		userRepository: userRepository,
 	}
-}
-
-//
-//
-// Integrate with Elasticsearch
-// ######################################################################################
-
-func (userService *userService) GetAllUsers(ctx context.Context) ([]*userservicepb.User, error) {
-	users, err := userService.userRepository.GetAll(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("query users from postgresql failed: %s", err.Error())
-	}
-
-	return dto.FromListUserViewToListUserProto(dto.ToListUserView(users)), nil
 }
 
 //
@@ -287,26 +272,44 @@ func (userService *userService) GetAllLoggedInAccounts(ctx context.Context) ([]i
 
 //
 //
+// Elasticsearch integration features (init data for elasticsearch-service)
+// ######################################################################################
+
+func (userService *userService) GetAllUsers(ctx context.Context) ([]dto.UserView, error) {
+	users, err := userService.userRepository.GetAll(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("query users from postgresql failed: %s", err.Error())
+	}
+
+	return dto.ToListUserView(users), nil
+}
+
+//
+//
 // Elasticsearch integration features
 // ######################################################################################
 
 func (userService *userService) GetUsers(ctx context.Context, reqDTO *dto.GetUsersRequest) ([]dto.UserView, error) {
-	convertReqDTO := &elasticsearchservicepb.GetUsersRequest{}
-	convertReqDTO.Offset = reqDTO.Offset
-	convertReqDTO.Limit = reqDTO.Limit
-	convertReqDTO.SortBy = reqDTO.SortBy
-	convertReqDTO.FullName = reqDTO.FullName
-	convertReqDTO.Email = reqDTO.Email
-	convertReqDTO.Username = reqDTO.Username
-	convertReqDTO.Address = reqDTO.Address
-	convertReqDTO.RoleName = reqDTO.RoleName
-	convertReqDTO.CreatedAtGte = reqDTO.CreatedAtGTE
-	convertReqDTO.CreatedAtLte = reqDTO.CreatedAtLTE
+	if infrastructure.ElasticsearchServiceGRPCClient != nil {
+		convertReqDTO := &elasticsearchservicepb.GetUsersRequest{}
+		convertReqDTO.Offset = reqDTO.Offset
+		convertReqDTO.Limit = reqDTO.Limit
+		convertReqDTO.SortBy = reqDTO.SortBy
+		convertReqDTO.FullName = reqDTO.FullName
+		convertReqDTO.Email = reqDTO.Email
+		convertReqDTO.Username = reqDTO.Username
+		convertReqDTO.Address = reqDTO.Address
+		convertReqDTO.RoleName = reqDTO.RoleName
+		convertReqDTO.CreatedAtGte = reqDTO.CreatedAtGTE
+		convertReqDTO.CreatedAtLte = reqDTO.CreatedAtLTE
 
-	grpcRes, err := infrastructure.ElasticsearchServiceGRPCClient.GetUsers(ctx, convertReqDTO)
-	if err != nil {
-		return nil, fmt.Errorf("get all user from user-service failed: %s", err.Error())
+		grpcRes, err := infrastructure.ElasticsearchServiceGRPCClient.GetUsers(ctx, convertReqDTO)
+		if err != nil {
+			return nil, fmt.Errorf("get users from user-service failed: %s", err.Error())
+		}
+
+		return dto.FromListUserProtoToListUserView(grpcRes.Users), nil
+	} else {
+		return nil, fmt.Errorf("elasticsearch-service is not running")
 	}
-
-	return dto.FromListUserProtoToListUserView(grpcRes.Users), nil
 }

@@ -15,7 +15,7 @@ service CatalogServiceGRPC {
 message GetAllProductsRequest {}
 
 message GetProductsByListIdRequest {
-  repeated string list_id = 1;
+  repeated string ids = 1;
 }
 
 message UpdateProductsByListInvoiceDetailRequest {

@@ -26,50 +26,68 @@ func NewCartItemHandler(api huma.API, cartItemService service.CartItemService, j
 	// Main features
 	// ######################################################################################
 
+	// Get cart items
+	huma.Register(api, huma.Operation{
+		Method:      http.MethodGet,
+		Path:        "/cart-items",
+		Summary:     "/cart-items",
+		Description: "Get cart items.",
+		Tags:        []string{"Cart Item"},
+		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
+	}, cartItemHandler.GetCartItems)
+
+	// Get cart items by user id
+	huma.Register(api, huma.Operation{
+		Method:      http.MethodGet,
+		Path:        "/cart-items/user-id/{user_id}",
+		Summary:     "/cart-items/user-id/{user_id}",
+		Description: "Get cart items by user id.",
+		Tags:        []string{"Cart Item"},
+		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
+	}, cartItemHandler.GetCartItemsByUserId)
+
+	// Create cart item
+	huma.Register(api, huma.Operation{
+		Method:      http.MethodPost,
+		Path:        "/cart-items",
+		Summary:     "/cart-items",
+		Description: "Create cart item.",
+		Tags:        []string{"Cart Item"},
+		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
+	}, cartItemHandler.CreateCartItem)
+
+	// Update cart item by id and user id
+	huma.Register(api, huma.Operation{
+		Method:      http.MethodPut,
+		Path:        "/cart-items/id/{id}/user-id/{user_id}",
+		Summary:     "/cart-items/id/{id}/user-id/{user_id}",
+		Description: "Update cart item by id and user id.",
+		Tags:        []string{"Cart Item"},
+		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
+	}, cartItemHandler.UpdateCartItemByIdAndUserId)
+
+	// Delte cart item by id and user id
+	huma.Register(api, huma.Operation{
+		Method:      http.MethodDelete,
+		Path:        "/cart-items/id/{id}/user-id/{user_id}",
+		Summary:     "/cart-items/id/{id}/user-id/{user_id}",
+		Description: "Update cart item by id and user id.",
+		Tags:        []string{"Cart Item"},
+		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
+	}, cartItemHandler.DeleteCartItemByIdAndUserId)
+
+	// Get my cart items
+
+	// Create my cart item
+
+	// Update my cart item
+
+	// Delete my cart item
+
 	//
 	//
 	// Main features
 	// ######################################################################################
-
-	// Get account cart items
-	huma.Register(api, huma.Operation{
-		Method:      http.MethodGet,
-		Path:        "/my-cart-items",
-		Summary:     "/my-cart-items",
-		Description: "Get account cart items.",
-		Tags:        []string{"Account Cart Item"},
-		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication},
-	}, cartItemHandler.GetAccountCartItems)
-
-	// Create account cart item
-	huma.Register(api, huma.Operation{
-		Method:      http.MethodPost,
-		Path:        "/my-cart-items",
-		Summary:     "/my-cart-items",
-		Description: "Create account cart item.",
-		Tags:        []string{"Account Cart Item"},
-		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication},
-	}, cartItemHandler.CreateAccountCartItem)
-
-	// Update account cart item by id
-	huma.Register(api, huma.Operation{
-		Method:      http.MethodPut,
-		Path:        "/my-cart-items/id/{id}",
-		Summary:     "/my-cart-items/id/{id}",
-		Description: "Update account cart item by id.",
-		Tags:        []string{"Account Cart Item"},
-		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication},
-	}, cartItemHandler.UpdateAccountCartItemById)
-
-	// Delete account cart item by id
-	huma.Register(api, huma.Operation{
-		Method:      http.MethodDelete,
-		Path:        "/my-cart-items/id/{id}",
-		Summary:     "/my-cart-items/id/{id}",
-		Description: "Delete account cart item by id.",
-		Tags:        []string{"Account Cart Item"},
-		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication},
-	}, cartItemHandler.DeleteCartItemById)
 
 	return cartItemHandler
 }

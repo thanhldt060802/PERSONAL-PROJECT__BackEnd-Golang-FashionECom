@@ -21,33 +21,42 @@ type userService struct {
 }
 
 type UserService interface {
-	syncAllAvailableUsers() error
+	SyncAllAvailableUsers() error
 
 	GetUsers(ctx context.Context, reqDTO *elasticsearchservicepb.GetUsersRequest) ([]*elasticsearchservicepb.User, error)
 	syncCreatingUserLoop()
 	syncUpdatingUserLoop()
 	syncDeletingUserLoop()
-
-	// StatisticsNumberOfUsersCreated(ctx context.Context, reqDTO *dto.StatisticsNumberOfUsersCreatedRequest) (*dto.NumberOfUsersCreatedReport, error)
 }
 
-func NewUserService() UserService {
+func NewUserService(sync string) UserService {
 	userService := &userService{}
 
-	if err := userService.syncAllAvailableUsers(); err != nil {
-		log.Printf("Sync all available users the first time failed: %s", err.Error())
-	} else {
-		log.Printf("Sync all available users the first time successful")
-	}
+	go func() {
+		if sync == "true" {
+			for range infrastructure.UserServiceGRPCClientConnectionEvent {
+				close(infrastructure.UserServiceGRPCClientConnectionEvent)
+				break
+			}
 
-	go userService.syncCreatingUserLoop()
-	go userService.syncUpdatingUserLoop()
-	go userService.syncDeletingUserLoop()
+			if err := userService.SyncAllAvailableUsers(); err != nil {
+				log.Printf("Sync all available users the first time failed: %s", err.Error())
+			} else {
+				log.Printf("Sync all available users the first time successful")
+			}
+
+			infrastructure.UserServiceGRPCConnection.Close()
+		}
+
+		go userService.syncCreatingUserLoop()
+		go userService.syncUpdatingUserLoop()
+		go userService.syncDeletingUserLoop()
+	}()
 
 	return userService
 }
 
-func (userService *userService) syncAllAvailableUsers() error {
+func (userService *userService) SyncAllAvailableUsers() error {
 	// Check if index already exists on Elasticsearch
 	existsRes, err := infrastructure.ElasticsearchClient.Indices.Exists([]string{"users"})
 	if err != nil {
@@ -55,81 +64,90 @@ func (userService *userService) syncAllAvailableUsers() error {
 	}
 	defer existsRes.Body.Close()
 
-	// If index does not exists on Elasticsearch
-	if existsRes.StatusCode == 404 {
-		grpcRes, err := infrastructure.UserServiceGRPCClient.GetAllUsers(context.Background(), &userservicepb.GetAllUsersRequest{})
+	// If index exists on Elasticsearch
+	if existsRes.StatusCode == 200 {
+		// Delete index on Elasticsearch
+		res, err := infrastructure.ElasticsearchClient.Indices.Delete([]string{"users"})
 		if err != nil {
-			return fmt.Errorf("get all user from user-service failed: %s", err.Error())
-		}
-		users := grpcRes.Users
-
-		// Create index on Elasticsearch using custom schema
-		res, err := infrastructure.ElasticsearchClient.Indices.Create("users",
-			infrastructure.ElasticsearchClient.Indices.Create.WithBody(bytes.NewReader([]byte(schema.User))))
-		if err != nil {
-			return err
+			log.Fatalf("Cannot delete index users: %s", err)
 		}
 		defer res.Body.Close()
 
 		if res.IsError() {
-			return fmt.Errorf("create users index on elasticsearch failed: %s", res.String())
+			return fmt.Errorf("delete users index on elasticsearch failed: %s", res.String())
+		}
+	}
+
+	// Create index on Elasticsearch using custom schema
+	res, err := infrastructure.ElasticsearchClient.Indices.Create("users",
+		infrastructure.ElasticsearchClient.Indices.Create.WithBody(bytes.NewReader([]byte(schema.User))))
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	if res.IsError() {
+		return fmt.Errorf("create users index on elasticsearch failed: %s", res.String())
+	}
+
+	grpcRes, err := infrastructure.UserServiceGRPCClient.GetAllUsers(context.Background(), &userservicepb.GetAllUsersRequest{})
+	if err != nil {
+		return fmt.Errorf("get all user from user-service failed: %s", err.Error())
+	}
+	users := grpcRes.Users
+
+	hasFailure := false
+	var closeBulkIndexer error
+
+	// Create BulkIndexer for above index to index to Elasticsearch
+	indexer, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
+		Client: infrastructure.ElasticsearchClient,
+		Index:  "users",
+	})
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := indexer.Close(context.Background()); err != nil {
+			closeBulkIndexer = fmt.Errorf("close bulk indexer failed: %s", err.Error())
+		}
+	}()
+
+	// Add all available data on PostgreSQL to BulkIndexer
+	for _, user := range users {
+		// Convert data to JSON data
+		userJSON, err := json.Marshal(dto.FromUserProtoToUserView(user))
+		if err != nil {
+			return err
 		}
 
-		hasFailure := false
-		var closeBulkIndexer error
-
-		// Create BulkIndexer for above index to index to Elasticsearch
-		indexer, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
-			Client: infrastructure.ElasticsearchClient,
-			Index:  "users",
+		// Add data to BulkIndexer
+		err = indexer.Add(context.Background(), esutil.BulkIndexerItem{
+			Action:     "index",
+			DocumentID: user.Id,
+			Body:       bytes.NewReader(userJSON),
+			OnFailure: func(ctx context.Context, item esutil.BulkIndexerItem, resp esutil.BulkIndexerResponseItem, err error) {
+				if err != nil {
+					log.Printf("Bulk index failed: %s", err.Error())
+				} else {
+					log.Printf("Index user with id = %s failed: %s", item.DocumentID, resp.Error.Reason)
+				}
+				hasFailure = true
+			},
 		})
 		if err != nil {
 			return err
 		}
-		defer func() {
-			if err := indexer.Close(context.Background()); err != nil {
-				closeBulkIndexer = fmt.Errorf("close bulk indexer failed: %s", err.Error())
-			}
-		}()
-
-		// Add all available data on PostgreSQL to BulkIndexer
-		for _, user := range users {
-			// Convert data to JSON data
-			userJSON, err := json.Marshal(dto.FromUserProtoToUserView(user))
-			if err != nil {
-				return err
-			}
-
-			// Add data to BulkIndexer
-			err = indexer.Add(context.Background(), esutil.BulkIndexerItem{
-				Action:     "index",
-				DocumentID: user.Id,
-				Body:       bytes.NewReader(userJSON),
-				OnFailure: func(ctx context.Context, item esutil.BulkIndexerItem, resp esutil.BulkIndexerResponseItem, err error) {
-					if err != nil {
-						log.Printf("Bulk index failed: %s", err.Error())
-					} else {
-						log.Printf("Index user with id = %s failed: %s", item.DocumentID, resp.Error.Reason)
-					}
-					hasFailure = true
-				},
-			})
-			if err != nil {
-				return err
-			}
-		}
-
-		if hasFailure {
-			return fmt.Errorf("sync all available users to elasticsearch failed: index user to bulk")
-		}
-		if closeBulkIndexer != nil {
-			return fmt.Errorf("sync all available users to elasticsearch failed: %s", closeBulkIndexer.Error())
-		}
-
-		return nil
 	}
 
-	return fmt.Errorf("users index on elasticsearch already exists after first syncing all")
+	if hasFailure {
+		return fmt.Errorf("sync all available users to elasticsearch failed: index user to bulk")
+	}
+	if closeBulkIndexer != nil {
+		return fmt.Errorf("sync all available users to elasticsearch failed: %s", closeBulkIndexer.Error())
+	}
+
+	return nil
 }
 
 func (userService *userService) syncCreatingUserLoop() {

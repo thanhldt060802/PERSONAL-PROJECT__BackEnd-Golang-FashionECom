@@ -22,6 +22,18 @@ type InvoiceDetailView struct {
 	DiscountPercentage int32  `json:"discount_percentage"`
 	Quantity           int32  `json:"quantity"`
 	TotalPrice         int64  `json:"total_price"`
+	InvoiceDetailExtraInfo
+}
+
+type InvoiceDetailExtraInfo struct {
+	Name     string `json:"name"`
+	Sex      string `json:"sex"`
+	ImageURL string `json:"image_url"`
+
+	CategoryId   string `json:"category_id"`
+	CategoryName string `json:"category_name"`
+	BrandId      string `json:"brand_id"`
+	BrandName    string `json:"brand_name"`
 }
 
 func ToInvoiceView(invoice *model.Invoice, details []InvoiceDetailView) *InvoiceView {

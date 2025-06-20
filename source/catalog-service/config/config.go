@@ -22,8 +22,8 @@ type Config struct {
 
 	CatalogServiceGRPCHost       string
 	CatalogServiceGRPCPort       string
-	ElasticSearchServiceGRPCHost string
-	ElasticSearchServiceGRPCPort string
+	ElasticsearchServiceGRPCHost string
+	ElasticsearchServiceGRPCPort string
 }
 
 var AppConfig *Config
@@ -48,8 +48,8 @@ func InitConfig() {
 
 		CatalogServiceGRPCHost:       GetEnv("CATALOG_SERVICE_GRPC_HOST", "localhost"),
 		CatalogServiceGRPCPort:       GetEnv("CATALOG_SERVICE_GRPC_PORT", "50050"),
-		ElasticSearchServiceGRPCHost: GetEnv("ELASTICSEARCH_SERVICE_GRPC_HOST", "localhost"),
-		ElasticSearchServiceGRPCPort: GetEnv("ELASTICSEARCH_SERVICE_GRPC_PORT", "50050"),
+		ElasticsearchServiceGRPCHost: GetEnv("ELASTICSEARCH_SERVICE_GRPC_HOST", "localhost"),
+		ElasticsearchServiceGRPCPort: GetEnv("ELASTICSEARCH_SERVICE_GRPC_PORT", "50050"),
 	}
 
 	log.Println("Load .env file successful")

@@ -15,7 +15,7 @@ type brandRepository struct {
 
 type BrandRepository interface {
 	// Main features
-	Get(ctx context.Context, sortFields []utils.SortField) ([]model.Brand, error)
+	GetAll(ctx context.Context, sortFields []utils.SortField) ([]model.Brand, error)
 	GetById(ctx context.Context, id string) (*model.Brand, error)
 	GetByName(ctx context.Context, name string) (*model.Brand, error)
 	Create(ctx context.Context, newBrand *model.Brand) error
@@ -32,7 +32,7 @@ func NewBrandRepository() BrandRepository {
 // Main features
 // ######################################################################################
 
-func (brandRepository *brandRepository) Get(ctx context.Context, sortFields []utils.SortField) ([]model.Brand, error) {
+func (brandRepository *brandRepository) GetAll(ctx context.Context, sortFields []utils.SortField) ([]model.Brand, error) {
 	var brands []model.Brand
 
 	query := infrastructure.PostgresDB.NewSelect().Model(&brands)

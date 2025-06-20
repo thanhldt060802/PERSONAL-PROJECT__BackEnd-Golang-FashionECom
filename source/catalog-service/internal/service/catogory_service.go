@@ -37,7 +37,7 @@ func NewCategoryService(categoryRepository repository.CategoryRepository) Catego
 func (categoryService *categoryService) GetCategories(ctx context.Context, reqDTO *dto.GetCategoriesRequest) ([]dto.CategoryView, error) {
 	sortFields := utils.ParseSorter(reqDTO.SortBy)
 
-	categories, err := categoryService.categoryRepository.Get(ctx, sortFields)
+	categories, err := categoryService.categoryRepository.GetAll(ctx, sortFields)
 	if err != nil {
 		return nil, fmt.Errorf("query categories from postgresql failed: %s", err.Error())
 	}

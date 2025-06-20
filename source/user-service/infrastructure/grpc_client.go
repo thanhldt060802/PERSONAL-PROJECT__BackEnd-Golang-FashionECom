@@ -29,7 +29,7 @@ func InitAllServiceGRPCClients() {
 
 	// Kết nối elasticsearch-service
 	go func() {
-		elasticsearchServiceGRPCServerAddress := net.JoinHostPort(config.AppConfig.ElasticSearchServiceGRPCHost, config.AppConfig.ElasticSearchServiceGRPCPort)
+		elasticsearchServiceGRPCServerAddress := net.JoinHostPort(config.AppConfig.ElasticsearchServiceGRPCHost, config.AppConfig.ElasticsearchServiceGRPCPort)
 		for {
 			testingConn, err := net.DialTimeout("tcp", elasticsearchServiceGRPCServerAddress, 2*time.Second)
 			if err == nil {
@@ -37,8 +37,8 @@ func InitAllServiceGRPCClients() {
 
 				elasticsearchServiceGRPCServerAddress = fmt.Sprintf(
 					"%s:%s",
-					config.AppConfig.ElasticSearchServiceGRPCHost,
-					config.AppConfig.ElasticSearchServiceGRPCPort,
+					config.AppConfig.ElasticsearchServiceGRPCHost,
+					config.AppConfig.ElasticsearchServiceGRPCPort,
 				)
 
 				conn, err := grpc.NewClient(elasticsearchServiceGRPCServerAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -48,7 +48,7 @@ func InitAllServiceGRPCClients() {
 				ServiceGRPCConnectionManager.elasticsearchServiceGRPCConnection = conn
 				ElasticsearchServiceGRPCClient = elasticsearchservicepb.NewElasticsearchServiceGRPCClient(conn)
 
-				log.Printf("connect to elasticsearch-service successful")
+				log.Printf("Connect to elasticsearch-service successful")
 
 				return
 			}

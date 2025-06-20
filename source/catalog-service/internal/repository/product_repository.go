@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"thanhldt060802/infrastructure"
-	"thanhldt060802/internal/dto"
 	"thanhldt060802/internal/model"
 
 	"github.com/google/uuid"
@@ -20,12 +19,12 @@ type ProductRepository interface {
 	Update(ctx context.Context, updatedProduct *model.Product) error
 	DeleteById(ctx context.Context, id string) error
 
-	// Elasticsearch integration features
+	// Elasticsearch integration features (init data for elasticsearch-service)
 	GetAll(ctx context.Context) ([]model.Product, error)
 
-	// Extra integration with
-	GetProductsByListId(ctx context.Context, listId []string) ([]model.Product, error)
-	UpdateProductsByListInvoiceDetail(ctx context.Context, listInvoiceDetail []dto.InvoiceDetail) error
+	// Order integration features (extra features for order-service)
+	GetByListId(ctx context.Context, ids []string) ([]model.Product, error)
+	UpdateStocks(ctx context.Context, updatedProducts []model.Product) error
 }
 
 func NewProductRepository() ProductRepository {
@@ -75,7 +74,7 @@ func (productRepository *productRepository) DeleteById(ctx context.Context, id s
 
 //
 //
-// Elasticsearch integration features
+// Elasticsearch integration features (init data for elasticsearch-service)
 // ######################################################################################
 
 func (productRepository *productRepository) GetAll(ctx context.Context) ([]model.Product, error) {
@@ -90,10 +89,10 @@ func (productRepository *productRepository) GetAll(ctx context.Context) ([]model
 
 //
 //
-// Extra GRPC integration features
+// Order integration features (extra features for order-service)
 // ######################################################################################
 
-func (productRepository *productRepository) GetProductsByListId(ctx context.Context, ids []string) ([]model.Product, error) {
+func (productRepository *productRepository) GetByListId(ctx context.Context, ids []string) ([]model.Product, error) {
 	var products []model.Product
 
 	if err := infrastructure.PostgresDB.NewSelect().Model(&products).Where("id IN (?)", bun.In(ids)).Scan(ctx); err != nil {
@@ -103,14 +102,18 @@ func (productRepository *productRepository) GetProductsByListId(ctx context.Cont
 	return products, nil
 }
 
-func (productRepository *productRepository) UpdateProductsByListInvoiceDetail(ctx context.Context, invoiceDetails []dto.InvoiceDetail) error {
+func (productRepository *productRepository) UpdateStocks(ctx context.Context, updatedProducts []model.Product) error {
 	tx, err := infrastructure.PostgresDB.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
 
-	for _, invoiceDetail := range invoiceDetails {
-
+	for _, updatedProduct := range updatedProducts {
+		if _, err := tx.NewUpdate().Model(updatedProduct).Returning("*").Where("id = ?", updatedProduct.Id).Exec(ctx); err != nil {
+			return err
+		}
 	}
+
+	return tx.Commit()
 }

@@ -20,14 +20,14 @@ type GetCartItemsByUserIdRequest struct {
 
 type CreateCartItemRequest struct {
 	Body struct {
-		UserId    string `json:"user_id" required:"true" minimun:"1" doc:"User id of cart item."`
-		ProductId string `json:"product_id" required:"true" minimun:"1" doc:"Product id of cart item."`
+		UserId    string `json:"user_id" required:"true" minLength:"1" doc:"User id of cart item."`
+		ProductId string `json:"product_id" required:"true" minLength:"1" doc:"Product id of cart item."`
 	}
 }
 
 type UpdateCartItemByIdAndUserIdRequest struct {
 	Id     string `path:"id" required:"true" doc:"Id of cart item."`
-	UserId string `path:"user_id" required:"true" minimun:"1" doc:"User id of cart item."`
+	UserId string `path:"user_id" required:"true" doc:"User id of cart item."`
 	Body   struct {
 		Quantity *int32 `json:"quantity,omitempty" minimun:"1" doc:"Quantiy of cart item."`
 	}
@@ -35,7 +35,7 @@ type UpdateCartItemByIdAndUserIdRequest struct {
 
 type DeleteCartItemByIdAndUserIdRequest struct {
 	Id     string `path:"id" required:"true" doc:"Id of cart item."`
-	UserId string `path:"user_id" required:"true" minimun:"1" doc:"User id of cart item."`
+	UserId string `path:"user_id" required:"true" doc:"User id of cart item."`
 }
 
 //
@@ -51,7 +51,7 @@ type GetMyCartItemsRequest struct {
 
 type CreateMyCartItemRequest struct {
 	Body struct {
-		ProductId string `json:"product_id" required:"true" minimun:"1" doc:"Product id of cart item."`
+		ProductId string `json:"product_id" required:"true" minLength:"1" doc:"Product id of cart item."`
 	}
 }
 

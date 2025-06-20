@@ -60,7 +60,7 @@ func (*GetAllProductsRequest) Descriptor() ([]byte, []int) {
 
 type GetProductsByListIdRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ListId        []string               `protobuf:"bytes,1,rep,name=list_id,json=listId,proto3" json:"list_id,omitempty"`
+	Ids           []string               `protobuf:"bytes,1,rep,name=ids,proto3" json:"ids,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -95,9 +95,9 @@ func (*GetProductsByListIdRequest) Descriptor() ([]byte, []int) {
 	return file_catalog_service_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *GetProductsByListIdRequest) GetListId() []string {
+func (x *GetProductsByListIdRequest) GetIds() []string {
 	if x != nil {
-		return x.ListId
+		return x.Ids
 	}
 	return nil
 }
@@ -475,9 +475,9 @@ var File_catalog_service_proto protoreflect.FileDescriptor
 const file_catalog_service_proto_rawDesc = "" +
 	"\n" +
 	"\x15catalog_service.proto\x12\x0ecatalogservice\x1a\x1fgoogle/protobuf/timestamp.proto\"\x17\n" +
-	"\x15GetAllProductsRequest\"5\n" +
-	"\x1aGetProductsByListIdRequest\x12\x17\n" +
-	"\alist_id\x18\x01 \x03(\tR\x06listId\"r\n" +
+	"\x15GetAllProductsRequest\".\n" +
+	"\x1aGetProductsByListIdRequest\x12\x10\n" +
+	"\x03ids\x18\x01 \x03(\tR\x03ids\"r\n" +
 	"(UpdateProductsByListInvoiceDetailRequest\x12F\n" +
 	"\x0finvoice_details\x18\x01 \x03(\v2\x1d.catalogservice.InvoiceDetailR\x0einvoiceDetails\"M\n" +
 	"\x16GetAllProductsResponse\x123\n" +

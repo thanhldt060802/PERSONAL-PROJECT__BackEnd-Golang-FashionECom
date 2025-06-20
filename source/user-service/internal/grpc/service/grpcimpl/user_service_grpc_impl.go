@@ -2,6 +2,7 @@ package grpcimpl
 
 import (
 	"context"
+	"thanhldt060802/internal/dto"
 	"thanhldt060802/internal/grpc/service/userservicepb"
 	"thanhldt060802/internal/service"
 )
@@ -16,12 +17,12 @@ func NewUserServiceGRPCImpl(userService service.UserService) *UserServiceGRPCImp
 }
 
 func (userServiceGRPC *UserServiceGRPCImpl) GetAllUsers(ctx context.Context, req *userservicepb.GetAllUsersRequest) (*userservicepb.GetAllUsersResponse, error) {
-	userProtos, err := userServiceGRPC.userService.GetAllUsers(ctx)
+	users, err := userServiceGRPC.userService.GetAllUsers(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	res := &userservicepb.GetAllUsersResponse{}
-	res.Users = userProtos
+	res.Users = dto.FromListUserViewToListUserProto(users)
 	return res, nil
 }
