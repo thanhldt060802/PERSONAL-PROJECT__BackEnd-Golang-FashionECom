@@ -1,14 +1,13 @@
 package dto
 
-type GetInvoicesByUserIdRequest struct {
-	UserId string `path:"user_id" required:"true" doc:"Id of user."`
-	Offset int    `query:"offset" default:"0" minimum:"0" example:"0" doc:"Skip item by offset."`
-	Limit  int    `query:"limit" default:"5" minimum:"1" maximum:"10" example:"10" doc:"Limit item from offset."`
-	SortBy string `query:"sort_by" default:"created_at:asc" example:"total_amount:desc,created_at" doc:"Sort by one or more fields separated by commas. For example: sort_by=total_amount:desc,created_at will sort by total_amount in descending order, then by created_at in ascending order."`
-}
+//
+//
+// Main features
+// ######################################################################################
 
 type GetInvoiceByIdRequest struct {
-	Id int64 `path:"id" required:"true" doc:"Id of invoice item."`
+	Id     int64  `path:"id" required:"true" doc:"Id of invoice item."`
+	UserId string `path:"user_id" required:"true" doc:"User id of invoice."`
 }
 
 type CreateInvoiceRequest struct {
@@ -26,40 +25,37 @@ type CreateInvoiceRequest struct {
 }
 
 type UpdateInvoiceByIdRequest struct {
-	Id   int64 `path:"id" required:"true" doc:"Id of invoice."`
-	Body struct {
+	Id     int64  `path:"id" required:"true" doc:"Id of invoice."`
+	UserId string `path:"user_id" required:"true" doc:"User id of invoice."`
+	Body   struct {
 		Status *string `json:"status,omitempty" minLength:"1" enum:"CREATED,PENDING,CANCEL,DONE" doc:"Status of invoice."`
 	}
 }
 
 type DeleteInvoiceByIdRequest struct {
-	Id int64 `path:"id" required:"true" doc:"Id of invoice."`
+	Id     int64  `path:"id" required:"true" doc:"Id of invoice."`
+	UserId string `path:"user_id" required:"true" doc:"User id of invoice."`
 }
 
-type GetAccountInvoices struct {
+//
+//
+// Extra features
+// ######################################################################################
+
+type GetMyInvoicesRequest struct {
 	Offset int    `query:"offset" default:"0" minimum:"0" example:"0" doc:"Skip item by offset."`
 	Limit  int    `query:"limit" default:"5" minimum:"1" maximum:"10" example:"10" doc:"Limit item from offset."`
 	SortBy string `query:"sort_by" default:"created_at:asc" example:"total_amount:desc,created_at" doc:"Sort by one or more fields separated by commas. For example: sort_by=total_amount:desc,created_at will sort by total_amount in descending order, then by created_at in ascending order."`
 }
 
-type GetAccountInvoiceByIdRequest struct {
-	Id int64 `path:"id" required:"true" doc:"Id of invoice."`
+type GetMyInvoiceByIdRequest struct {
+	Id int64 `path:"id" required:"true" doc:"Id of invoice item."`
 }
 
-type DeleteAccountInvoiceByIdRequest struct {
-	Id int64 `path:"id" required:"true" doc:"Id of invoice."`
+//
+//
+// Elasticsearch integration features
+// ######################################################################################
+
+type GetInvoicesRequest struct {
 }
-
-// Integrate with Elasticsearch
-
-// type GetInvoicesWithElasticsearchRequest struct {
-// 	Offset int    `query:"offset" default:"0" minimum:"0" example:"0" doc:"Skip item by offset."`
-// 	Limit  int    `query:"limit" default:"5" minimum:"1" maximum:"10" example:"10" doc:"Limit item from offset."`
-// 	SortBy string `query:"sort_by" default:"created_at:asc" example:"total_amount:desc,created_at" doc:"Sort by one or more fields separated by commas. For example: sort_by=total_amount:desc,created_at will sort by total_amount in descending order, then by created_at in ascending order."`
-// 	// Filter
-// 	Status         string `query:"status" enum:"CREATED,PENDING,CANCEL,DONE" example:"CREATED" doc:"Filter by status."`
-// 	TotalAmountGTE string `query:"total_amount_gte" pattern:"^[0-9]+$" example:"250000" doc:"Filter by total amount greater than or equal."`
-// 	TotalAmountLTE string `query:"total_amount_lte" pattern:"^[0-9]+$" example:"500000" doc:"Filter by total amount less than or equal."`
-// 	CreatedAtGTE   string `query:"created_at_gte" example:"2024-01-15T00:00:00" doc:"Filter by created_at greater than or equal, with format is YYYY-MM-ddTHH:mm:ss."`
-// 	CreatedAtLTE   string `query:"created_at_lte" example:"2024-02-05T23:59:59" doc:"Filter by created_at less than or equal, with format is YYYY-MM-ddTHH:mm:ss."`
-// }

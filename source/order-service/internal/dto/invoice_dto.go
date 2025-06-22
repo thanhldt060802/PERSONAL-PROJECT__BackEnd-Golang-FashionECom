@@ -56,21 +56,22 @@ func ToListInvoiceView(invoices []model.Invoice) []InvoiceView {
 	return invoiceViews
 }
 
-func ToInvoiceDetailView(invoiceDetail *model.InvoiceDetail) *InvoiceDetailView {
+func ToInvoiceDetailView(invoiceDetail *model.InvoiceDetail, invoiceDetailExtraInfo InvoiceDetailExtraInfo) *InvoiceDetailView {
 	return &InvoiceDetailView{
-		Id:                 invoiceDetail.Id,
-		ProductId:          invoiceDetail.ProductId,
-		Price:              invoiceDetail.Price,
-		DiscountPercentage: invoiceDetail.DiscountPercentage,
-		Quantity:           invoiceDetail.Quantity,
-		TotalPrice:         invoiceDetail.TotalPrice,
+		Id:                     invoiceDetail.Id,
+		ProductId:              invoiceDetail.ProductId,
+		Price:                  invoiceDetail.Price,
+		DiscountPercentage:     invoiceDetail.DiscountPercentage,
+		Quantity:               invoiceDetail.Quantity,
+		TotalPrice:             invoiceDetail.TotalPrice,
+		InvoiceDetailExtraInfo: invoiceDetailExtraInfo,
 	}
 }
 
-func ToListInvoiceDetailView(invoiceDetails []model.InvoiceDetail) []InvoiceDetailView {
+func ToListInvoiceDetailView(invoiceDetails []model.InvoiceDetail, invoiceDetailExtraInfos []InvoiceDetailExtraInfo) []InvoiceDetailView {
 	invoiceDetailViews := make([]InvoiceDetailView, len(invoiceDetails))
-	for i, invoiceDetail := range invoiceDetails {
-		invoiceDetailViews[i] = *ToInvoiceDetailView(&invoiceDetail)
+	for i := range invoiceDetails {
+		invoiceDetailViews[i] = *ToInvoiceDetailView(&invoiceDetails[i], invoiceDetailExtraInfos[i])
 	}
 	return invoiceDetailViews
 }
