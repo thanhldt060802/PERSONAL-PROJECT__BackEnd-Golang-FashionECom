@@ -29,7 +29,7 @@ type UpdateCartItemByIdAndUserIdRequest struct {
 	Id     string `path:"id" required:"true" doc:"Id of cart item."`
 	UserId string `path:"user_id" required:"true" doc:"User id of cart item."`
 	Body   struct {
-		Quantity *int32 `json:"quantity,omitempty" minimun:"1" doc:"Quantiy of cart item."`
+		Quantity *int32 `json:"quantity,omitempty" minimum:"1" doc:"Quantiy of cart item."`
 	}
 }
 
@@ -58,7 +58,7 @@ type CreateMyCartItemRequest struct {
 type UpdateMyCartItemByIdRequest struct {
 	Id   string `path:"id" required:"true" doc:"Id of cart item."`
 	Body struct {
-		Quantity *int32 `json:"quantity,omitempty" minimun:"1" doc:"Quantiy of cart item."`
+		Quantity *int32 `json:"quantity,omitempty" minimum:"1" doc:"Quantiy of cart item."`
 	}
 }
 
