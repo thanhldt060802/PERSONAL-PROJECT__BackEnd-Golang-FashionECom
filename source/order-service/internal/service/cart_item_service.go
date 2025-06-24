@@ -18,10 +18,9 @@ type cartItemService struct {
 type CartItemService interface {
 	// Main features
 	GetCartItems(ctx context.Context, reqDTO *dto.GetCartItemsRequest) ([]dto.CartItemView, error)
-	GetCartItemsByUserId(ctx context.Context, reqDTO *dto.GetCartItemsByUserIdRequest) ([]dto.CartItemView, error)
 	CreateCartItem(ctx context.Context, reqDTO *dto.CreateCartItemRequest) error
-	UpdateCartItemByIdAndUserId(ctx context.Context, reqDTO *dto.UpdateCartItemByIdAndUserIdRequest) error
-	DeleteCartItemByIdAndUserId(ctx context.Context, reqDTO *dto.DeleteCartItemByIdAndUserIdRequest) error
+	UpdateCartItemById(ctx context.Context, reqDTO *dto.UpdateCartItemByIdRequest) error
+	DeleteCartItemById(ctx context.Context, reqDTO *dto.DeleteCartItemByIdRequest) error
 }
 
 func NewCartItemService(cartItemRepository repository.CartItemRepository) CartItemService {
@@ -39,51 +38,19 @@ func (cartItemService *cartItemService) GetCartItems(ctx context.Context, reqDTO
 	if infrastructure.CatalogServiceGRPCClient != nil {
 		sortFields := utils.ParseSorter(reqDTO.SortBy)
 
-		cartItems, err := cartItemService.cartItemRepository.Get(ctx, reqDTO.Offset, reqDTO.Limit, sortFields)
-		if err != nil {
-			return nil, fmt.Errorf("query cart items from postgresql failed: %s", err.Error())
-		}
-
-		ids := make([]string, len(cartItems))
-		for i, cartItem := range cartItems {
-			ids[i] = cartItem.Id
-		}
-
-		convertReqDTO := &catalogservicepb.GetProductsByListIdRequest{}
-		convertReqDTO.Ids = ids
-		grpcRes, err := infrastructure.CatalogServiceGRPCClient.GetProductsByListId(ctx, convertReqDTO)
-		if err != nil {
-			return nil, fmt.Errorf("get products from catalog-service failed: %s", err.Error())
-		}
-
-		productProtos := grpcRes.Products
-		cartItemExtraInfos := make([]dto.CartItemExtraInfo, len(productProtos))
-		for i, productProto := range productProtos {
-			cartItemExtraInfos[i].Name = productProto.Name
-			cartItemExtraInfos[i].Sex = productProto.Sex
-			cartItemExtraInfos[i].Price = productProto.Price
-			cartItemExtraInfos[i].DiscountPercentage = productProto.DiscountPercentage
-			cartItemExtraInfos[i].ImageURL = productProto.ImageUrl
-
-			cartItemExtraInfos[i].CategoryId = productProto.CategoryId
-			cartItemExtraInfos[i].CategoryName = productProto.CategoryName
-			cartItemExtraInfos[i].BrandId = productProto.BrandId
-			cartItemExtraInfos[i].BrandName = productProto.BrandName
-		}
-
-		return dto.ToListCartItemView(cartItems, cartItemExtraInfos), nil
-	} else {
-		return nil, fmt.Errorf("catalog-service is not running")
-	}
-}
-
-func (cartItemService *cartItemService) GetCartItemsByUserId(ctx context.Context, reqDTO *dto.GetCartItemsByUserIdRequest) ([]dto.CartItemView, error) {
-	if infrastructure.CatalogServiceGRPCClient != nil {
-		sortFields := utils.ParseSorter(reqDTO.SortBy)
-
-		cartItems, err := cartItemService.cartItemRepository.GetByUserId(ctx, reqDTO.UserId, reqDTO.Offset, reqDTO.Limit, sortFields)
-		if err != nil {
-			return nil, fmt.Errorf("query cart items from postgresql failed: %s", err.Error())
+		var cartItems []model.CartItem
+		if reqDTO.UserId == "" {
+			_cartItems, err := cartItemService.cartItemRepository.Get(ctx, reqDTO.Offset, reqDTO.Limit, sortFields)
+			if err != nil {
+				return nil, fmt.Errorf("query cart items from postgresql failed: %s", err.Error())
+			}
+			cartItems = _cartItems
+		} else {
+			_cartItems, err := cartItemService.cartItemRepository.GetByUserId(ctx, reqDTO.UserId, reqDTO.Offset, reqDTO.Limit, sortFields)
+			if err != nil {
+				return nil, fmt.Errorf("query cart items from postgresql failed: %s", err.Error())
+			}
+			cartItems = _cartItems
 		}
 
 		ids := make([]string, len(cartItems))
@@ -121,6 +88,8 @@ func (cartItemService *cartItemService) GetCartItemsByUserId(ctx context.Context
 
 func (cartItemService *cartItemService) CreateCartItem(ctx context.Context, reqDTO *dto.CreateCartItemRequest) error {
 	if infrastructure.CatalogServiceGRPCClient != nil {
+		// Missing->ValidateUser
+
 		convertReqDTO := &catalogservicepb.GetProductsByListIdRequest{}
 		convertReqDTO.Ids = []string{reqDTO.Body.ProductId}
 		grpcRes, err := infrastructure.CatalogServiceGRPCClient.GetProductsByListId(ctx, convertReqDTO)
@@ -147,10 +116,14 @@ func (cartItemService *cartItemService) CreateCartItem(ctx context.Context, reqD
 	}
 }
 
-func (cartItemService *cartItemService) UpdateCartItemByIdAndUserId(ctx context.Context, reqDTO *dto.UpdateCartItemByIdAndUserIdRequest) error {
-	foundCartItem, err := cartItemService.cartItemRepository.GetByIdAndUserId(ctx, reqDTO.Id, reqDTO.UserId)
+func (cartItemService *cartItemService) UpdateCartItemById(ctx context.Context, reqDTO *dto.UpdateCartItemByIdRequest) error {
+	foundCartItem, err := cartItemService.cartItemRepository.GetById(ctx, reqDTO.Id)
 	if err != nil {
 		return fmt.Errorf("id or user id of cart item is not valid: %s", err.Error())
+	}
+
+	if reqDTO.UserId != "" && reqDTO.UserId != foundCartItem.UserId {
+		return fmt.Errorf("id or user id of cart item is not valid: no permission")
 	}
 
 	if reqDTO.Body.Quantity != nil {
@@ -164,12 +137,17 @@ func (cartItemService *cartItemService) UpdateCartItemByIdAndUserId(ctx context.
 	return nil
 }
 
-func (cartItemService *cartItemService) DeleteCartItemByIdAndUserId(ctx context.Context, reqDTO *dto.DeleteCartItemByIdAndUserIdRequest) error {
-	if _, err := cartItemService.cartItemRepository.GetByIdAndUserId(ctx, reqDTO.Id, reqDTO.UserId); err != nil {
-		return fmt.Errorf("id or user id of cart item is not valid")
+func (cartItemService *cartItemService) DeleteCartItemById(ctx context.Context, reqDTO *dto.DeleteCartItemByIdRequest) error {
+	foundCartItem, err := cartItemService.cartItemRepository.GetById(ctx, reqDTO.Id)
+	if err != nil {
+		return fmt.Errorf("id or user id of cart item is not valid: %s", err.Error())
 	}
 
-	if err := cartItemService.cartItemRepository.DeleteByIdAndUserId(ctx, reqDTO.Id, reqDTO.UserId); err != nil {
+	if reqDTO.UserId != "" && reqDTO.UserId != foundCartItem.UserId {
+		return fmt.Errorf("id or user id of cart item is not valid: no permission")
+	}
+
+	if err := cartItemService.cartItemRepository.DeleteById(ctx, reqDTO.Id); err != nil {
 		return fmt.Errorf("delete cart item from postgresql failed: %s", err.Error())
 	}
 

@@ -19,10 +19,10 @@ type ProductRepository interface {
 	Update(ctx context.Context, updatedProduct *model.Product) error
 	DeleteById(ctx context.Context, id string) error
 
-	// Elasticsearch integration features (init data for elasticsearch-service)
+	// Elasticsearch integration (init data for elasticsearch-service)
 	GetAll(ctx context.Context) ([]model.Product, error)
 
-	// Order integration features (extra features for order-service)
+	// Order integration (extra features for order-service)
 	GetByListId(ctx context.Context, ids []string) ([]model.Product, error)
 	UpdateStocks(ctx context.Context, updatedProducts []model.Product) error
 }
@@ -74,7 +74,7 @@ func (productRepository *productRepository) DeleteById(ctx context.Context, id s
 
 //
 //
-// Elasticsearch integration features (init data for elasticsearch-service)
+// Elasticsearch integration (init data for elasticsearch-service)
 // ######################################################################################
 
 func (productRepository *productRepository) GetAll(ctx context.Context) ([]model.Product, error) {
@@ -89,7 +89,7 @@ func (productRepository *productRepository) GetAll(ctx context.Context) ([]model
 
 //
 //
-// Order integration features (extra features for order-service)
+// Order integration (extra features for order-service)
 // ######################################################################################
 
 func (productRepository *productRepository) GetByListId(ctx context.Context, ids []string) ([]model.Product, error) {

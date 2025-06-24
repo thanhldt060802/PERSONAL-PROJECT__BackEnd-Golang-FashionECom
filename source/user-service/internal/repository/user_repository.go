@@ -20,7 +20,7 @@ type UserRepository interface {
 	Update(ctx context.Context, updatedUser *model.User) error
 	DeleteById(ctx context.Context, id string) error
 
-	// Elasticsearch integrattion features (init data for elasticsearch-service)
+	// Elasticsearch integrattion (init data for elasticsearch-service)
 	GetAll(ctx context.Context) ([]model.User, error)
 }
 
@@ -81,7 +81,7 @@ func (userRepository *userRepository) DeleteById(ctx context.Context, id string)
 
 //
 //
-// Elasticsearch integrattion features (init data for elasticsearch-service)
+// Elasticsearch integrattion (init data for elasticsearch-service)
 // ######################################################################################
 
 func (userRepository *userRepository) GetAll(ctx context.Context) ([]model.User, error) {

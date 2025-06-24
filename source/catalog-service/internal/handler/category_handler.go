@@ -23,7 +23,7 @@ func NewCategoryHandler(api huma.API, categoryService service.CategoryService, j
 
 	//
 	//
-	// Main features
+	// For admin + customer
 	// ######################################################################################
 
 	// Get all categories
@@ -43,6 +43,11 @@ func NewCategoryHandler(api huma.API, categoryService service.CategoryService, j
 		Description: "Get category by id.",
 		Tags:        []string{"Category"},
 	}, categoryHandler.GetCategoryById)
+
+	//
+	//
+	// For only admin
+	// ######################################################################################
 
 	// Create category
 	huma.Register(api, huma.Operation{
@@ -76,11 +81,6 @@ func NewCategoryHandler(api huma.API, categoryService service.CategoryService, j
 
 	return categoryHandler
 }
-
-//
-//
-// Main features
-// ######################################################################################
 
 func (categoryHandler *CategoryHandler) GetAllCategories(ctx context.Context, reqDTO *dto.GetCategoriesRequest) (*dto.PaginationBodyResponseList[dto.CategoryView], error) {
 	categories, err := categoryHandler.categoryService.GetCategories(ctx, reqDTO)

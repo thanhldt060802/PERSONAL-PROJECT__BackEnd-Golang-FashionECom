@@ -30,9 +30,9 @@ type UserService interface {
 	// Extra feature
 	LoginAccount(ctx context.Context, reqDTO *dto.LoginAccountRequest) (string, error)
 	LogoutAccount(ctx context.Context, id string) error
-	GetAllLoggedInAccounts(ctx context.Context) ([]int64, error)
+	GetAllLoggedInAccounts(ctx context.Context) ([]string, error)
 
-	// Elasticsearch integration features (init data for elasticsearch-service)
+	// Elasticsearch integration (init data for elasticsearch-service)
 	GetAllUsers(ctx context.Context) ([]dto.UserView, error)
 
 	// Elasticsearch integration features
@@ -236,9 +236,9 @@ func (userService *userService) LogoutAccount(ctx context.Context, id string) er
 	return nil
 }
 
-func (userService *userService) GetAllLoggedInAccounts(ctx context.Context) ([]int64, error) {
+func (userService *userService) GetAllLoggedInAccounts(ctx context.Context) ([]string, error) {
 	var cursor uint64
-	var loggedInAccounts []int64
+	var loggedInAccounts []string
 
 	for {
 		keys, nextCursor, err := infrastructure.RedisClient.Scan(ctx, cursor, "token:*", 100).Result()
@@ -253,7 +253,7 @@ func (userService *userService) GetAllLoggedInAccounts(ctx context.Context) ([]i
 			}
 
 			var userData struct {
-				UserId   int64  `json:"user_id"`
+				UserId   string `json:"user_id"`
 				RoleName string `json:"role_name"`
 			}
 			json.Unmarshal([]byte(userDataJson), &userData)
@@ -272,7 +272,7 @@ func (userService *userService) GetAllLoggedInAccounts(ctx context.Context) ([]i
 
 //
 //
-// Elasticsearch integration features (init data for elasticsearch-service)
+// Elasticsearch integration (init data for elasticsearch-service)
 // ######################################################################################
 
 func (userService *userService) GetAllUsers(ctx context.Context) ([]dto.UserView, error) {

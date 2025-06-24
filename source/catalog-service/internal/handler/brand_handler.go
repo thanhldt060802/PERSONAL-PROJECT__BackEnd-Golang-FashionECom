@@ -23,7 +23,7 @@ func NewBrandHandler(api huma.API, brandService service.BrandService, jwtAuthMid
 
 	//
 	//
-	// Main features
+	// For admin + customer
 	// ######################################################################################
 
 	// Get all brands
@@ -43,6 +43,11 @@ func NewBrandHandler(api huma.API, brandService service.BrandService, jwtAuthMid
 		Description: "Get brand by id.",
 		Tags:        []string{"Brand"},
 	}, brandHandler.GetBrandById)
+
+	//
+	//
+	// For only admin
+	// ######################################################################################
 
 	// Create brand
 	huma.Register(api, huma.Operation{
@@ -76,11 +81,6 @@ func NewBrandHandler(api huma.API, brandService service.BrandService, jwtAuthMid
 
 	return brandHandler
 }
-
-//
-//
-// Main features
-// ######################################################################################
 
 func (brandHandler *BrandHandler) GetBrands(ctx context.Context, reqDTO *dto.GetBrandsRequest) (*dto.PaginationBodyResponseList[dto.BrandView], error) {
 	brands, err := brandHandler.brandService.GetBrands(ctx, reqDTO)

@@ -6,8 +6,9 @@ package dto
 // ######################################################################################
 
 type GetInvoiceByIdRequest struct {
-	Id     int64  `path:"id" required:"true" doc:"Id of invoice item."`
-	UserId string `path:"user_id" required:"true" doc:"User id of invoice."`
+	Id int64 `path:"id" required:"true" doc:"Id of invoice item."`
+	// Filter
+	UserId string `query:"user_id" doc:"Filter by user id."`
 }
 
 type CreateInvoiceRequest struct {
@@ -25,16 +26,18 @@ type CreateInvoiceRequest struct {
 }
 
 type UpdateInvoiceByIdRequest struct {
-	Id     int64  `path:"id" required:"true" doc:"Id of invoice."`
-	UserId string `path:"user_id" required:"true" doc:"User id of invoice."`
-	Body   struct {
+	Id   int64 `path:"id" required:"true" doc:"Id of invoice."`
+	Body struct {
 		Status *string `json:"status,omitempty" minLength:"1" enum:"CREATED,PENDING,CANCEL,DONE" doc:"Status of invoice."`
 	}
+	// Filter
+	UserId string `query:"user_id" doc:"Filter by user id."`
 }
 
 type DeleteInvoiceByIdRequest struct {
-	Id     int64  `path:"id" required:"true" doc:"Id of invoice."`
-	UserId string `path:"user_id" required:"true" doc:"User id of invoice."`
+	Id int64 `path:"id" required:"true" doc:"Id of invoice."`
+	// Filter
+	UserId string `query:"user_id" doc:"Filter by user id."`
 }
 
 //

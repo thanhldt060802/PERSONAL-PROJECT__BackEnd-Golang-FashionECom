@@ -23,7 +23,7 @@ func NewProductHandler(api huma.API, productService service.ProductService, jwtA
 
 	//
 	//
-	// Main features
+	// For admin + customer
 	// ######################################################################################
 
 	// Get product by id
@@ -34,6 +34,11 @@ func NewProductHandler(api huma.API, productService service.ProductService, jwtA
 		Description: "Get product by id.",
 		Tags:        []string{"Product"},
 	}, productHandler.GetProductById)
+
+	//
+	//
+	// For only admin
+	// ######################################################################################
 
 	// Create product
 	huma.Register(api, huma.Operation{
@@ -67,7 +72,7 @@ func NewProductHandler(api huma.API, productService service.ProductService, jwtA
 
 	//
 	//
-	// Elasticsearch integration features
+	// For admin + customer
 	// ######################################################################################
 
 	// Get products
@@ -81,11 +86,6 @@ func NewProductHandler(api huma.API, productService service.ProductService, jwtA
 
 	return productHandler
 }
-
-//
-//
-// Main features
-// ######################################################################################
 
 func (productHandler *ProductHandler) GetProductById(ctx context.Context, reqDTO *dto.GetProductByIdRequest) (*dto.BodyResponse[dto.ProductView], error) {
 	foundProduct, err := productHandler.productService.GetProductById(ctx, reqDTO)
@@ -152,11 +152,6 @@ func (productHandler *ProductHandler) DeleteProductById(ctx context.Context, req
 	res.Body.Message = "Delete product by id successful"
 	return res, nil
 }
-
-//
-//
-// Elasticsearch integration features
-// ######################################################################################
 
 func (productHandler *ProductHandler) GetProducts(ctx context.Context, reqDTO *dto.GetProductsRequest) (*dto.PaginationBodyResponseList[dto.ProductView], error) {
 	products, err := productHandler.productService.GetProducts(ctx, reqDTO)

@@ -25,10 +25,10 @@ type ProductService interface {
 	UpdateProductById(ctx context.Context, reqDTO *dto.UpdateProductByIdRequest) error
 	DeleteProductById(ctx context.Context, reqDTO *dto.DeleteProductByIdRequest) error
 
-	// Elasticsearch integration features (init data for elasticsearch-service)
+	// Elasticsearch integration (init data for elasticsearch-service)
 	GetAllProducts(ctx context.Context) ([]dto.ProductView, error)
 
-	// Order integration features (extra features for order-service)
+	// Order integration (extra features for order-service)
 	GetProductsByListId(ctx context.Context, reqDTO *dto.GetProductsByListIdRequest) ([]dto.ProductView, error)
 	UpdateProductStocksByListInvoiceDetail(ctx context.Context, reqDTO *dto.UpdateProductStocksByListInvoiceDetailRequest) error
 
@@ -172,7 +172,7 @@ func (productService *productService) DeleteProductById(ctx context.Context, req
 
 //
 //
-// Elasticsearch integration features (init data for elasticsearch-service)
+// Elasticsearch integration (init data for elasticsearch-service)
 // ######################################################################################
 
 func (productService *productService) GetAllProducts(ctx context.Context) ([]dto.ProductView, error) {
@@ -196,7 +196,7 @@ func (productService *productService) GetAllProducts(ctx context.Context) ([]dto
 
 //
 //
-// Order integration features (extra features for order-service)
+// Order integration (extra features for order-service)
 // ######################################################################################
 
 func (productService *productService) GetProductsByListId(ctx context.Context, reqDTO *dto.GetProductsByListIdRequest) ([]dto.ProductView, error) {

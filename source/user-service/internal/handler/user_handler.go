@@ -23,7 +23,7 @@ func NewUserHandler(api huma.API, userService service.UserService, jwtAuthMiddle
 
 	//
 	//
-	// Main features
+	// For only admin
 	// ######################################################################################
 
 	// Get user by id
@@ -68,7 +68,7 @@ func NewUserHandler(api huma.API, userService service.UserService, jwtAuthMiddle
 
 	//
 	//
-	// Extra features
+	// For admin + customer
 	// ######################################################################################
 
 	// Login account
@@ -119,6 +119,11 @@ func NewUserHandler(api huma.API, userService service.UserService, jwtAuthMiddle
 		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication},
 	}, userHandler.UpdateAccount)
 
+	//
+	//
+	// For only admin
+	// ######################################################################################
+
 	// Get all logged in accounts
 	huma.Register(api, huma.Operation{
 		Method:      http.MethodGet,
@@ -139,11 +144,6 @@ func NewUserHandler(api huma.API, userService service.UserService, jwtAuthMiddle
 		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
 	}, userHandler.DeleteLoggedInAccount)
 
-	//
-	//
-	// Elasticsearch integration features
-	// ######################################################################################
-
 	// Get users
 	huma.Register(api, huma.Operation{
 		Method:      http.MethodGet,
@@ -156,11 +156,6 @@ func NewUserHandler(api huma.API, userService service.UserService, jwtAuthMiddle
 
 	return userHandler
 }
-
-//
-//
-// Main features
-// ######################################################################################
 
 func (userHandler *UserHandler) GetUserById(ctx context.Context, reqDTO *dto.GetUserByIdRequest) (*dto.BodyResponse[dto.UserView], error) {
 	foundUser, err := userHandler.userService.GetUserById(ctx, reqDTO)
@@ -227,11 +222,6 @@ func (userHandler *UserHandler) DeleteUserById(ctx context.Context, reqDTO *dto.
 	res.Body.Message = "Delete user by id successful"
 	return res, nil
 }
-
-//
-//
-// Extra features
-// ######################################################################################
 
 func (userHandler *UserHandler) LoginAccount(ctx context.Context, reqDTO *dto.LoginAccountRequest) (*dto.BodyResponse[string], error) {
 	token, err := userHandler.userService.LoginAccount(ctx, reqDTO)
@@ -335,7 +325,7 @@ func (userHandler *UserHandler) UpdateAccount(ctx context.Context, reqDTO *dto.U
 	return res, nil
 }
 
-func (userHandler *UserHandler) GetAllLoggedInAccounts(ctx context.Context, _ *struct{}) (*dto.BodyResponse[[]int64], error) {
+func (userHandler *UserHandler) GetAllLoggedInAccounts(ctx context.Context, _ *struct{}) (*dto.BodyResponse[[]string], error) {
 	loggedInAccounts, err := userHandler.userService.GetAllLoggedInAccounts(ctx)
 	if err != nil {
 		res := &dto.ErrorResponse{}
@@ -346,7 +336,7 @@ func (userHandler *UserHandler) GetAllLoggedInAccounts(ctx context.Context, _ *s
 		return nil, res
 	}
 
-	res := &dto.BodyResponse[[]int64]{}
+	res := &dto.BodyResponse[[]string]{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Get all logged in accounts successful"
 	res.Body.Data = loggedInAccounts
@@ -368,11 +358,6 @@ func (userHandler *UserHandler) DeleteLoggedInAccount(ctx context.Context, reqDT
 	res.Body.Message = "Delete logged in account successful"
 	return res, nil
 }
-
-//
-//
-// Elasticsearch integration features
-// ######################################################################################
 
 func (userHandler *UserHandler) GetUsers(ctx context.Context, reqDTO *dto.GetUsersRequest) (*dto.PaginationBodyResponseList[dto.UserView], error) {
 	users, err := userHandler.userService.GetUsers(ctx, reqDTO)

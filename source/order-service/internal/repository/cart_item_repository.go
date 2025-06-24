@@ -17,10 +17,10 @@ type CartItemRepository interface {
 	// Main features
 	Get(ctx context.Context, offset int, limit int, sortFields []utils.SortField) ([]model.CartItem, error)
 	GetByUserId(ctx context.Context, userId string, offset int, limit int, sortFields []utils.SortField) ([]model.CartItem, error)
-	GetByIdAndUserId(ctx context.Context, id string, userId string) (*model.CartItem, error)
+	GetById(ctx context.Context, id string) (*model.CartItem, error)
 	Create(ctx context.Context, newCartItem *model.CartItem) error
 	Update(ctx context.Context, updatedCartItem *model.CartItem) error
-	DeleteByIdAndUserId(ctx context.Context, id string, userId string) error
+	DeleteById(ctx context.Context, id string) error
 }
 
 func NewCartItemRepository() CartItemRepository {
@@ -68,10 +68,10 @@ func (cartItemRepository *cartItemRepository) GetByUserId(ctx context.Context, u
 	return cartItems, nil
 }
 
-func (cartItemRepository *cartItemRepository) GetByIdAndUserId(ctx context.Context, id string, userId string) (*model.CartItem, error) {
+func (cartItemRepository *cartItemRepository) GetById(ctx context.Context, id string) (*model.CartItem, error) {
 	var cartItem model.CartItem
 
-	if err := infrastructure.PostgresDB.NewSelect().Model(&cartItem).Where("id = ? AND user_id = ?", id, userId).Scan(ctx); err != nil {
+	if err := infrastructure.PostgresDB.NewSelect().Model(&cartItem).Where("id = ?", id).Scan(ctx); err != nil {
 		return nil, err
 	}
 
@@ -89,7 +89,7 @@ func (cartItemRepository *cartItemRepository) Update(ctx context.Context, update
 	return err
 }
 
-func (cartItemRepository *cartItemRepository) DeleteByIdAndUserId(ctx context.Context, id string, userId string) error {
-	_, err := infrastructure.PostgresDB.NewDelete().Model(&model.CartItem{}).Where("id = ? AND user_id = ?", id, userId).Exec(ctx)
+func (cartItemRepository *cartItemRepository) DeleteById(ctx context.Context, id string) error {
+	_, err := infrastructure.PostgresDB.NewDelete().Model(&model.CartItem{}).Where("id = ?", id).Exec(ctx)
 	return err
 }
