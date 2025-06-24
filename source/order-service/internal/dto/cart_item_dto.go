@@ -25,20 +25,20 @@ type CartItemExtraInfo struct {
 	BrandName    string `json:"brand_name"`
 }
 
-func ToCartItemView(cartItem *model.CartItem, cartItemExtraInfo CartItemExtraInfo) *CartItemView {
+func ToCartItemView(cartItem *model.CartItem, cartItemExtraInfo *CartItemExtraInfo) *CartItemView {
 	return &CartItemView{
 		Id:                cartItem.Id,
 		UserId:            cartItem.UserId,
 		ProductId:         cartItem.ProductId,
 		Quantity:          cartItem.Quantity,
-		CartItemExtraInfo: cartItemExtraInfo,
+		CartItemExtraInfo: *cartItemExtraInfo,
 	}
 }
 
 func ToListCartItemView(cartItems []model.CartItem, cartItemExtraInfos []CartItemExtraInfo) []CartItemView {
 	cartItemViews := make([]CartItemView, len(cartItems))
 	for i := range cartItems {
-		cartItemViews[i] = *ToCartItemView(&cartItems[i], cartItemExtraInfos[i])
+		cartItemViews[i] = *ToCartItemView(&cartItems[i], &cartItemExtraInfos[i])
 	}
 
 	return cartItemViews

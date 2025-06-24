@@ -21,11 +21,6 @@ func NewBrandHandler(api huma.API, brandService service.BrandService, jwtAuthMid
 		jwtAuthMiddleware: jwtAuthMiddleware,
 	}
 
-	//
-	//
-	// For admin + customer
-	// ######################################################################################
-
 	// Get all brands
 	huma.Register(api, huma.Operation{
 		Method:      http.MethodGet,
@@ -33,7 +28,7 @@ func NewBrandHandler(api huma.API, brandService service.BrandService, jwtAuthMid
 		Summary:     "/brands/all",
 		Description: "Get all brands.",
 		Tags:        []string{"Brand"},
-	}, brandHandler.GetBrands)
+	}, brandHandler.GetAllBrands)
 
 	// Get brand by id
 	huma.Register(api, huma.Operation{
@@ -43,11 +38,6 @@ func NewBrandHandler(api huma.API, brandService service.BrandService, jwtAuthMid
 		Description: "Get brand by id.",
 		Tags:        []string{"Brand"},
 	}, brandHandler.GetBrandById)
-
-	//
-	//
-	// For only admin
-	// ######################################################################################
 
 	// Create brand
 	huma.Register(api, huma.Operation{
@@ -82,8 +72,8 @@ func NewBrandHandler(api huma.API, brandService service.BrandService, jwtAuthMid
 	return brandHandler
 }
 
-func (brandHandler *BrandHandler) GetBrands(ctx context.Context, reqDTO *dto.GetBrandsRequest) (*dto.PaginationBodyResponseList[dto.BrandView], error) {
-	brands, err := brandHandler.brandService.GetBrands(ctx, reqDTO)
+func (brandHandler *BrandHandler) GetAllBrands(ctx context.Context, reqDTO *dto.GetAllBrandsRequest) (*dto.PaginationBodyResponseList[dto.BrandView], error) {
+	brands, err := brandHandler.brandService.GetAllBrands(ctx, reqDTO)
 	if err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusInternalServerError

@@ -21,10 +21,15 @@ func NewUserHandler(api huma.API, userService service.UserService, jwtAuthMiddle
 		jwtAuthMiddleware: jwtAuthMiddleware,
 	}
 
-	//
-	//
-	// For only admin
-	// ######################################################################################
+	// Get users
+	huma.Register(api, huma.Operation{
+		Method:      http.MethodGet,
+		Path:        "/users",
+		Summary:     "/users",
+		Description: "Get users.",
+		Tags:        []string{"User"},
+		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
+	}, userHandler.GetUsers)
 
 	// Get user by id
 	huma.Register(api, huma.Operation{
@@ -65,11 +70,6 @@ func NewUserHandler(api huma.API, userService service.UserService, jwtAuthMiddle
 		Tags:        []string{"User"},
 		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
 	}, userHandler.DeleteUserById)
-
-	//
-	//
-	// For admin + customer
-	// ######################################################################################
 
 	// Login account
 	huma.Register(api, huma.Operation{
@@ -119,11 +119,6 @@ func NewUserHandler(api huma.API, userService service.UserService, jwtAuthMiddle
 		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication},
 	}, userHandler.UpdateAccount)
 
-	//
-	//
-	// For only admin
-	// ######################################################################################
-
 	// Get all logged in accounts
 	huma.Register(api, huma.Operation{
 		Method:      http.MethodGet,
@@ -144,17 +139,26 @@ func NewUserHandler(api huma.API, userService service.UserService, jwtAuthMiddle
 		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
 	}, userHandler.DeleteLoggedInAccount)
 
-	// Get users
-	huma.Register(api, huma.Operation{
-		Method:      http.MethodGet,
-		Path:        "/users",
-		Summary:     "/users",
-		Description: "Get users.",
-		Tags:        []string{"User"},
-		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
-	}, userHandler.GetUsers)
-
 	return userHandler
+}
+
+func (userHandler *UserHandler) GetUsers(ctx context.Context, reqDTO *dto.GetUsersRequest) (*dto.PaginationBodyResponseList[dto.UserView], error) {
+	users, err := userHandler.userService.GetUsers(ctx, reqDTO)
+	if err != nil {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusInternalServerError
+		res.Code = "ERR_INTERNAL_SERVER"
+		res.Message = "Get users failed"
+		res.Details = []string{err.Error()}
+		return nil, res
+	}
+
+	res := &dto.PaginationBodyResponseList[dto.UserView]{}
+	res.Body.Code = "OK"
+	res.Body.Message = "Get users successful"
+	res.Body.Data = users
+	res.Body.Total = len(users)
+	return res, nil
 }
 
 func (userHandler *UserHandler) GetUserById(ctx context.Context, reqDTO *dto.GetUserByIdRequest) (*dto.BodyResponse[dto.UserView], error) {
@@ -356,24 +360,5 @@ func (userHandler *UserHandler) DeleteLoggedInAccount(ctx context.Context, reqDT
 	res := &dto.SuccessResponse{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Delete logged in account successful"
-	return res, nil
-}
-
-func (userHandler *UserHandler) GetUsers(ctx context.Context, reqDTO *dto.GetUsersRequest) (*dto.PaginationBodyResponseList[dto.UserView], error) {
-	users, err := userHandler.userService.GetUsers(ctx, reqDTO)
-	if err != nil {
-		res := &dto.ErrorResponse{}
-		res.Status = http.StatusInternalServerError
-		res.Code = "ERR_INTERNAL_SERVER"
-		res.Message = "Get users failed"
-		res.Details = []string{err.Error()}
-		return nil, res
-	}
-
-	res := &dto.PaginationBodyResponseList[dto.UserView]{}
-	res.Body.Code = "OK"
-	res.Body.Message = "Get users successful"
-	res.Body.Data = users
-	res.Body.Total = len(users)
 	return res, nil
 }

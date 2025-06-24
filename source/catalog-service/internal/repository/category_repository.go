@@ -6,15 +6,12 @@ import (
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/model"
 	"thanhldt060802/utils"
-
-	"github.com/google/uuid"
 )
 
 type categoryRepository struct {
 }
 
 type CategoryRepository interface {
-	// Main features
 	GetAll(ctx context.Context, sortFields []utils.SortField) ([]model.Category, error)
 	GetById(ctx context.Context, id string) (*model.Category, error)
 	GetByName(ctx context.Context, name string) (*model.Category, error)
@@ -26,11 +23,6 @@ type CategoryRepository interface {
 func NewCategoryRepository() CategoryRepository {
 	return &categoryRepository{}
 }
-
-//
-//
-// Main features
-// ######################################################################################
 
 func (categoryRepository *categoryRepository) GetAll(ctx context.Context, sortFields []utils.SortField) ([]model.Category, error) {
 	var categories []model.Category
@@ -69,7 +61,6 @@ func (categoryRepository *categoryRepository) GetByName(ctx context.Context, nam
 }
 
 func (categoryRepository *categoryRepository) Create(ctx context.Context, newCategory *model.Category) error {
-	newCategory.Id = uuid.New().String()
 	_, err := infrastructure.PostgresDB.NewInsert().Model(newCategory).Exec(ctx)
 	return err
 }

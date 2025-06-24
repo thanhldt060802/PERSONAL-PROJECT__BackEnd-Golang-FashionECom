@@ -26,3 +26,17 @@ func (userServiceGRPC *UserServiceGRPCImpl) GetAllUsers(ctx context.Context, req
 	res.Users = dto.FromListUserViewToListUserProto(users)
 	return res, nil
 }
+
+func (userServiceGRPC *UserServiceGRPCImpl) GetUserById(ctx context.Context, req *userservicepb.GetUserByIdRequest) (*userservicepb.GetUserByIdResponse, error) {
+	convertReqDTO := &dto.GetUserByIdRequest{}
+	convertReqDTO.Id = req.Id
+
+	user, err := userServiceGRPC.userService.GetUserById(ctx, convertReqDTO)
+	if err != nil {
+		return nil, err
+	}
+
+	res := &userservicepb.GetUserByIdResponse{}
+	res.User = dto.FromUserViewToUserProto(*user)
+	return res, nil
+}

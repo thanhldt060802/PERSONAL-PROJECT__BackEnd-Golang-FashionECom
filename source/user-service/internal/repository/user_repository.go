@@ -4,15 +4,12 @@ import (
 	"context"
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/model"
-
-	"github.com/google/uuid"
 )
 
 type userRepository struct {
 }
 
 type UserRepository interface {
-	// Main features
 	GetById(ctx context.Context, id string) (*model.User, error)
 	GetByUsername(ctx context.Context, username string) (*model.User, error)
 	GetByEmail(ctx context.Context, email string) (*model.User, error)
@@ -27,11 +24,6 @@ type UserRepository interface {
 func NewUserRepository() UserRepository {
 	return &userRepository{}
 }
-
-//
-//
-// Main features
-// ######################################################################################
 
 func (userRepository *userRepository) GetById(ctx context.Context, id string) (*model.User, error) {
 	var user model.User
@@ -64,13 +56,12 @@ func (userRepository *userRepository) GetByEmail(ctx context.Context, email stri
 }
 
 func (userRepository *userRepository) Create(ctx context.Context, newUser *model.User) error {
-	newUser.Id = uuid.New().String()
-	_, err := infrastructure.PostgresDB.NewInsert().Model(newUser).Returning("*").Exec(ctx)
+	_, err := infrastructure.PostgresDB.NewInsert().Model(newUser).Exec(ctx)
 	return err
 }
 
 func (userRepository *userRepository) Update(ctx context.Context, updatedUser *model.User) error {
-	_, err := infrastructure.PostgresDB.NewUpdate().Model(updatedUser).Returning("*").Where("id = ?", updatedUser.Id).Exec(ctx)
+	_, err := infrastructure.PostgresDB.NewUpdate().Model(updatedUser).Where("id = ?", updatedUser.Id).Exec(ctx)
 	return err
 }
 
@@ -78,11 +69,6 @@ func (userRepository *userRepository) DeleteById(ctx context.Context, id string)
 	_, err := infrastructure.PostgresDB.NewDelete().Model(&model.User{}).Where("id = ?", id).Exec(ctx)
 	return err
 }
-
-//
-//
-// Elasticsearch integrattion (init data for elasticsearch-service)
-// ######################################################################################
 
 func (userRepository *userRepository) GetAll(ctx context.Context) ([]model.User, error) {
 	var users []model.User

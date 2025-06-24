@@ -6,15 +6,12 @@ import (
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/model"
 	"thanhldt060802/utils"
-
-	"github.com/google/uuid"
 )
 
 type brandRepository struct {
 }
 
 type BrandRepository interface {
-	// Main features
 	GetAll(ctx context.Context, sortFields []utils.SortField) ([]model.Brand, error)
 	GetById(ctx context.Context, id string) (*model.Brand, error)
 	GetByName(ctx context.Context, name string) (*model.Brand, error)
@@ -26,11 +23,6 @@ type BrandRepository interface {
 func NewBrandRepository() BrandRepository {
 	return &brandRepository{}
 }
-
-//
-//
-// Main features
-// ######################################################################################
 
 func (brandRepository *brandRepository) GetAll(ctx context.Context, sortFields []utils.SortField) ([]model.Brand, error) {
 	var brands []model.Brand
@@ -69,7 +61,6 @@ func (brandRepository *brandRepository) GetByName(ctx context.Context, name stri
 }
 
 func (brandRepository *brandRepository) Create(ctx context.Context, newBrand *model.Brand) error {
-	newBrand.Id = uuid.New().String()
 	_, err := infrastructure.PostgresDB.NewInsert().Model(newBrand).Exec(ctx)
 	return err
 }

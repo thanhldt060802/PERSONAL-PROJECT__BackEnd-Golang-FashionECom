@@ -1,6 +1,6 @@
 package dto
 
-type GetBrandsRequest struct {
+type GetAllBrandsRequest struct {
 	SortBy string `query:"sort_by" default:"created_at:asc" example:"created_at:desc,name" doc:"Sort by one or more fields separated by commas. For example: sort_by=created_at:desc,name will sort by created_at in descending order, then by name in ascending order."`
 }
 

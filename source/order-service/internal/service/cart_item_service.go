@@ -16,7 +16,6 @@ type cartItemService struct {
 }
 
 type CartItemService interface {
-	// Main features
 	GetCartItems(ctx context.Context, reqDTO *dto.GetCartItemsRequest) ([]dto.CartItemView, error)
 	CreateCartItem(ctx context.Context, reqDTO *dto.CreateCartItemRequest) error
 	UpdateCartItemById(ctx context.Context, reqDTO *dto.UpdateCartItemByIdRequest) error
@@ -28,11 +27,6 @@ func NewCartItemService(cartItemRepository repository.CartItemRepository) CartIt
 		cartItemRepository: cartItemRepository,
 	}
 }
-
-//
-//
-// Main features
-// ######################################################################################
 
 func (cartItemService *cartItemService) GetCartItems(ctx context.Context, reqDTO *dto.GetCartItemsRequest) ([]dto.CartItemView, error) {
 	if infrastructure.CatalogServiceGRPCClient != nil {
@@ -119,11 +113,11 @@ func (cartItemService *cartItemService) CreateCartItem(ctx context.Context, reqD
 func (cartItemService *cartItemService) UpdateCartItemById(ctx context.Context, reqDTO *dto.UpdateCartItemByIdRequest) error {
 	foundCartItem, err := cartItemService.cartItemRepository.GetById(ctx, reqDTO.Id)
 	if err != nil {
-		return fmt.Errorf("id or user id of cart item is not valid: %s", err.Error())
+		return fmt.Errorf("id of cart item is not valid: %s", err.Error())
 	}
 
 	if reqDTO.UserId != "" && reqDTO.UserId != foundCartItem.UserId {
-		return fmt.Errorf("id or user id of cart item is not valid: no permission")
+		return fmt.Errorf("id of cart item is not valid: no permission")
 	}
 
 	if reqDTO.Body.Quantity != nil {
@@ -140,11 +134,11 @@ func (cartItemService *cartItemService) UpdateCartItemById(ctx context.Context, 
 func (cartItemService *cartItemService) DeleteCartItemById(ctx context.Context, reqDTO *dto.DeleteCartItemByIdRequest) error {
 	foundCartItem, err := cartItemService.cartItemRepository.GetById(ctx, reqDTO.Id)
 	if err != nil {
-		return fmt.Errorf("id or user id of cart item is not valid: %s", err.Error())
+		return fmt.Errorf("id of cart item is not valid: %s", err.Error())
 	}
 
 	if reqDTO.UserId != "" && reqDTO.UserId != foundCartItem.UserId {
-		return fmt.Errorf("id or user id of cart item is not valid: no permission")
+		return fmt.Errorf("id of cart item is not valid: no permission")
 	}
 
 	if err := cartItemService.cartItemRepository.DeleteById(ctx, reqDTO.Id); err != nil {

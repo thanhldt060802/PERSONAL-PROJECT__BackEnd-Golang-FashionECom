@@ -8,6 +8,8 @@ import (
 	"thanhldt060802/internal/repository"
 	"thanhldt060802/utils"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type brandService struct {
@@ -15,8 +17,7 @@ type brandService struct {
 }
 
 type BrandService interface {
-	// Main features
-	GetBrands(ctx context.Context, reqDTO *dto.GetBrandsRequest) ([]dto.BrandView, error)
+	GetAllBrands(ctx context.Context, reqDTO *dto.GetAllBrandsRequest) ([]dto.BrandView, error)
 	GetBrandById(ctx context.Context, reqDTO *dto.GetBrandByIdRequest) (*dto.BrandView, error)
 	CreateBrand(ctx context.Context, reqDTO *dto.CreateBrandRequest) error
 	UpdateBrandById(ctx context.Context, reqDTO *dto.UpdateBrandByIdRequest) error
@@ -29,12 +30,7 @@ func NewBrandService(brandRepository repository.BrandRepository) BrandService {
 	}
 }
 
-//
-//
-// Main features
-// ######################################################################################
-
-func (brandService *brandService) GetBrands(ctx context.Context, redDTO *dto.GetBrandsRequest) ([]dto.BrandView, error) {
+func (brandService *brandService) GetAllBrands(ctx context.Context, redDTO *dto.GetAllBrandsRequest) ([]dto.BrandView, error) {
 	sortFields := utils.ParseSorter(redDTO.SortBy)
 
 	brands, err := brandService.brandRepository.GetAll(ctx, sortFields)
@@ -60,6 +56,7 @@ func (brandService *brandService) CreateBrand(ctx context.Context, reqDTO *dto.C
 	}
 
 	newBrand := model.Brand{
+		Id:          uuid.New().String(),
 		Name:        reqDTO.Body.Name,
 		Description: reqDTO.Body.Description,
 	}

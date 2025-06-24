@@ -10,6 +10,8 @@ import (
 	"thanhldt060802/internal/model"
 	"thanhldt060802/internal/repository"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type productService struct {
@@ -19,7 +21,6 @@ type productService struct {
 }
 
 type ProductService interface {
-	// Main features
 	GetProductById(ctx context.Context, reqDTO *dto.GetProductByIdRequest) (*dto.ProductView, error)
 	CreateProduct(ctx context.Context, reqDTO *dto.CreateProductRequest) error
 	UpdateProductById(ctx context.Context, reqDTO *dto.UpdateProductByIdRequest) error
@@ -43,11 +44,6 @@ func NewProductService(productRepository repository.ProductRepository, categoryR
 		brandRepository:    brandRepository,
 	}
 }
-
-//
-//
-// Main features
-// ######################################################################################
 
 func (productService *productService) GetProductById(ctx context.Context, reqDTO *dto.GetProductByIdRequest) (*dto.ProductView, error) {
 	foundProduct, err := productService.productRepository.GetById(ctx, reqDTO.Id)
@@ -74,6 +70,7 @@ func (productService *productService) CreateProduct(ctx context.Context, reqDTO 
 	}
 
 	newProduct := model.Product{
+		Id:                 uuid.New().String(),
 		Name:               reqDTO.Body.Name,
 		Description:        reqDTO.Body.Description,
 		Sex:                reqDTO.Body.Sex,
@@ -170,11 +167,6 @@ func (productService *productService) DeleteProductById(ctx context.Context, req
 	return nil
 }
 
-//
-//
-// Elasticsearch integration (init data for elasticsearch-service)
-// ######################################################################################
-
 func (productService *productService) GetAllProducts(ctx context.Context) ([]dto.ProductView, error) {
 	products, err := productService.productRepository.GetAll(ctx)
 	if err != nil {
@@ -193,11 +185,6 @@ func (productService *productService) GetAllProducts(ctx context.Context) ([]dto
 
 	return dto.ToListProductView(products, categories, brands), nil
 }
-
-//
-//
-// Order integration (extra features for order-service)
-// ######################################################################################
 
 func (productService *productService) GetProductsByListId(ctx context.Context, reqDTO *dto.GetProductsByListIdRequest) ([]dto.ProductView, error) {
 	foundProducts, err := productService.productRepository.GetByListId(ctx, reqDTO.Ids)
@@ -256,11 +243,6 @@ func (productService *productService) UpdateProductStocksByListInvoiceDetail(ctx
 
 	return nil
 }
-
-//
-//
-// Elasticsearch integration features
-// ######################################################################################
 
 func (productService *productService) GetProducts(ctx context.Context, reqDTO *dto.GetProductsRequest) ([]dto.ProductView, error) {
 	if infrastructure.ElasticsearchServiceGRPCClient != nil {

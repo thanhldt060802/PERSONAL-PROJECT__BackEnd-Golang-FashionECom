@@ -1,10 +1,5 @@
 package dto
 
-//
-//
-// Main features
-// ######################################################################################
-
 type GetCartItemsRequest struct {
 	Offset int    `query:"offset" default:"0" minimum:"0" example:"0" doc:"Skip item by offset."`
 	Limit  int    `query:"limit" default:"5" minimum:"1" maximum:"10" example:"10" doc:"Limit item from offset."`
@@ -34,11 +29,6 @@ type DeleteCartItemByIdRequest struct {
 	// Filter
 	UserId string `query:"user_id" doc:"Filter by user id."`
 }
-
-//
-//
-// Extra features
-// ######################################################################################
 
 type GetMyCartItemsRequest struct {
 	Offset int    `query:"offset" default:"0" minimum:"0" example:"0" doc:"Skip item by offset."`

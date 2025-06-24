@@ -21,11 +21,6 @@ func NewCartItemHandler(api huma.API, cartItemService service.CartItemService, j
 		jwtAuthMiddleware: jwtAuthMiddleware,
 	}
 
-	//
-	//
-	// For only admin
-	// ######################################################################################
-
 	// Get cart items
 	huma.Register(api, huma.Operation{
 		Method:      http.MethodGet,
@@ -46,7 +41,7 @@ func NewCartItemHandler(api huma.API, cartItemService service.CartItemService, j
 		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
 	}, cartItemHandler.CreateCartItem)
 
-	// Update cart item by id and user id
+	// Update cart item by id
 	huma.Register(api, huma.Operation{
 		Method:      http.MethodPut,
 		Path:        "/cart-items/id/{id}",
@@ -56,7 +51,7 @@ func NewCartItemHandler(api huma.API, cartItemService service.CartItemService, j
 		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
 	}, cartItemHandler.UpdateCartItemById)
 
-	// Delte cart item by id and user id
+	// Delte cart item by id
 	huma.Register(api, huma.Operation{
 		Method:      http.MethodDelete,
 		Path:        "/cart-items/id/{id}",
@@ -65,11 +60,6 @@ func NewCartItemHandler(api huma.API, cartItemService service.CartItemService, j
 		Tags:        []string{"Cart Item"},
 		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
 	}, cartItemHandler.DeleteCartItemById)
-
-	//
-	//
-	// For only customer
-	// ######################################################################################
 
 	// Get my cart items
 	huma.Register(api, huma.Operation{
@@ -91,7 +81,7 @@ func NewCartItemHandler(api huma.API, cartItemService service.CartItemService, j
 		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication},
 	}, cartItemHandler.CreateMyCartItem)
 
-	// Update my cart item
+	// Update my cart item by id
 	huma.Register(api, huma.Operation{
 		Method:      http.MethodPut,
 		Path:        "/cart-items/id/{id}",
@@ -101,7 +91,7 @@ func NewCartItemHandler(api huma.API, cartItemService service.CartItemService, j
 		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication},
 	}, cartItemHandler.UpdateMyCartItemById)
 
-	// Delete my cart item
+	// Delete my cart item by id
 	huma.Register(api, huma.Operation{
 		Method:      http.MethodDelete,
 		Path:        "/my-cart-items/id/{id}",
@@ -111,18 +101,8 @@ func NewCartItemHandler(api huma.API, cartItemService service.CartItemService, j
 		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication},
 	}, cartItemHandler.DeleteMyCartItemById)
 
-	//
-	//
-	// Main features
-	// ######################################################################################
-
 	return cartItemHandler
 }
-
-//
-//
-// Main features
-// ######################################################################################
 
 func (cartItemHandler *CartItemHandler) GetCartItems(ctx context.Context, reqDTO *dto.GetCartItemsRequest) (*dto.PaginationBodyResponseList[dto.CartItemView], error) {
 	cartItems, err := cartItemHandler.cartItemService.GetCartItems(ctx, reqDTO)

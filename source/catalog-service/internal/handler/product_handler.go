@@ -21,10 +21,14 @@ func NewProductHandler(api huma.API, productService service.ProductService, jwtA
 		jwtAuthMiddleware: jwtAuthMiddleware,
 	}
 
-	//
-	//
-	// For admin + customer
-	// ######################################################################################
+	// Get products
+	huma.Register(api, huma.Operation{
+		Method:      http.MethodGet,
+		Path:        "/products",
+		Summary:     "/products",
+		Description: "Get products.",
+		Tags:        []string{"Product"},
+	}, productHandler.GetProducts)
 
 	// Get product by id
 	huma.Register(api, huma.Operation{
@@ -34,11 +38,6 @@ func NewProductHandler(api huma.API, productService service.ProductService, jwtA
 		Description: "Get product by id.",
 		Tags:        []string{"Product"},
 	}, productHandler.GetProductById)
-
-	//
-	//
-	// For only admin
-	// ######################################################################################
 
 	// Create product
 	huma.Register(api, huma.Operation{
@@ -70,21 +69,26 @@ func NewProductHandler(api huma.API, productService service.ProductService, jwtA
 		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
 	}, productHandler.DeleteProductById)
 
-	//
-	//
-	// For admin + customer
-	// ######################################################################################
-
-	// Get products
-	huma.Register(api, huma.Operation{
-		Method:      http.MethodGet,
-		Path:        "/products",
-		Summary:     "/products",
-		Description: "Get products.",
-		Tags:        []string{"Product"},
-	}, productHandler.GetProducts)
-
 	return productHandler
+}
+
+func (productHandler *ProductHandler) GetProducts(ctx context.Context, reqDTO *dto.GetProductsRequest) (*dto.PaginationBodyResponseList[dto.ProductView], error) {
+	products, err := productHandler.productService.GetProducts(ctx, reqDTO)
+	if err != nil {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusInternalServerError
+		res.Code = "ERR_INTERNAL_SERVER"
+		res.Message = "Get products failed"
+		res.Details = []string{err.Error()}
+		return nil, res
+	}
+
+	res := &dto.PaginationBodyResponseList[dto.ProductView]{}
+	res.Body.Code = "OK"
+	res.Body.Message = "Get products successful"
+	res.Body.Data = products
+	res.Body.Total = len(products)
+	return res, nil
 }
 
 func (productHandler *ProductHandler) GetProductById(ctx context.Context, reqDTO *dto.GetProductByIdRequest) (*dto.BodyResponse[dto.ProductView], error) {
@@ -150,24 +154,5 @@ func (productHandler *ProductHandler) DeleteProductById(ctx context.Context, req
 	res := &dto.SuccessResponse{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Delete product by id successful"
-	return res, nil
-}
-
-func (productHandler *ProductHandler) GetProducts(ctx context.Context, reqDTO *dto.GetProductsRequest) (*dto.PaginationBodyResponseList[dto.ProductView], error) {
-	products, err := productHandler.productService.GetProducts(ctx, reqDTO)
-	if err != nil {
-		res := &dto.ErrorResponse{}
-		res.Status = http.StatusInternalServerError
-		res.Code = "ERR_INTERNAL_SERVER"
-		res.Message = "Get products failed"
-		res.Details = []string{err.Error()}
-		return nil, res
-	}
-
-	res := &dto.PaginationBodyResponseList[dto.ProductView]{}
-	res.Body.Code = "OK"
-	res.Body.Message = "Get products successful"
-	res.Body.Data = products
-	res.Body.Total = len(products)
 	return res, nil
 }

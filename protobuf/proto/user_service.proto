@@ -8,12 +8,21 @@ import "google/protobuf/timestamp.proto";
 
 service UserServiceGRPC {
   rpc GetAllUsers (GetAllUsersRequest) returns (GetAllUsersResponse);
+  rpc GetUserById (GetUserByIdRequest) returns (GetUserByIdResponse);
 }
 
 message GetAllUsersRequest {}
 
+message GetUserByIdRequest {
+  string id = 1;
+}
+
 message GetAllUsersResponse {
   repeated User users = 1;
+}
+
+message GetUserByIdResponse {
+  User user = 1;
 }
 
 message User {

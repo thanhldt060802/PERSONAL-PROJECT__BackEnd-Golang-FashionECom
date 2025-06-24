@@ -14,7 +14,6 @@ type cartItemRepository struct {
 }
 
 type CartItemRepository interface {
-	// Main features
 	Get(ctx context.Context, offset int, limit int, sortFields []utils.SortField) ([]model.CartItem, error)
 	GetByUserId(ctx context.Context, userId string, offset int, limit int, sortFields []utils.SortField) ([]model.CartItem, error)
 	GetById(ctx context.Context, id string) (*model.CartItem, error)
@@ -26,11 +25,6 @@ type CartItemRepository interface {
 func NewCartItemRepository() CartItemRepository {
 	return &cartItemRepository{}
 }
-
-//
-//
-// Main features
-// ######################################################################################
 
 func (cartItemRepository *cartItemRepository) Get(ctx context.Context, offset int, limit int, sortFields []utils.SortField) ([]model.CartItem, error) {
 	var cartItems []model.CartItem

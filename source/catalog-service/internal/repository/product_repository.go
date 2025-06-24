@@ -5,7 +5,6 @@ import (
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/model"
 
-	"github.com/google/uuid"
 	"github.com/uptrace/bun"
 )
 
@@ -13,7 +12,6 @@ type productRepository struct {
 }
 
 type ProductRepository interface {
-	// Main features
 	GetById(ctx context.Context, id string) (*model.Product, error)
 	Create(ctx context.Context, newProduct *model.Product) error
 	Update(ctx context.Context, updatedProduct *model.Product) error
@@ -30,11 +28,6 @@ type ProductRepository interface {
 func NewProductRepository() ProductRepository {
 	return &productRepository{}
 }
-
-//
-//
-// Main features
-// ######################################################################################
 
 func (productRepository *productRepository) GetById(ctx context.Context, id string) (*model.Product, error) {
 	var product model.Product
@@ -57,13 +50,12 @@ func (productRepository *productRepository) GetByName(ctx context.Context, name 
 }
 
 func (productRepository *productRepository) Create(ctx context.Context, newProduct *model.Product) error {
-	newProduct.Id = uuid.New().String()
-	_, err := infrastructure.PostgresDB.NewInsert().Model(newProduct).Returning("*").Exec(ctx)
+	_, err := infrastructure.PostgresDB.NewInsert().Model(newProduct).Exec(ctx)
 	return err
 }
 
 func (productRepository *productRepository) Update(ctx context.Context, updatedProduct *model.Product) error {
-	_, err := infrastructure.PostgresDB.NewUpdate().Model(updatedProduct).Returning("*").Where("id = ?", updatedProduct.Id).Exec(ctx)
+	_, err := infrastructure.PostgresDB.NewUpdate().Model(updatedProduct).Where("id = ?", updatedProduct.Id).Exec(ctx)
 	return err
 }
 
@@ -71,11 +63,6 @@ func (productRepository *productRepository) DeleteById(ctx context.Context, id s
 	_, err := infrastructure.PostgresDB.NewDelete().Model(&model.Product{}).Where("id = ?", id).Exec(ctx)
 	return err
 }
-
-//
-//
-// Elasticsearch integration (init data for elasticsearch-service)
-// ######################################################################################
 
 func (productRepository *productRepository) GetAll(ctx context.Context) ([]model.Product, error) {
 	var products []model.Product
@@ -86,11 +73,6 @@ func (productRepository *productRepository) GetAll(ctx context.Context) ([]model
 
 	return products, nil
 }
-
-//
-//
-// Order integration (extra features for order-service)
-// ######################################################################################
 
 func (productRepository *productRepository) GetByListId(ctx context.Context, ids []string) ([]model.Product, error) {
 	var products []model.Product
@@ -110,7 +92,7 @@ func (productRepository *productRepository) UpdateStocks(ctx context.Context, up
 	defer tx.Rollback()
 
 	for _, updatedProduct := range updatedProducts {
-		if _, err := tx.NewUpdate().Model(updatedProduct).Returning("*").Where("id = ?", updatedProduct.Id).Exec(ctx); err != nil {
+		if _, err := tx.NewUpdate().Model(updatedProduct).Where("id = ?", updatedProduct.Id).Exec(ctx); err != nil {
 			return err
 		}
 	}

@@ -8,6 +8,8 @@ import (
 	"thanhldt060802/internal/repository"
 	"thanhldt060802/utils"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type categoryService struct {
@@ -16,7 +18,7 @@ type categoryService struct {
 
 type CategoryService interface {
 	// Main features
-	GetCategories(ctx context.Context, reqDTO *dto.GetCategoriesRequest) ([]dto.CategoryView, error)
+	GetAllCategories(ctx context.Context, reqDTO *dto.GetAllCategoriesRequest) ([]dto.CategoryView, error)
 	GetCategoryById(ctx context.Context, reqDTO *dto.GetCategoryByIdRequest) (*dto.CategoryView, error)
 	CreateCategory(ctx context.Context, reqDTO *dto.CreateCategoryRequest) error
 	UpdateCategoryById(ctx context.Context, reqDTO *dto.UpdateCategoryByIdRequest) error
@@ -29,12 +31,7 @@ func NewCategoryService(categoryRepository repository.CategoryRepository) Catego
 	}
 }
 
-//
-//
-// Main features
-// ######################################################################################
-
-func (categoryService *categoryService) GetCategories(ctx context.Context, reqDTO *dto.GetCategoriesRequest) ([]dto.CategoryView, error) {
+func (categoryService *categoryService) GetAllCategories(ctx context.Context, reqDTO *dto.GetAllCategoriesRequest) ([]dto.CategoryView, error) {
 	sortFields := utils.ParseSorter(reqDTO.SortBy)
 
 	categories, err := categoryService.categoryRepository.GetAll(ctx, sortFields)
@@ -60,6 +57,7 @@ func (categoryService *categoryService) CreateCategory(ctx context.Context, reqD
 	}
 
 	newCategory := model.Category{
+		Id:   uuid.New().String(),
 		Name: reqDTO.Body.Name,
 	}
 	if err := categoryService.categoryRepository.Create(ctx, &newCategory); err != nil {

@@ -21,11 +21,6 @@ func NewCategoryHandler(api huma.API, categoryService service.CategoryService, j
 		jwtAuthMiddleware: jwtAuthMiddleware,
 	}
 
-	//
-	//
-	// For admin + customer
-	// ######################################################################################
-
 	// Get all categories
 	huma.Register(api, huma.Operation{
 		Method:      http.MethodGet,
@@ -82,8 +77,8 @@ func NewCategoryHandler(api huma.API, categoryService service.CategoryService, j
 	return categoryHandler
 }
 
-func (categoryHandler *CategoryHandler) GetAllCategories(ctx context.Context, reqDTO *dto.GetCategoriesRequest) (*dto.PaginationBodyResponseList[dto.CategoryView], error) {
-	categories, err := categoryHandler.categoryService.GetCategories(ctx, reqDTO)
+func (categoryHandler *CategoryHandler) GetAllCategories(ctx context.Context, reqDTO *dto.GetAllCategoriesRequest) (*dto.PaginationBodyResponseList[dto.CategoryView], error) {
+	categories, err := categoryHandler.categoryService.GetAllCategories(ctx, reqDTO)
 	if err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusInternalServerError

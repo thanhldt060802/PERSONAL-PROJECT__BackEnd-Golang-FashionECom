@@ -13,6 +13,7 @@ import (
 	"thanhldt060802/utils"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -21,13 +22,11 @@ type userService struct {
 }
 
 type UserService interface {
-	// Main features
 	GetUserById(ctx context.Context, reqDTO *dto.GetUserByIdRequest) (*dto.UserView, error)
 	CreateUser(ctx context.Context, reqDTO *dto.CreateUserRequest) error
 	UpdateUserById(ctx context.Context, reqDTO *dto.UpdateUserByIdRequest) error
 	DeleteUserById(ctx context.Context, reqDTO *dto.DeleteUserByIdRequest) error
 
-	// Extra feature
 	LoginAccount(ctx context.Context, reqDTO *dto.LoginAccountRequest) (string, error)
 	LogoutAccount(ctx context.Context, id string) error
 	GetAllLoggedInAccounts(ctx context.Context) ([]string, error)
@@ -45,18 +44,13 @@ func NewUserService(userRepository repository.UserRepository) UserService {
 	}
 }
 
-//
-//
-// Main features
-// ######################################################################################
-
 func (userService *userService) GetUserById(ctx context.Context, reqDTO *dto.GetUserByIdRequest) (*dto.UserView, error) {
 	foundUser, err := userService.userRepository.GetById(ctx, reqDTO.Id)
 	if err != nil {
 		return nil, fmt.Errorf("id of user is not valid: %s", err.Error())
 	}
 
-	return dto.ToUserView(foundUser), nil
+	return *dto.ToUserView(*foundUser), nil
 }
 
 func (userService *userService) CreateUser(ctx context.Context, reqDTO *dto.CreateUserRequest) error {
@@ -73,6 +67,7 @@ func (userService *userService) CreateUser(ctx context.Context, reqDTO *dto.Crea
 	}
 
 	newUser := model.User{
+		Id:             uuid.New().String(),
 		FullName:       reqDTO.Body.FullName,
 		Email:          reqDTO.Body.Email,
 		Username:       reqDTO.Body.Username,
@@ -154,11 +149,6 @@ func (userService *userService) DeleteUserById(ctx context.Context, reqDTO *dto.
 
 	return nil
 }
-
-//
-//
-// Extra features
-// ######################################################################################
 
 func (userService *userService) LoginAccount(ctx context.Context, reqDTO *dto.LoginAccountRequest) (string, error) {
 	foundUser, err := userService.userRepository.GetByUsername(ctx, reqDTO.Body.Username)
@@ -270,11 +260,6 @@ func (userService *userService) GetAllLoggedInAccounts(ctx context.Context) ([]s
 	return loggedInAccounts, nil
 }
 
-//
-//
-// Elasticsearch integration (init data for elasticsearch-service)
-// ######################################################################################
-
 func (userService *userService) GetAllUsers(ctx context.Context) ([]dto.UserView, error) {
 	users, err := userService.userRepository.GetAll(ctx)
 	if err != nil {
@@ -283,11 +268,6 @@ func (userService *userService) GetAllUsers(ctx context.Context) ([]dto.UserView
 
 	return dto.ToListUserView(users), nil
 }
-
-//
-//
-// Elasticsearch integration features
-// ######################################################################################
 
 func (userService *userService) GetUsers(ctx context.Context, reqDTO *dto.GetUsersRequest) ([]dto.UserView, error) {
 	if infrastructure.ElasticsearchServiceGRPCClient != nil {

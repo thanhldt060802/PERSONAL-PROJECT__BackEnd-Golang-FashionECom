@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	UserServiceGRPC_GetAllUsers_FullMethodName = "/userservicepb.UserServiceGRPC/GetAllUsers"
+	UserServiceGRPC_GetUserById_FullMethodName = "/userservicepb.UserServiceGRPC/GetUserById"
 )
 
 // UserServiceGRPCClient is the client API for UserServiceGRPC service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserServiceGRPCClient interface {
 	GetAllUsers(ctx context.Context, in *GetAllUsersRequest, opts ...grpc.CallOption) (*GetAllUsersResponse, error)
+	GetUserById(ctx context.Context, in *GetUserByIdRequest, opts ...grpc.CallOption) (*GetUserByIdResponse, error)
 }
 
 type userServiceGRPCClient struct {
@@ -47,11 +49,22 @@ func (c *userServiceGRPCClient) GetAllUsers(ctx context.Context, in *GetAllUsers
 	return out, nil
 }
 
+func (c *userServiceGRPCClient) GetUserById(ctx context.Context, in *GetUserByIdRequest, opts ...grpc.CallOption) (*GetUserByIdResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetUserByIdResponse)
+	err := c.cc.Invoke(ctx, UserServiceGRPC_GetUserById_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceGRPCServer is the server API for UserServiceGRPC service.
 // All implementations must embed UnimplementedUserServiceGRPCServer
 // for forward compatibility.
 type UserServiceGRPCServer interface {
 	GetAllUsers(context.Context, *GetAllUsersRequest) (*GetAllUsersResponse, error)
+	GetUserById(context.Context, *GetUserByIdRequest) (*GetUserByIdResponse, error)
 	mustEmbedUnimplementedUserServiceGRPCServer()
 }
 
@@ -64,6 +77,9 @@ type UnimplementedUserServiceGRPCServer struct{}
 
 func (UnimplementedUserServiceGRPCServer) GetAllUsers(context.Context, *GetAllUsersRequest) (*GetAllUsersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllUsers not implemented")
+}
+func (UnimplementedUserServiceGRPCServer) GetUserById(context.Context, *GetUserByIdRequest) (*GetUserByIdResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserById not implemented")
 }
 func (UnimplementedUserServiceGRPCServer) mustEmbedUnimplementedUserServiceGRPCServer() {}
 func (UnimplementedUserServiceGRPCServer) testEmbeddedByValue()                         {}
@@ -104,6 +120,24 @@ func _UserServiceGRPC_GetAllUsers_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserServiceGRPC_GetUserById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserByIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceGRPCServer).GetUserById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserServiceGRPC_GetUserById_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceGRPCServer).GetUserById(ctx, req.(*GetUserByIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserServiceGRPC_ServiceDesc is the grpc.ServiceDesc for UserServiceGRPC service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -114,6 +148,10 @@ var UserServiceGRPC_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAllUsers",
 			Handler:    _UserServiceGRPC_GetAllUsers_Handler,
+		},
+		{
+			MethodName: "GetUserById",
+			Handler:    _UserServiceGRPC_GetUserById_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
