@@ -32,24 +32,24 @@ func (cartItemService *cartItemService) GetCartItems(ctx context.Context, reqDTO
 	if infrastructure.CatalogServiceGRPCClient != nil {
 		sortFields := utils.ParseSorter(reqDTO.SortBy)
 
-		var cartItems []model.CartItem
+		var foundCartItems []model.CartItem
 		if reqDTO.UserId == "" {
-			_cartItems, err := cartItemService.cartItemRepository.Get(ctx, reqDTO.Offset, reqDTO.Limit, sortFields)
+			cartItems, err := cartItemService.cartItemRepository.Get(ctx, reqDTO.Offset, reqDTO.Limit, sortFields)
 			if err != nil {
 				return nil, fmt.Errorf("query cart items from postgresql failed: %s", err.Error())
 			}
-			cartItems = _cartItems
+			foundCartItems = cartItems
 		} else {
-			_cartItems, err := cartItemService.cartItemRepository.GetByUserId(ctx, reqDTO.UserId, reqDTO.Offset, reqDTO.Limit, sortFields)
+			cartItems, err := cartItemService.cartItemRepository.GetByUserId(ctx, reqDTO.UserId, reqDTO.Offset, reqDTO.Limit, sortFields)
 			if err != nil {
 				return nil, fmt.Errorf("query cart items from postgresql failed: %s", err.Error())
 			}
-			cartItems = _cartItems
+			foundCartItems = cartItems
 		}
 
-		ids := make([]string, len(cartItems))
-		for i, cartItem := range cartItems {
-			ids[i] = cartItem.Id
+		ids := make([]string, len(foundCartItems))
+		for i, cartItem := range foundCartItems {
+			ids[i] = cartItem.ProductId
 		}
 
 		convertReqDTO := &catalogservicepb.GetProductsByListIdRequest{}
@@ -60,21 +60,21 @@ func (cartItemService *cartItemService) GetCartItems(ctx context.Context, reqDTO
 		}
 
 		productProtos := grpcRes.Products
-		cartItemExtraInfos := make([]dto.CartItemExtraInfo, len(productProtos))
+		foundCartItemExtraInfos := make([]dto.CartItemExtraInfo, len(productProtos))
 		for i, productProto := range productProtos {
-			cartItemExtraInfos[i].Name = productProto.Name
-			cartItemExtraInfos[i].Sex = productProto.Sex
-			cartItemExtraInfos[i].Price = productProto.Price
-			cartItemExtraInfos[i].DiscountPercentage = productProto.DiscountPercentage
-			cartItemExtraInfos[i].ImageURL = productProto.ImageUrl
+			foundCartItemExtraInfos[i].Name = productProto.Name
+			foundCartItemExtraInfos[i].Sex = productProto.Sex
+			foundCartItemExtraInfos[i].Price = productProto.Price
+			foundCartItemExtraInfos[i].DiscountPercentage = productProto.DiscountPercentage
+			foundCartItemExtraInfos[i].ImageURL = productProto.ImageUrl
 
-			cartItemExtraInfos[i].CategoryId = productProto.CategoryId
-			cartItemExtraInfos[i].CategoryName = productProto.CategoryName
-			cartItemExtraInfos[i].BrandId = productProto.BrandId
-			cartItemExtraInfos[i].BrandName = productProto.BrandName
+			foundCartItemExtraInfos[i].CategoryId = productProto.CategoryId
+			foundCartItemExtraInfos[i].CategoryName = productProto.CategoryName
+			foundCartItemExtraInfos[i].BrandId = productProto.BrandId
+			foundCartItemExtraInfos[i].BrandName = productProto.BrandName
 		}
 
-		return dto.ToListCartItemView(cartItems, cartItemExtraInfos), nil
+		return dto.ToListCartItemView(foundCartItems, foundCartItemExtraInfos), nil
 	} else {
 		return nil, fmt.Errorf("catalog-service is not running")
 	}

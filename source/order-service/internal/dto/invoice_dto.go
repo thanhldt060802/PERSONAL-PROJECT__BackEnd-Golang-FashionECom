@@ -48,10 +48,10 @@ func ToInvoiceView(invoice *model.Invoice, details []InvoiceDetailView) *Invoice
 	}
 }
 
-func ToListInvoiceView(invoices []model.Invoice) []InvoiceView {
+func ToListInvoiceView(invoices []model.Invoice, invoiceIdInvoiceDetailsMap map[string][]model.InvoiceDetail) []InvoiceView {
 	invoiceViews := make([]InvoiceView, len(invoices))
 	for i, invoice := range invoices {
-		invoiceViews[i] = *ToInvoiceView(&invoice, nil)
+		invoiceViews[i] = *ToInvoiceView(&invoice, &invoiceIdInvoiceDetailsMap[invoice.Id])
 	}
 	return invoiceViews
 }
