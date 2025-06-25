@@ -50,7 +50,7 @@ func (userService *userService) GetUserById(ctx context.Context, reqDTO *dto.Get
 		return nil, fmt.Errorf("id of user is not valid: %s", err.Error())
 	}
 
-	return *dto.ToUserView(*foundUser), nil
+	return dto.ToUserView(foundUser), nil
 }
 
 func (userService *userService) CreateUser(ctx context.Context, reqDTO *dto.CreateUserRequest) error {

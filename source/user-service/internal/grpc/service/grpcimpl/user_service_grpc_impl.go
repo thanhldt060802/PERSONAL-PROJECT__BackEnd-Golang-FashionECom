@@ -37,6 +37,6 @@ func (userServiceGRPC *UserServiceGRPCImpl) GetUserById(ctx context.Context, req
 	}
 
 	res := &userservicepb.GetUserByIdResponse{}
-	res.User = dto.FromUserViewToUserProto(*user)
+	res.User = dto.FromUserViewToUserProto(user)
 	return res, nil
 }
