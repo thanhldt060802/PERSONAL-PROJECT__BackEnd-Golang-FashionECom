@@ -36,7 +36,7 @@ type InvoiceDetailExtraInfo struct {
 	BrandName    string `json:"brand_name"`
 }
 
-func ToInvoiceView(invoice *model.Invoice, details []InvoiceDetailView) *InvoiceView {
+func ToInvoiceView(invoice *model.Invoice, invoiceDetailViews []InvoiceDetailView) *InvoiceView {
 	return &InvoiceView{
 		Id:          invoice.Id,
 		UserId:      invoice.UserId,
@@ -44,19 +44,19 @@ func ToInvoiceView(invoice *model.Invoice, details []InvoiceDetailView) *Invoice
 		Stautus:     invoice.Status,
 		CreatedAt:   *invoice.CreatedAt,
 		UpdatedAt:   *invoice.UpdatedAt,
-		Details:     details,
+		Details:     invoiceDetailViews,
 	}
 }
 
-func ToListInvoiceView(invoices []model.Invoice, invoiceIdInvoiceDetailsMap map[string][]model.InvoiceDetail) []InvoiceView {
+func ToListInvoiceView(invoices []model.Invoice, invoiceIdInvoiceDetailViewsMap map[string][]InvoiceDetailView) []InvoiceView {
 	invoiceViews := make([]InvoiceView, len(invoices))
 	for i, invoice := range invoices {
-		invoiceViews[i] = *ToInvoiceView(&invoice, &invoiceIdInvoiceDetailsMap[invoice.Id])
+		invoiceViews[i] = *ToInvoiceView(&invoice, invoiceIdInvoiceDetailViewsMap[invoice.Id])
 	}
 	return invoiceViews
 }
 
-func ToInvoiceDetailView(invoiceDetail *model.InvoiceDetail, invoiceDetailExtraInfo InvoiceDetailExtraInfo) *InvoiceDetailView {
+func ToInvoiceDetailView(invoiceDetail *model.InvoiceDetail, invoiceDetailExtraInfo *InvoiceDetailExtraInfo) *InvoiceDetailView {
 	return &InvoiceDetailView{
 		Id:                     invoiceDetail.Id,
 		ProductId:              invoiceDetail.ProductId,
@@ -64,14 +64,14 @@ func ToInvoiceDetailView(invoiceDetail *model.InvoiceDetail, invoiceDetailExtraI
 		DiscountPercentage:     invoiceDetail.DiscountPercentage,
 		Quantity:               invoiceDetail.Quantity,
 		TotalPrice:             invoiceDetail.TotalPrice,
-		InvoiceDetailExtraInfo: invoiceDetailExtraInfo,
+		InvoiceDetailExtraInfo: *invoiceDetailExtraInfo,
 	}
 }
 
 func ToListInvoiceDetailView(invoiceDetails []model.InvoiceDetail, invoiceDetailExtraInfos []InvoiceDetailExtraInfo) []InvoiceDetailView {
 	invoiceDetailViews := make([]InvoiceDetailView, len(invoiceDetails))
 	for i := range invoiceDetails {
-		invoiceDetailViews[i] = *ToInvoiceDetailView(&invoiceDetails[i], invoiceDetailExtraInfos[i])
+		invoiceDetailViews[i] = *ToInvoiceDetailView(&invoiceDetails[i], &invoiceDetailExtraInfos[i])
 	}
 	return invoiceDetailViews
 }

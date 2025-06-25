@@ -30,7 +30,7 @@ type InvoiceService interface {
 	GetInvoices(ctx context.Context, reqDTO *dto.GetInvoicesRequest) ([]dto.InvoiceView, error)
 }
 
-func NewInvoiceService(invoiceRepository repository.InvoiceRepository, invoiceDetailRepository repository.InvoiceDetailRepository) InvoiceService {
+func NewInvoiceService(invoiceRepository repository.InvoiceRepository) InvoiceService {
 	return &invoiceService{
 		invoiceRepository: invoiceRepository,
 	}
@@ -147,20 +147,44 @@ func (invoiceService *invoiceService) DeleteInvoiceById(ctx context.Context, req
 }
 
 func (invoiceService *invoiceService) GetAllInvoices(ctx context.Context) ([]dto.InvoiceView, error) {
-	invoices, err := invoiceService.invoiceRepository.GetAll(ctx)
+	foundInvoices, foundInvoiceIdInvoiceDetailsMap, err := invoiceService.invoiceRepository.GetAll(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("query invoices from postgresql failed: %s", err.Error())
 	}
 
-	invoiceViews := dto.ToListInvoiceView(invoices)
-	for i, _ := range invoiceViews {
-		foundInvoiceDetail, err := invoiceService.invoiceDetailRepository.GetAllByInvoiceId(ctx, invoiceViews[i].Id)
-		if err != nil {
-			return nil, fmt.Errorf("query invoice details from postgresql failed: %s", err.Error())
+	foundInvoiceIdInvoiceDetailViewsMap := make(map[string][]dto.InvoiceDetailView)
+	for invoiceId, invoiceDetails := range foundInvoiceIdInvoiceDetailsMap {
+		ids := make([]string, len(invoiceDetails))
+		for i, invoiceDetail := range invoiceDetails {
+			ids[i] = invoiceDetail.ProductId
 		}
 
-		invoiceViews[i].Details = dto.ToListInvoiceDetailView(foundInvoiceDetail)
+		convertReqDTO := &catalogservicepb.GetProductsByListIdRequest{}
+		convertReqDTO.Ids = ids
+		grpcRes, err := infrastructure.CatalogServiceGRPCClient.GetProductsByListId(ctx, convertReqDTO)
+		if err != nil {
+			return nil, fmt.Errorf("get products from catalog-service failed: %s", err.Error())
+		}
+
+		productProtos := grpcRes.Products
+		foundInvoiceDetailExtraInfos := make([]dto.InvoiceDetailExtraInfo, len(productProtos))
+		for i, productProto := range productProtos {
+			foundInvoiceDetailExtraInfos[i].Name = productProto.Name
+			foundInvoiceDetailExtraInfos[i].Sex = productProto.Sex
+			foundInvoiceDetailExtraInfos[i].ImageURL = productProto.ImageUrl
+
+			foundInvoiceDetailExtraInfos[i].CategoryId = productProto.CategoryId
+			foundInvoiceDetailExtraInfos[i].CategoryName = productProto.CategoryName
+			foundInvoiceDetailExtraInfos[i].BrandId = productProto.BrandId
+			foundInvoiceDetailExtraInfos[i].BrandName = productProto.BrandName
+		}
+
+		foundInvoiceIdInvoiceDetailViewsMap[invoiceId] = dto.ToListInvoiceDetailView(invoiceDetails, foundInvoiceDetailExtraInfos)
 	}
 
-	return invoiceViews, nil
+	return dto.ToListInvoiceView(foundInvoices, foundInvoiceIdInvoiceDetailViewsMap), nil
+}
+
+func (invoiceService *invoiceService) GetInvoices(ctx context.Context, reqDTO *dto.GetInvoicesRequest) ([]dto.InvoiceView, error) {
+	return nil, nil
 }
