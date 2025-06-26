@@ -32,10 +32,10 @@ type UserService interface {
 	GetAllLoggedInAccounts(ctx context.Context) ([]string, error)
 
 	// Elasticsearch integration (init data for elasticsearch-service)
-	GetAllUsers(ctx context.Context) ([]dto.UserView, error)
+	GetAllUsers(ctx context.Context) ([]*dto.UserView, error)
 
 	// Elasticsearch integration features
-	GetUsers(ctx context.Context, reqDTO *dto.GetUsersRequest) ([]dto.UserView, error)
+	GetUsers(ctx context.Context, reqDTO *dto.GetUsersRequest) ([]*dto.UserView, error)
 }
 
 func NewUserService(userRepository repository.UserRepository) UserService {
@@ -260,7 +260,7 @@ func (userService *userService) GetAllLoggedInAccounts(ctx context.Context) ([]s
 	return loggedInAccounts, nil
 }
 
-func (userService *userService) GetAllUsers(ctx context.Context) ([]dto.UserView, error) {
+func (userService *userService) GetAllUsers(ctx context.Context) ([]*dto.UserView, error) {
 	users, err := userService.userRepository.GetAll(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("query users from postgresql failed: %s", err.Error())
@@ -269,7 +269,7 @@ func (userService *userService) GetAllUsers(ctx context.Context) ([]dto.UserView
 	return dto.ToListUserView(users), nil
 }
 
-func (userService *userService) GetUsers(ctx context.Context, reqDTO *dto.GetUsersRequest) ([]dto.UserView, error) {
+func (userService *userService) GetUsers(ctx context.Context, reqDTO *dto.GetUsersRequest) ([]*dto.UserView, error) {
 	if infrastructure.ElasticsearchServiceGRPCClient != nil {
 		convertReqDTO := &elasticsearchservicepb.GetUsersRequest{}
 		convertReqDTO.Offset = reqDTO.Offset

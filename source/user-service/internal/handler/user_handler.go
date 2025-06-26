@@ -99,7 +99,7 @@ func NewUserHandler(api huma.API, userService service.UserService, jwtAuthMiddle
 		Tags:        []string{"Account"},
 	}, userHandler.RegisterAccount)
 
-	// Get account
+	// Get my account
 	huma.Register(api, huma.Operation{
 		Method:      http.MethodGet,
 		Path:        "/my-account",
@@ -107,9 +107,9 @@ func NewUserHandler(api huma.API, userService service.UserService, jwtAuthMiddle
 		Description: "Get account.",
 		Tags:        []string{"Account"},
 		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication},
-	}, userHandler.GetAccount)
+	}, userHandler.GetMyAccount)
 
-	// Update account
+	// Update my account
 	huma.Register(api, huma.Operation{
 		Method:      http.MethodPut,
 		Path:        "/my-account",
@@ -117,7 +117,7 @@ func NewUserHandler(api huma.API, userService service.UserService, jwtAuthMiddle
 		Description: "Update account.",
 		Tags:        []string{"Account"},
 		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication},
-	}, userHandler.UpdateAccount)
+	}, userHandler.UpdateMyAccount)
 
 	// Get all logged in accounts
 	huma.Register(api, huma.Operation{
@@ -142,7 +142,7 @@ func NewUserHandler(api huma.API, userService service.UserService, jwtAuthMiddle
 	return userHandler
 }
 
-func (userHandler *UserHandler) GetUsers(ctx context.Context, reqDTO *dto.GetUsersRequest) (*dto.PaginationBodyResponseList[dto.UserView], error) {
+func (userHandler *UserHandler) GetUsers(ctx context.Context, reqDTO *dto.GetUsersRequest) (*dto.PaginationBodyResponseList[*dto.UserView], error) {
 	users, err := userHandler.userService.GetUsers(ctx, reqDTO)
 	if err != nil {
 		res := &dto.ErrorResponse{}
@@ -153,7 +153,7 @@ func (userHandler *UserHandler) GetUsers(ctx context.Context, reqDTO *dto.GetUse
 		return nil, res
 	}
 
-	res := &dto.PaginationBodyResponseList[dto.UserView]{}
+	res := &dto.PaginationBodyResponseList[*dto.UserView]{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Get users successful"
 	res.Body.Data = users
@@ -161,7 +161,16 @@ func (userHandler *UserHandler) GetUsers(ctx context.Context, reqDTO *dto.GetUse
 	return res, nil
 }
 
-func (userHandler *UserHandler) GetUserById(ctx context.Context, reqDTO *dto.GetUserByIdRequest) (*dto.BodyResponse[dto.UserView], error) {
+func (userHandler *UserHandler) GetUserById(ctx context.Context, reqDTO *dto.GetUserByIdRequest) (*dto.BodyResponse[*dto.UserView], error) {
+	if reqDTO.Id == "{id}" {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusBadRequest
+		res.Code = "ERR_BAD_REQUEST"
+		res.Message = "Get user by id failed"
+		res.Details = []string{"missing path parameters: id"}
+		return nil, res
+	}
+
 	foundUser, err := userHandler.userService.GetUserById(ctx, reqDTO)
 	if err != nil {
 		res := &dto.ErrorResponse{}
@@ -172,10 +181,10 @@ func (userHandler *UserHandler) GetUserById(ctx context.Context, reqDTO *dto.Get
 		return nil, res
 	}
 
-	res := &dto.BodyResponse[dto.UserView]{}
+	res := &dto.BodyResponse[*dto.UserView]{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Get user by id successful"
-	res.Body.Data = *foundUser
+	res.Body.Data = foundUser
 	return res, nil
 }
 
@@ -196,6 +205,15 @@ func (userHandler *UserHandler) CreateUser(ctx context.Context, reqDTO *dto.Crea
 }
 
 func (userHandler *UserHandler) UpdateUserById(ctx context.Context, reqDTO *dto.UpdateUserByIdRequest) (*dto.SuccessResponse, error) {
+	if reqDTO.Id == "{id}" {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusBadRequest
+		res.Code = "ERR_BAD_REQUEST"
+		res.Message = "Update user by id failed"
+		res.Details = []string{"missing path parameters: id"}
+		return nil, res
+	}
+
 	if err := userHandler.userService.UpdateUserById(ctx, reqDTO); err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusBadRequest
@@ -212,6 +230,15 @@ func (userHandler *UserHandler) UpdateUserById(ctx context.Context, reqDTO *dto.
 }
 
 func (userHandler *UserHandler) DeleteUserById(ctx context.Context, reqDTO *dto.DeleteUserByIdRequest) (*dto.SuccessResponse, error) {
+	if reqDTO.Id == "{id}" {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusBadRequest
+		res.Code = "ERR_BAD_REQUEST"
+		res.Message = "Delete user by id failed"
+		res.Details = []string{"missing path parameters: id"}
+		return nil, res
+	}
+
 	if err := userHandler.userService.DeleteUserById(ctx, reqDTO); err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusBadRequest
@@ -285,7 +312,7 @@ func (userHandler *UserHandler) RegisterAccount(ctx context.Context, reqDTO *dto
 	return res, nil
 }
 
-func (userHandler *UserHandler) GetAccount(ctx context.Context, _ *struct{}) (*dto.BodyResponse[dto.UserView], error) {
+func (userHandler *UserHandler) GetMyAccount(ctx context.Context, _ *struct{}) (*dto.BodyResponse[*dto.UserView], error) {
 	convertReqDTO := &dto.GetUserByIdRequest{}
 	convertReqDTO.Id = ctx.Value("user_id").(string)
 
@@ -299,14 +326,14 @@ func (userHandler *UserHandler) GetAccount(ctx context.Context, _ *struct{}) (*d
 		return nil, res
 	}
 
-	res := &dto.BodyResponse[dto.UserView]{}
+	res := &dto.BodyResponse[*dto.UserView]{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Get account successful"
-	res.Body.Data = *foundUser
+	res.Body.Data = foundUser
 	return res, nil
 }
 
-func (userHandler *UserHandler) UpdateAccount(ctx context.Context, reqDTO *dto.UpdateAccountRequest) (*dto.SuccessResponse, error) {
+func (userHandler *UserHandler) UpdateMyAccount(ctx context.Context, reqDTO *dto.UpdateAccountRequest) (*dto.SuccessResponse, error) {
 	convertReqDTO := &dto.UpdateUserByIdRequest{}
 	convertReqDTO.Id = ctx.Value("user_id").(string)
 	convertReqDTO.Body.FullName = reqDTO.Body.FullName
@@ -348,6 +375,15 @@ func (userHandler *UserHandler) GetAllLoggedInAccounts(ctx context.Context, _ *s
 }
 
 func (userHandler *UserHandler) DeleteLoggedInAccount(ctx context.Context, reqDTO *dto.DeleteLoggedInAccountRequest) (*dto.SuccessResponse, error) {
+	if reqDTO.Id == "{id}" {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusBadRequest
+		res.Code = "ERR_BAD_REQUEST"
+		res.Message = "Delete logged in account failed"
+		res.Details = []string{"missing path parameters: id"}
+		return nil, res
+	}
+
 	if err := userHandler.userService.LogoutAccount(ctx, reqDTO.Id); err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusBadRequest

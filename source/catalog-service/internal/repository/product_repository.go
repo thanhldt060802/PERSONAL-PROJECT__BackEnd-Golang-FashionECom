@@ -18,11 +18,11 @@ type ProductRepository interface {
 	DeleteById(ctx context.Context, id string) error
 
 	// Elasticsearch integration (init data for elasticsearch-service)
-	GetAll(ctx context.Context) ([]model.Product, error)
+	GetAll(ctx context.Context) ([]*model.Product, error)
 
 	// Order integration (extra features for order-service)
-	GetByListId(ctx context.Context, ids []string) ([]model.Product, error)
-	UpdateStocks(ctx context.Context, updatedProducts []model.Product) error
+	GetByListId(ctx context.Context, ids []string) ([]*model.Product, error)
+	UpdateStocks(ctx context.Context, updatedProducts []*model.Product) error
 }
 
 func NewProductRepository() ProductRepository {
@@ -64,8 +64,8 @@ func (productRepository *productRepository) DeleteById(ctx context.Context, id s
 	return err
 }
 
-func (productRepository *productRepository) GetAll(ctx context.Context) ([]model.Product, error) {
-	var products []model.Product
+func (productRepository *productRepository) GetAll(ctx context.Context) ([]*model.Product, error) {
+	var products []*model.Product
 
 	if err := infrastructure.PostgresDB.NewSelect().Model(&products).Scan(ctx); err != nil {
 		return nil, err
@@ -74,8 +74,8 @@ func (productRepository *productRepository) GetAll(ctx context.Context) ([]model
 	return products, nil
 }
 
-func (productRepository *productRepository) GetByListId(ctx context.Context, ids []string) ([]model.Product, error) {
-	var products []model.Product
+func (productRepository *productRepository) GetByListId(ctx context.Context, ids []string) ([]*model.Product, error) {
+	var products []*model.Product
 
 	if err := infrastructure.PostgresDB.NewSelect().Model(&products).Where("id IN (?)", bun.In(ids)).Scan(ctx); err != nil {
 		return nil, err
@@ -84,7 +84,7 @@ func (productRepository *productRepository) GetByListId(ctx context.Context, ids
 	return products, nil
 }
 
-func (productRepository *productRepository) UpdateStocks(ctx context.Context, updatedProducts []model.Product) error {
+func (productRepository *productRepository) UpdateStocks(ctx context.Context, updatedProducts []*model.Product) error {
 	tx, err := infrastructure.PostgresDB.BeginTx(ctx, nil)
 	if err != nil {
 		return err

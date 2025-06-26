@@ -15,7 +15,7 @@ type GetUsersRequest struct {
 }
 
 type GetUserByIdRequest struct {
-	Id string `path:"id" required:"true" doc:"Id of user."`
+	Id string `path:"id" doc:"Id of user."`
 }
 
 type CreateUserRequest struct {
@@ -30,7 +30,7 @@ type CreateUserRequest struct {
 }
 
 type UpdateUserByIdRequest struct {
-	Id   string `path:"id" required:"true" doc:"Id of user."`
+	Id   string `path:"id" doc:"Id of user."`
 	Body struct {
 		FullName *string `json:"fullname,omitempty" minLength:"1" doc:"Full name of user."`
 		Email    *string `json:"email,omitempty" minLength:"1" format:"email" doc:"Email of user."`
@@ -41,7 +41,7 @@ type UpdateUserByIdRequest struct {
 }
 
 type DeleteUserByIdRequest struct {
-	Id string `path:"id" required:"true" doc:"Id of user."`
+	Id string `path:"id" doc:"Id of user."`
 }
 
 type LoginAccountRequest struct {
@@ -77,5 +77,5 @@ type UpdateAccountRequest struct {
 // GetAllLoggedInAccountsRequest
 
 type DeleteLoggedInAccountRequest struct {
-	Id string `path:"id" required:"true" doc:"Id of user."`
+	Id string `path:"id" doc:"Id of user."`
 }

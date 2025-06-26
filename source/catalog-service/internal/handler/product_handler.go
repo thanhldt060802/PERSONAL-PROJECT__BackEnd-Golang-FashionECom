@@ -72,7 +72,7 @@ func NewProductHandler(api huma.API, productService service.ProductService, jwtA
 	return productHandler
 }
 
-func (productHandler *ProductHandler) GetProducts(ctx context.Context, reqDTO *dto.GetProductsRequest) (*dto.PaginationBodyResponseList[dto.ProductView], error) {
+func (productHandler *ProductHandler) GetProducts(ctx context.Context, reqDTO *dto.GetProductsRequest) (*dto.PaginationBodyResponseList[*dto.ProductView], error) {
 	products, err := productHandler.productService.GetProducts(ctx, reqDTO)
 	if err != nil {
 		res := &dto.ErrorResponse{}
@@ -83,7 +83,7 @@ func (productHandler *ProductHandler) GetProducts(ctx context.Context, reqDTO *d
 		return nil, res
 	}
 
-	res := &dto.PaginationBodyResponseList[dto.ProductView]{}
+	res := &dto.PaginationBodyResponseList[*dto.ProductView]{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Get products successful"
 	res.Body.Data = products
@@ -92,6 +92,15 @@ func (productHandler *ProductHandler) GetProducts(ctx context.Context, reqDTO *d
 }
 
 func (productHandler *ProductHandler) GetProductById(ctx context.Context, reqDTO *dto.GetProductByIdRequest) (*dto.BodyResponse[dto.ProductView], error) {
+	if reqDTO.Id == "{id}" {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusBadRequest
+		res.Code = "ERR_BAD_REQUEST"
+		res.Message = "Get product by id failed"
+		res.Details = []string{"missing path parameters: id"}
+		return nil, res
+	}
+
 	foundProduct, err := productHandler.productService.GetProductById(ctx, reqDTO)
 	if err != nil {
 		res := &dto.ErrorResponse{}
@@ -126,6 +135,15 @@ func (productHandler *ProductHandler) CreateProduct(ctx context.Context, reqDTO 
 }
 
 func (productHandler *ProductHandler) UpdateProductById(ctx context.Context, reqDTO *dto.UpdateProductByIdRequest) (*dto.SuccessResponse, error) {
+	if reqDTO.Id == "{id}" {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusBadRequest
+		res.Code = "ERR_BAD_REQUEST"
+		res.Message = "Update product by id failed"
+		res.Details = []string{"missing path parameters: id"}
+		return nil, res
+	}
+
 	if err := productHandler.productService.UpdateProductById(ctx, reqDTO); err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusBadRequest
@@ -142,6 +160,15 @@ func (productHandler *ProductHandler) UpdateProductById(ctx context.Context, req
 }
 
 func (productHandler *ProductHandler) DeleteProductById(ctx context.Context, reqDTO *dto.DeleteProductByIdRequest) (*dto.SuccessResponse, error) {
+	if reqDTO.Id == "{id}" {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusBadRequest
+		res.Code = "ERR_BAD_REQUEST"
+		res.Message = "Delete product by id failed"
+		res.Details = []string{"missing path parameters: id"}
+		return nil, res
+	}
+
 	if err := productHandler.productService.DeleteProductById(ctx, reqDTO); err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusBadRequest

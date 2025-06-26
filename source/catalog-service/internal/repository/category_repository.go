@@ -12,7 +12,7 @@ type categoryRepository struct {
 }
 
 type CategoryRepository interface {
-	GetAll(ctx context.Context, sortFields []utils.SortField) ([]model.Category, error)
+	GetAll(ctx context.Context, sortFields []*utils.SortField) ([]*model.Category, error)
 	GetById(ctx context.Context, id string) (*model.Category, error)
 	GetByName(ctx context.Context, name string) (*model.Category, error)
 	Create(ctx context.Context, newCategory *model.Category) error
@@ -24,8 +24,8 @@ func NewCategoryRepository() CategoryRepository {
 	return &categoryRepository{}
 }
 
-func (categoryRepository *categoryRepository) GetAll(ctx context.Context, sortFields []utils.SortField) ([]model.Category, error) {
-	var categories []model.Category
+func (categoryRepository *categoryRepository) GetAll(ctx context.Context, sortFields []*utils.SortField) ([]*model.Category, error) {
+	var categories []*model.Category
 
 	query := infrastructure.PostgresDB.NewSelect().Model(&categories)
 

@@ -72,7 +72,7 @@ func NewBrandHandler(api huma.API, brandService service.BrandService, jwtAuthMid
 	return brandHandler
 }
 
-func (brandHandler *BrandHandler) GetAllBrands(ctx context.Context, reqDTO *dto.GetAllBrandsRequest) (*dto.PaginationBodyResponseList[dto.BrandView], error) {
+func (brandHandler *BrandHandler) GetAllBrands(ctx context.Context, reqDTO *dto.GetAllBrandsRequest) (*dto.PaginationBodyResponseList[*dto.BrandView], error) {
 	brands, err := brandHandler.brandService.GetAllBrands(ctx, reqDTO)
 	if err != nil {
 		res := &dto.ErrorResponse{}
@@ -83,7 +83,7 @@ func (brandHandler *BrandHandler) GetAllBrands(ctx context.Context, reqDTO *dto.
 		return nil, res
 	}
 
-	res := &dto.PaginationBodyResponseList[dto.BrandView]{}
+	res := &dto.PaginationBodyResponseList[*dto.BrandView]{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Get all brands successful"
 	res.Body.Data = brands
@@ -91,7 +91,16 @@ func (brandHandler *BrandHandler) GetAllBrands(ctx context.Context, reqDTO *dto.
 	return res, nil
 }
 
-func (brandHandler *BrandHandler) GetBrandById(ctx context.Context, reqDTO *dto.GetBrandByIdRequest) (*dto.BodyResponse[dto.BrandView], error) {
+func (brandHandler *BrandHandler) GetBrandById(ctx context.Context, reqDTO *dto.GetBrandByIdRequest) (*dto.BodyResponse[*dto.BrandView], error) {
+	if reqDTO.Id == "{id}" {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusBadRequest
+		res.Code = "ERR_BAD_REQUEST"
+		res.Message = "Get brand by id failed"
+		res.Details = []string{"missing path parameters: id"}
+		return nil, res
+	}
+
 	foundBrand, err := brandHandler.brandService.GetBrandById(ctx, reqDTO)
 	if err != nil {
 		res := &dto.ErrorResponse{}
@@ -102,10 +111,10 @@ func (brandHandler *BrandHandler) GetBrandById(ctx context.Context, reqDTO *dto.
 		return nil, res
 	}
 
-	res := &dto.BodyResponse[dto.BrandView]{}
+	res := &dto.BodyResponse[*dto.BrandView]{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Get brand by id successful"
-	res.Body.Data = *foundBrand
+	res.Body.Data = foundBrand
 	return res, nil
 }
 
@@ -126,6 +135,15 @@ func (brandHandler *BrandHandler) CreateBrand(ctx context.Context, reqDTO *dto.C
 }
 
 func (brandHandler *BrandHandler) UpdateBrandById(ctx context.Context, reqDTO *dto.UpdateBrandByIdRequest) (*dto.SuccessResponse, error) {
+	if reqDTO.Id == "{id}" {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusBadRequest
+		res.Code = "ERR_BAD_REQUEST"
+		res.Message = "Update brand by id failed"
+		res.Details = []string{"missing path parameters: id"}
+		return nil, res
+	}
+
 	if err := brandHandler.brandService.UpdateBrandById(ctx, reqDTO); err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusBadRequest
@@ -142,6 +160,15 @@ func (brandHandler *BrandHandler) UpdateBrandById(ctx context.Context, reqDTO *d
 }
 
 func (brandHandler *BrandHandler) DeleteBrandById(ctx context.Context, reqDTO *dto.DeleteBrandByIdRequest) (*dto.SuccessResponse, error) {
+	if reqDTO.Id == "{id}" {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusBadRequest
+		res.Code = "ERR_BAD_REQUEST"
+		res.Message = "Delete brand by id failed"
+		res.Details = []string{"missing path parameters: id"}
+		return nil, res
+	}
+
 	if err := brandHandler.brandService.DeleteBrandById(ctx, reqDTO); err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusBadRequest

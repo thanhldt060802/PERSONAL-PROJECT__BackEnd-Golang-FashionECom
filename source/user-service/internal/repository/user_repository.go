@@ -18,7 +18,7 @@ type UserRepository interface {
 	DeleteById(ctx context.Context, id string) error
 
 	// Elasticsearch integrattion (init data for elasticsearch-service)
-	GetAll(ctx context.Context) ([]model.User, error)
+	GetAll(ctx context.Context) ([]*model.User, error)
 }
 
 func NewUserRepository() UserRepository {
@@ -70,8 +70,8 @@ func (userRepository *userRepository) DeleteById(ctx context.Context, id string)
 	return err
 }
 
-func (userRepository *userRepository) GetAll(ctx context.Context) ([]model.User, error) {
-	var users []model.User
+func (userRepository *userRepository) GetAll(ctx context.Context) ([]*model.User, error) {
+	var users []*model.User
 
 	if err := infrastructure.PostgresDB.NewSelect().Model(&users).Scan(ctx); err != nil {
 		return nil, err

@@ -5,7 +5,7 @@ type GetAllCategoriesRequest struct {
 }
 
 type GetCategoryByIdRequest struct {
-	Id string `path:"id" required:"true" doc:"Id of category."`
+	Id string `path:"id" doc:"Id of category."`
 }
 
 type CreateCategoryRequest struct {
@@ -15,12 +15,12 @@ type CreateCategoryRequest struct {
 }
 
 type UpdateCategoryByIdRequest struct {
-	Id   string `path:"id" required:"true" doc:"Id of category."`
+	Id   string `path:"id" doc:"Id of category."`
 	Body struct {
 		Name *string `json:"name,omitempty" minLength:"1" doc:"Name of category (unique)."`
 	}
 }
 
 type DeleteCategoryByIdRequest struct {
-	Id string `path:"id" required:"true" doc:"Id of category."`
+	Id string `path:"id" doc:"Id of category."`
 }

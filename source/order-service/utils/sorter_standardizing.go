@@ -7,8 +7,8 @@ type SortField struct {
 	Direction string
 }
 
-func ParseSorter(sortBy string) []SortField {
-	sortFields := []SortField{}
+func ParseSorter(sortBy string) []*SortField {
+	sortFields := []*SortField{}
 
 	items := strings.Split(sortBy, ",")
 	for _, item := range items {
@@ -24,7 +24,7 @@ func ParseSorter(sortBy string) []SortField {
 			direction = "ASC"
 		}
 
-		sortFields = append(sortFields, SortField{
+		sortFields = append(sortFields, &SortField{
 			Field:     field,
 			Direction: direction,
 		})

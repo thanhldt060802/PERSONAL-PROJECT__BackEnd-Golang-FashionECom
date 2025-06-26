@@ -33,10 +33,10 @@ func ToUserView(user *model.User) *UserView {
 	}
 }
 
-func ToListUserView(users []model.User) []UserView {
-	userViews := make([]UserView, len(users))
+func ToListUserView(users []*model.User) []*UserView {
+	userViews := make([]*UserView, len(users))
 	for i, user := range users {
-		userViews[i] = *ToUserView(&user)
+		userViews[i] = ToUserView(user)
 	}
 
 	return userViews
@@ -57,10 +57,10 @@ func FromUserViewToUserProto(userView *UserView) *userservicepb.User {
 	}
 }
 
-func FromListUserViewToListUserProto(userViews []UserView) []*userservicepb.User {
+func FromListUserViewToListUserProto(userViews []*UserView) []*userservicepb.User {
 	userProtos := make([]*userservicepb.User, len(userViews))
 	for i, userView := range userViews {
-		userProtos[i] = FromUserViewToUserProto(&userView)
+		userProtos[i] = FromUserViewToUserProto(userView)
 	}
 
 	return userProtos
@@ -81,10 +81,10 @@ func FromUserProtoToUserView(userProto *elasticsearchservicepb.User) *UserView {
 	}
 }
 
-func FromListUserProtoToListUserView(userProtos []*elasticsearchservicepb.User) []UserView {
-	userViews := make([]UserView, len(userProtos))
+func FromListUserProtoToListUserView(userProtos []*elasticsearchservicepb.User) []*UserView {
+	userViews := make([]*UserView, len(userProtos))
 	for i, userProto := range userProtos {
-		userViews[i] = *FromUserProtoToUserView(userProto)
+		userViews[i] = FromUserProtoToUserView(userProto)
 	}
 
 	return userViews

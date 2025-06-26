@@ -16,7 +16,7 @@ type cartItemService struct {
 }
 
 type CartItemService interface {
-	GetCartItems(ctx context.Context, reqDTO *dto.GetCartItemsRequest) ([]dto.CartItemView, error)
+	GetCartItems(ctx context.Context, reqDTO *dto.GetCartItemsRequest) ([]*dto.CartItemView, error)
 	CreateCartItem(ctx context.Context, reqDTO *dto.CreateCartItemRequest) error
 	UpdateCartItemById(ctx context.Context, reqDTO *dto.UpdateCartItemByIdRequest) error
 	DeleteCartItemById(ctx context.Context, reqDTO *dto.DeleteCartItemByIdRequest) error
@@ -28,11 +28,11 @@ func NewCartItemService(cartItemRepository repository.CartItemRepository) CartIt
 	}
 }
 
-func (cartItemService *cartItemService) GetCartItems(ctx context.Context, reqDTO *dto.GetCartItemsRequest) ([]dto.CartItemView, error) {
+func (cartItemService *cartItemService) GetCartItems(ctx context.Context, reqDTO *dto.GetCartItemsRequest) ([]*dto.CartItemView, error) {
 	if infrastructure.CatalogServiceGRPCClient != nil {
 		sortFields := utils.ParseSorter(reqDTO.SortBy)
 
-		var foundCartItems []model.CartItem
+		var foundCartItems []*model.CartItem
 		if reqDTO.UserId == "" {
 			cartItems, err := cartItemService.cartItemRepository.Get(ctx, reqDTO.Offset, reqDTO.Limit, sortFields)
 			if err != nil {
@@ -59,22 +59,9 @@ func (cartItemService *cartItemService) GetCartItems(ctx context.Context, reqDTO
 			return nil, fmt.Errorf("get products from catalog-service failed: %s", err.Error())
 		}
 
-		productProtos := grpcRes.Products
-		foundCartItemExtraInfos := make([]dto.CartItemExtraInfo, len(productProtos))
-		for i, productProto := range productProtos {
-			foundCartItemExtraInfos[i].Name = productProto.Name
-			foundCartItemExtraInfos[i].Sex = productProto.Sex
-			foundCartItemExtraInfos[i].Price = productProto.Price
-			foundCartItemExtraInfos[i].DiscountPercentage = productProto.DiscountPercentage
-			foundCartItemExtraInfos[i].ImageURL = productProto.ImageUrl
+		foundProductProtos := grpcRes.Products
 
-			foundCartItemExtraInfos[i].CategoryId = productProto.CategoryId
-			foundCartItemExtraInfos[i].CategoryName = productProto.CategoryName
-			foundCartItemExtraInfos[i].BrandId = productProto.BrandId
-			foundCartItemExtraInfos[i].BrandName = productProto.BrandName
-		}
-
-		return dto.ToListCartItemView(foundCartItems, foundCartItemExtraInfos), nil
+		return dto.ToListCartItemView(foundCartItems, foundProductProtos), nil
 	} else {
 		return nil, fmt.Errorf("catalog-service is not running")
 	}

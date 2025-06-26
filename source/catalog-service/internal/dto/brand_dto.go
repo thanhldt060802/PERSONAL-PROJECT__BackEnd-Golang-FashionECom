@@ -23,10 +23,10 @@ func ToBrandView(brand *model.Brand) *BrandView {
 	}
 }
 
-func ToListBrandView(brands []model.Brand) []BrandView {
-	brandViews := make([]BrandView, len(brands))
+func ToListBrandView(brands []*model.Brand) []*BrandView {
+	brandViews := make([]*BrandView, len(brands))
 	for i, brand := range brands {
-		brandViews[i] = *ToBrandView(&brand)
+		brandViews[i] = ToBrandView(brand)
 	}
 
 	return brandViews

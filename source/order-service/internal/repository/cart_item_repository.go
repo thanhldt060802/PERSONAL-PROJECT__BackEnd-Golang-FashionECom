@@ -14,8 +14,8 @@ type cartItemRepository struct {
 }
 
 type CartItemRepository interface {
-	Get(ctx context.Context, offset int, limit int, sortFields []utils.SortField) ([]model.CartItem, error)
-	GetByUserId(ctx context.Context, userId string, offset int, limit int, sortFields []utils.SortField) ([]model.CartItem, error)
+	Get(ctx context.Context, offset int, limit int, sortFields []*utils.SortField) ([]*model.CartItem, error)
+	GetByUserId(ctx context.Context, userId string, offset int, limit int, sortFields []*utils.SortField) ([]*model.CartItem, error)
 	GetById(ctx context.Context, id string) (*model.CartItem, error)
 	Create(ctx context.Context, newCartItem *model.CartItem) error
 	Update(ctx context.Context, updatedCartItem *model.CartItem) error
@@ -26,8 +26,8 @@ func NewCartItemRepository() CartItemRepository {
 	return &cartItemRepository{}
 }
 
-func (cartItemRepository *cartItemRepository) Get(ctx context.Context, offset int, limit int, sortFields []utils.SortField) ([]model.CartItem, error) {
-	var cartItems []model.CartItem
+func (cartItemRepository *cartItemRepository) Get(ctx context.Context, offset int, limit int, sortFields []*utils.SortField) ([]*model.CartItem, error) {
+	var cartItems []*model.CartItem
 
 	query := infrastructure.PostgresDB.NewSelect().Model(&cartItems).
 		Offset(offset).
@@ -44,8 +44,8 @@ func (cartItemRepository *cartItemRepository) Get(ctx context.Context, offset in
 	return cartItems, nil
 }
 
-func (cartItemRepository *cartItemRepository) GetByUserId(ctx context.Context, userId string, offset int, limit int, sortFields []utils.SortField) ([]model.CartItem, error) {
-	var cartItems []model.CartItem
+func (cartItemRepository *cartItemRepository) GetByUserId(ctx context.Context, userId string, offset int, limit int, sortFields []*utils.SortField) ([]*model.CartItem, error) {
+	var cartItems []*model.CartItem
 
 	query := infrastructure.PostgresDB.NewSelect().Model(&cartItems).Where("user_id = ?", userId).
 		Offset(offset).

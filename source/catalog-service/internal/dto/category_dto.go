@@ -21,10 +21,10 @@ func ToCategoryView(category *model.Category) *CategoryView {
 	}
 }
 
-func ToListCategoryView(categorys []model.Category) []CategoryView {
-	categoryViews := make([]CategoryView, len(categorys))
+func ToListCategoryView(categorys []*model.Category) []*CategoryView {
+	categoryViews := make([]*CategoryView, len(categorys))
 	for i, category := range categorys {
-		categoryViews[i] = *ToCategoryView(&category)
+		categoryViews[i] = ToCategoryView(category)
 	}
 
 	return categoryViews

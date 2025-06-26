@@ -16,7 +16,7 @@ type CreateCartItemRequest struct {
 }
 
 type UpdateCartItemByIdRequest struct {
-	Id   string `path:"id" required:"true" doc:"Id of cart item."`
+	Id   string `path:"id" doc:"Id of cart item."`
 	Body struct {
 		Quantity *int32 `json:"quantity,omitempty" minimum:"1" doc:"Quantiy of cart item."`
 	}
@@ -25,7 +25,7 @@ type UpdateCartItemByIdRequest struct {
 }
 
 type DeleteCartItemByIdRequest struct {
-	Id string `path:"id" required:"true" doc:"Id of cart item."`
+	Id string `path:"id" doc:"Id of cart item."`
 	// Filter
 	UserId string `query:"user_id" doc:"Filter by user id."`
 }
@@ -43,12 +43,12 @@ type CreateMyCartItemRequest struct {
 }
 
 type UpdateMyCartItemByIdRequest struct {
-	Id   string `path:"id" required:"true" doc:"Id of cart item."`
+	Id   string `path:"id" doc:"Id of cart item."`
 	Body struct {
 		Quantity *int32 `json:"quantity,omitempty" minimum:"1" doc:"Quantiy of cart item."`
 	}
 }
 
 type DeleteMyCartItemByIdRequest struct {
-	Id string `path:"id" required:"true" doc:"Id of cart item."`
+	Id string `path:"id" doc:"Id of cart item."`
 }

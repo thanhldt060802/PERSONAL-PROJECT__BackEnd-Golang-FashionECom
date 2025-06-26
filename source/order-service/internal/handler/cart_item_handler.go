@@ -104,7 +104,7 @@ func NewCartItemHandler(api huma.API, cartItemService service.CartItemService, j
 	return cartItemHandler
 }
 
-func (cartItemHandler *CartItemHandler) GetCartItems(ctx context.Context, reqDTO *dto.GetCartItemsRequest) (*dto.PaginationBodyResponseList[dto.CartItemView], error) {
+func (cartItemHandler *CartItemHandler) GetCartItems(ctx context.Context, reqDTO *dto.GetCartItemsRequest) (*dto.PaginationBodyResponseList[*dto.CartItemView], error) {
 	cartItems, err := cartItemHandler.cartItemService.GetCartItems(ctx, reqDTO)
 	if err != nil {
 		res := &dto.ErrorResponse{}
@@ -115,7 +115,7 @@ func (cartItemHandler *CartItemHandler) GetCartItems(ctx context.Context, reqDTO
 		return nil, res
 	}
 
-	res := &dto.PaginationBodyResponseList[dto.CartItemView]{}
+	res := &dto.PaginationBodyResponseList[*dto.CartItemView]{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Get cart items successful"
 	res.Body.Data = cartItems
@@ -140,6 +140,15 @@ func (cartItemHandler *CartItemHandler) CreateCartItem(ctx context.Context, reqD
 }
 
 func (cartItemHandler *CartItemHandler) UpdateCartItemById(ctx context.Context, reqDTO *dto.UpdateCartItemByIdRequest) (*dto.SuccessResponse, error) {
+	if reqDTO.Id == "{id}" {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusBadRequest
+		res.Code = "ERR_BAD_REQUEST"
+		res.Message = "Update cart item by id failed"
+		res.Details = []string{"missing path parameters: id"}
+		return nil, res
+	}
+
 	if err := cartItemHandler.cartItemService.UpdateCartItemById(ctx, reqDTO); err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusBadRequest
@@ -156,6 +165,15 @@ func (cartItemHandler *CartItemHandler) UpdateCartItemById(ctx context.Context, 
 }
 
 func (cartItemHandler *CartItemHandler) DeleteCartItemById(ctx context.Context, reqDTO *dto.DeleteCartItemByIdRequest) (*dto.SuccessResponse, error) {
+	if reqDTO.Id == "{id}" {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusBadRequest
+		res.Code = "ERR_BAD_REQUEST"
+		res.Message = "Delete cart item by id failed"
+		res.Details = []string{"missing path parameters: id"}
+		return nil, res
+	}
+
 	if err := cartItemHandler.cartItemService.DeleteCartItemById(ctx, reqDTO); err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusBadRequest
@@ -171,7 +189,7 @@ func (cartItemHandler *CartItemHandler) DeleteCartItemById(ctx context.Context, 
 	return res, nil
 }
 
-func (cartItemHandler *CartItemHandler) GetMyCartItems(ctx context.Context, reqDTO *dto.GetMyCartItemsRequest) (*dto.PaginationBodyResponseList[dto.CartItemView], error) {
+func (cartItemHandler *CartItemHandler) GetMyCartItems(ctx context.Context, reqDTO *dto.GetMyCartItemsRequest) (*dto.PaginationBodyResponseList[*dto.CartItemView], error) {
 	convertReqDTO := &dto.GetCartItemsRequest{}
 	convertReqDTO.Offset = reqDTO.Offset
 	convertReqDTO.Limit = reqDTO.Limit
@@ -188,7 +206,7 @@ func (cartItemHandler *CartItemHandler) GetMyCartItems(ctx context.Context, reqD
 		return nil, res
 	}
 
-	res := &dto.PaginationBodyResponseList[dto.CartItemView]{}
+	res := &dto.PaginationBodyResponseList[*dto.CartItemView]{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Get my cart items successful"
 	res.Body.Data = cartItems
@@ -217,6 +235,15 @@ func (cartItemHandler *CartItemHandler) CreateMyCartItem(ctx context.Context, re
 }
 
 func (cartItemHandler *CartItemHandler) UpdateMyCartItemById(ctx context.Context, reqDTO *dto.UpdateMyCartItemByIdRequest) (*dto.SuccessResponse, error) {
+	if reqDTO.Id == "{id}" {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusBadRequest
+		res.Code = "ERR_BAD_REQUEST"
+		res.Message = "Update my cart item by id failed"
+		res.Details = []string{"missing path parameters: id"}
+		return nil, res
+	}
+
 	convertReqDTO := &dto.UpdateCartItemByIdRequest{}
 	convertReqDTO.Id = reqDTO.Id
 	convertReqDTO.Body.Quantity = reqDTO.Body.Quantity
@@ -238,6 +265,15 @@ func (cartItemHandler *CartItemHandler) UpdateMyCartItemById(ctx context.Context
 }
 
 func (cartItemHandler *CartItemHandler) DeleteMyCartItemById(ctx context.Context, reqDTO *dto.DeleteMyCartItemByIdRequest) (*dto.SuccessResponse, error) {
+	if reqDTO.Id == "{id}" {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusBadRequest
+		res.Code = "ERR_BAD_REQUEST"
+		res.Message = "Delete my cart item by id failed"
+		res.Details = []string{"missing path parameters: id"}
+		return nil, res
+	}
+
 	convertReqDTO := &dto.DeleteCartItemByIdRequest{}
 	convertReqDTO.Id = reqDTO.Id
 	convertReqDTO.UserId = ctx.Value("user_id").(string)

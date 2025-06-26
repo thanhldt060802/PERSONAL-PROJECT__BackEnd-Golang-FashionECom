@@ -45,20 +45,20 @@ func ToProductView(product *model.Product, category *model.Category, brand *mode
 	}
 }
 
-func ToListProductView(products []model.Product, categories []model.Category, brands []model.Brand) []ProductView {
+func ToListProductView(products []*model.Product, categories []*model.Category, brands []*model.Brand) []*ProductView {
 	categoryMap := map[string]*model.Category{}
 	for _, category := range categories {
-		categoryMap[category.Id] = &category
+		categoryMap[category.Id] = category
 	}
 
 	brandMap := map[string]*model.Brand{}
 	for _, brand := range brands {
-		brandMap[brand.Id] = &brand
+		brandMap[brand.Id] = brand
 	}
 
-	productViews := make([]ProductView, len(products))
+	productViews := make([]*ProductView, len(products))
 	for i, product := range products {
-		productViews[i] = *ToProductView(&product, categoryMap[product.CategoryId], brandMap[product.BrandId])
+		productViews[i] = ToProductView(product, categoryMap[product.CategoryId], brandMap[product.BrandId])
 	}
 
 	return productViews
@@ -85,10 +85,10 @@ func FromProductViewToProductProto(productView *ProductView) *catalogservicepb.P
 	}
 }
 
-func FromListProductViewToListProductProto(productViews []ProductView) []*catalogservicepb.Product {
+func FromListProductViewToListProductProto(productViews []*ProductView) []*catalogservicepb.Product {
 	productProtos := make([]*catalogservicepb.Product, len(productViews))
-	for i, prproductView := range productViews {
-		productProtos[i] = FromProductViewToProductProto(&prproductView)
+	for i, productView := range productViews {
+		productProtos[i] = FromProductViewToProductProto(productView)
 	}
 
 	return productProtos
@@ -115,10 +115,10 @@ func FromProductProtoToProductView(productProto *elasticsearchservicepb.Product)
 	}
 }
 
-func FromListProductProtoToListProductView(productProtos []*elasticsearchservicepb.Product) []ProductView {
-	productViews := make([]ProductView, len(productProtos))
+func FromListProductProtoToListProductView(productProtos []*elasticsearchservicepb.Product) []*ProductView {
+	productViews := make([]*ProductView, len(productProtos))
 	for i, productProto := range productProtos {
-		productViews[i] = *FromProductProtoToProductView(productProto)
+		productViews[i] = FromProductProtoToProductView(productProto)
 	}
 
 	return productViews

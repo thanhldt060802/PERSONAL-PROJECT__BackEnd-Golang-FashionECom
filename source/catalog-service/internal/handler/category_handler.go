@@ -77,7 +77,7 @@ func NewCategoryHandler(api huma.API, categoryService service.CategoryService, j
 	return categoryHandler
 }
 
-func (categoryHandler *CategoryHandler) GetAllCategories(ctx context.Context, reqDTO *dto.GetAllCategoriesRequest) (*dto.PaginationBodyResponseList[dto.CategoryView], error) {
+func (categoryHandler *CategoryHandler) GetAllCategories(ctx context.Context, reqDTO *dto.GetAllCategoriesRequest) (*dto.PaginationBodyResponseList[*dto.CategoryView], error) {
 	categories, err := categoryHandler.categoryService.GetAllCategories(ctx, reqDTO)
 	if err != nil {
 		res := &dto.ErrorResponse{}
@@ -88,7 +88,7 @@ func (categoryHandler *CategoryHandler) GetAllCategories(ctx context.Context, re
 		return nil, res
 	}
 
-	res := &dto.PaginationBodyResponseList[dto.CategoryView]{}
+	res := &dto.PaginationBodyResponseList[*dto.CategoryView]{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Get all categories successful"
 	res.Body.Data = categories
@@ -97,6 +97,15 @@ func (categoryHandler *CategoryHandler) GetAllCategories(ctx context.Context, re
 }
 
 func (categoryHandler *CategoryHandler) GetCategoryById(ctx context.Context, reqDTO *dto.GetCategoryByIdRequest) (*dto.BodyResponse[dto.CategoryView], error) {
+	if reqDTO.Id == "{id}" {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusBadRequest
+		res.Code = "ERR_BAD_REQUEST"
+		res.Message = "Get category by id failed"
+		res.Details = []string{"missing path parameters: id"}
+		return nil, res
+	}
+
 	foundCategory, err := categoryHandler.categoryService.GetCategoryById(ctx, reqDTO)
 	if err != nil {
 		res := &dto.ErrorResponse{}
@@ -131,6 +140,15 @@ func (categoryHandler *CategoryHandler) CreateCategory(ctx context.Context, reqD
 }
 
 func (categoryHandler *CategoryHandler) UpdateCategoryById(ctx context.Context, reqDTO *dto.UpdateCategoryByIdRequest) (*dto.SuccessResponse, error) {
+	if reqDTO.Id == "{id}" {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusBadRequest
+		res.Code = "ERR_BAD_REQUEST"
+		res.Message = "Update category by id failed"
+		res.Details = []string{"missing path parameters: id"}
+		return nil, res
+	}
+
 	if err := categoryHandler.categoryService.UpdateCategoryById(ctx, reqDTO); err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusBadRequest
@@ -147,6 +165,15 @@ func (categoryHandler *CategoryHandler) UpdateCategoryById(ctx context.Context, 
 }
 
 func (categoryHandler *CategoryHandler) DeleteCategoryById(ctx context.Context, reqDTO *dto.DeleteCategoryByIdRequest) (*dto.SuccessResponse, error) {
+	if reqDTO.Id == "{id}" {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusBadRequest
+		res.Code = "ERR_BAD_REQUEST"
+		res.Message = "Delete category by id failed"
+		res.Details = []string{"missing path parameters: id"}
+		return nil, res
+	}
+
 	if err := categoryHandler.categoryService.DeleteCategoryById(ctx, reqDTO); err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusBadRequest

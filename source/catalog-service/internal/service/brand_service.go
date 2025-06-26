@@ -17,7 +17,7 @@ type brandService struct {
 }
 
 type BrandService interface {
-	GetAllBrands(ctx context.Context, reqDTO *dto.GetAllBrandsRequest) ([]dto.BrandView, error)
+	GetAllBrands(ctx context.Context, reqDTO *dto.GetAllBrandsRequest) ([]*dto.BrandView, error)
 	GetBrandById(ctx context.Context, reqDTO *dto.GetBrandByIdRequest) (*dto.BrandView, error)
 	CreateBrand(ctx context.Context, reqDTO *dto.CreateBrandRequest) error
 	UpdateBrandById(ctx context.Context, reqDTO *dto.UpdateBrandByIdRequest) error
@@ -30,7 +30,7 @@ func NewBrandService(brandRepository repository.BrandRepository) BrandService {
 	}
 }
 
-func (brandService *brandService) GetAllBrands(ctx context.Context, redDTO *dto.GetAllBrandsRequest) ([]dto.BrandView, error) {
+func (brandService *brandService) GetAllBrands(ctx context.Context, redDTO *dto.GetAllBrandsRequest) ([]*dto.BrandView, error) {
 	sortFields := utils.ParseSorter(redDTO.SortBy)
 
 	brands, err := brandService.brandRepository.GetAll(ctx, sortFields)
