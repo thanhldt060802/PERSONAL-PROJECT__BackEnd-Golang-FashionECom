@@ -22,6 +22,8 @@ type Config struct {
 
 	OrderServiceGRPCHost         string
 	OrderServiceGRPCPort         string
+	UserServiceGRPCHost          string
+	UserServiceGRPCPort          string
 	CatalogServiceGRPCHost       string
 	CatalogServiceGRPCPort       string
 	ElasticsearchServiceGRPCHost string
@@ -50,6 +52,8 @@ func InitConfig() {
 
 		OrderServiceGRPCHost:         GetEnv("ORDER_SERVICE_GRPC_HOST", "localhost"),
 		OrderServiceGRPCPort:         GetEnv("ORDER_SERVICE_GRPC_PORT", "50050"),
+		UserServiceGRPCHost:          GetEnv("USER_SERVICE_GRPC_HOST", "localhost"),
+		UserServiceGRPCPort:          GetEnv("USER_SERVICE_GRPC_PORT", "50050"),
 		CatalogServiceGRPCHost:       GetEnv("CATALOG_SERVICE_GRPC_HOST", "localhost"),
 		CatalogServiceGRPCPort:       GetEnv("CATALOG_SERVICE_GRPC_PORT", "50050"),
 		ElasticsearchServiceGRPCHost: GetEnv("ELASTICSEARCH_SERVICE_GRPC_HOST", "localhost"),

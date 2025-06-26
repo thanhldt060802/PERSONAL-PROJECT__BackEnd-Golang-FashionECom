@@ -11,18 +11,15 @@ type CartItemView struct {
 	ProductId string `json:"product_id"`
 	Quantity  int32  `json:"quantity"`
 
-	ProductName              string `json:"product_name"`
-	ProducSex                string `json:"product_sex"`
-	ProducPrice              int64  `json:"product_price"`
-	ProducDiscountPercentage int32  `json:"product_discount_percentage"`
-	ProducImageURL           string `json:"product_image_url"`
-	ProducCategoryId         string `json:"product_category_id"`
-	ProducCategoryName       string `json:"product_category_name"`
-	ProducBrandId            string `json:"product_brand_id"`
-	ProducBrandName          string `json:"product_brand_name"`
-}
-
-type CartItemExtraInfo struct {
+	ProductName               string `json:"product_name"`
+	ProductSex                string `json:"product_sex"`
+	ProductPrice              int64  `json:"product_price"`
+	ProductDiscountPercentage int32  `json:"product_discount_percentage"`
+	ProductImageURL           string `json:"product_image_url"`
+	ProductCategoryId         string `json:"product_category_id"`
+	ProductCategoryName       string `json:"product_category_name"`
+	ProductBrandId            string `json:"product_brand_id"`
+	ProductBrandName          string `json:"product_brand_name"`
 }
 
 func ToCartItemView(cartItem *model.CartItem, productProto *catalogservicepb.Product) *CartItemView {
@@ -32,22 +29,27 @@ func ToCartItemView(cartItem *model.CartItem, productProto *catalogservicepb.Pro
 		ProductId: cartItem.ProductId,
 		Quantity:  cartItem.Quantity,
 
-		ProductName:              productProto.Name,
-		ProducSex:                productProto.Sex,
-		ProducPrice:              productProto.Price,
-		ProducDiscountPercentage: productProto.DiscountPercentage,
-		ProducImageURL:           productProto.ImageUrl,
-		ProducCategoryId:         productProto.CategoryId,
-		ProducCategoryName:       productProto.CategoryName,
-		ProducBrandId:            productProto.BrandId,
-		ProducBrandName:          productProto.BrandName,
+		ProductName:               productProto.Name,
+		ProductSex:                productProto.Sex,
+		ProductPrice:              productProto.Price,
+		ProductDiscountPercentage: productProto.DiscountPercentage,
+		ProductImageURL:           productProto.ImageUrl,
+		ProductCategoryId:         productProto.CategoryId,
+		ProductCategoryName:       productProto.CategoryName,
+		ProductBrandId:            productProto.BrandId,
+		ProductBrandName:          productProto.BrandName,
 	}
 }
 
 func ToListCartItemView(cartItems []*model.CartItem, productProtos []*catalogservicepb.Product) []*CartItemView {
+	productProtoMap := make(map[string]*catalogservicepb.Product)
+	for _, productProto := range productProtos {
+		productProtoMap[productProto.Id] = productProto
+	}
+
 	cartItemViews := make([]*CartItemView, len(cartItems))
 	for i := range cartItems {
-		cartItemViews[i] = ToCartItemView(cartItems[i], productProtos[i])
+		cartItemViews[i] = ToCartItemView(cartItems[i], productProtoMap[cartItems[i].ProductId])
 	}
 
 	return cartItemViews

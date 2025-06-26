@@ -6,6 +6,7 @@ import (
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/dto"
 	"thanhldt060802/internal/grpc/client/catalogservicepb"
+	"thanhldt060802/internal/grpc/client/userservicepb"
 	"thanhldt060802/internal/model"
 	"thanhldt060802/internal/repository"
 	"thanhldt060802/utils"
@@ -69,17 +70,17 @@ func (cartItemService *cartItemService) GetCartItems(ctx context.Context, reqDTO
 
 func (cartItemService *cartItemService) CreateCartItem(ctx context.Context, reqDTO *dto.CreateCartItemRequest) error {
 	if infrastructure.CatalogServiceGRPCClient != nil {
-		// Missing->ValidateUser
-
-		convertReqDTO := &catalogservicepb.GetProductsByListIdRequest{}
-		convertReqDTO.Ids = []string{reqDTO.Body.ProductId}
-		grpcRes, err := infrastructure.CatalogServiceGRPCClient.GetProductsByListId(ctx, convertReqDTO)
-		if err != nil {
-			return fmt.Errorf("get products from catalog-service failed: %s", err.Error())
+		{
+			convertReqDTO := &userservicepb.GetUserByIdRequest{}
+			convertReqDTO.Id = reqDTO.Body.UserId
+			_, err := infrastructure.UserServiceGRPCClient.GetUserById(ctx, convertReqDTO)
+			if err != nil {
+				return fmt.Errorf("get user from user-service failed: %s", err.Error())
+			}
 		}
 
-		if len(grpcRes.Products) == 0 {
-			return fmt.Errorf("id of product is not valid")
+		{
+			// Missing->ValidateProduct
 		}
 
 		newCartItem := model.CartItem{

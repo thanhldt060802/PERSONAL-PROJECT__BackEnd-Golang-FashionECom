@@ -24,10 +24,10 @@ type InvoiceService interface {
 	DeleteInvoiceById(ctx context.Context, reqDTO *dto.DeleteInvoiceByIdRequest) error
 
 	// Elasticsearch integration (init data for elasticsearch-service)
-	GetAllInvoices(ctx context.Context) ([]dto.InvoiceView, error)
+	GetAllInvoices(ctx context.Context) ([]*dto.InvoiceView, error)
 
 	// Elasticsearch integration features
-	GetInvoices(ctx context.Context, reqDTO *dto.GetInvoicesRequest) ([]dto.InvoiceView, error)
+	GetInvoices(ctx context.Context, reqDTO *dto.GetInvoicesRequest) ([]*dto.InvoiceView, error)
 }
 
 func NewInvoiceService(invoiceRepository repository.InvoiceRepository) InvoiceService {
@@ -54,20 +54,9 @@ func (invoiceService *invoiceService) GetInvoiceById(ctx context.Context, reqDTO
 		return nil, fmt.Errorf("get products from catalog-service failed: %s", err.Error())
 	}
 
-	productProtos := grpcRes.Products
-	foundInvoiceDetailExtraInfos := make([]dto.InvoiceDetailExtraInfo, len(productProtos))
-	for i, productProto := range productProtos {
-		foundInvoiceDetailExtraInfos[i].Name = productProto.Name
-		foundInvoiceDetailExtraInfos[i].Sex = productProto.Sex
-		foundInvoiceDetailExtraInfos[i].ImageURL = productProto.ImageUrl
+	foundProductProtos := grpcRes.Products
 
-		foundInvoiceDetailExtraInfos[i].CategoryId = productProto.CategoryId
-		foundInvoiceDetailExtraInfos[i].CategoryName = productProto.CategoryName
-		foundInvoiceDetailExtraInfos[i].BrandId = productProto.BrandId
-		foundInvoiceDetailExtraInfos[i].BrandName = productProto.BrandName
-	}
-
-	return dto.ToInvoiceView(foundInvoice, dto.ToListInvoiceDetailView(foundInvoiceDetails, foundInvoiceDetailExtraInfos)), nil
+	return dto.ToInvoiceView(foundInvoice, foundInvoiceDetails, foundProductProtos), nil
 }
 
 func (invoiceService *invoiceService) CreateInvoice(ctx context.Context, reqDTO *dto.CreateInvoiceRequest) error {
@@ -78,9 +67,9 @@ func (invoiceService *invoiceService) CreateInvoice(ctx context.Context, reqDTO 
 		Status:      "CREATED",
 	}
 
-	newInvoiceDetails := []model.InvoiceDetail{}
+	newInvoiceDetails := []*model.InvoiceDetail{}
 	for _, invoiceDetail := range reqDTO.Body.Details {
-		newInvoiceDetails = append(newInvoiceDetails, model.InvoiceDetail{
+		newInvoiceDetails = append(newInvoiceDetails, &model.InvoiceDetail{
 			Id:                 uuid.New().String(),
 			InvoiceId:          newInvoice.Id,
 			ProductId:          invoiceDetail.ProductId,
@@ -146,14 +135,14 @@ func (invoiceService *invoiceService) DeleteInvoiceById(ctx context.Context, req
 	return nil
 }
 
-func (invoiceService *invoiceService) GetAllInvoices(ctx context.Context) ([]dto.InvoiceView, error) {
-	foundInvoices, foundInvoiceIdInvoiceDetailsMap, err := invoiceService.invoiceRepository.GetAll(ctx)
+func (invoiceService *invoiceService) GetAllInvoices(ctx context.Context) ([]*dto.InvoiceView, error) {
+	foundInvoices, foundInvoiceDetailsMap, err := invoiceService.invoiceRepository.GetAll(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("query invoices from postgresql failed: %s", err.Error())
 	}
 
-	foundInvoiceIdInvoiceDetailViewsMap := make(map[string][]dto.InvoiceDetailView)
-	for invoiceId, invoiceDetails := range foundInvoiceIdInvoiceDetailsMap {
+	foundProductProtosMap := make(map[string][]*catalogservicepb.Product)
+	for invoiceId, invoiceDetails := range foundInvoiceDetailsMap {
 		ids := make([]string, len(invoiceDetails))
 		for i, invoiceDetail := range invoiceDetails {
 			ids[i] = invoiceDetail.ProductId
@@ -166,25 +155,13 @@ func (invoiceService *invoiceService) GetAllInvoices(ctx context.Context) ([]dto
 			return nil, fmt.Errorf("get products from catalog-service failed: %s", err.Error())
 		}
 
-		productProtos := grpcRes.Products
-		foundInvoiceDetailExtraInfos := make([]dto.InvoiceDetailExtraInfo, len(productProtos))
-		for i, productProto := range productProtos {
-			foundInvoiceDetailExtraInfos[i].Name = productProto.Name
-			foundInvoiceDetailExtraInfos[i].Sex = productProto.Sex
-			foundInvoiceDetailExtraInfos[i].ImageURL = productProto.ImageUrl
-
-			foundInvoiceDetailExtraInfos[i].CategoryId = productProto.CategoryId
-			foundInvoiceDetailExtraInfos[i].CategoryName = productProto.CategoryName
-			foundInvoiceDetailExtraInfos[i].BrandId = productProto.BrandId
-			foundInvoiceDetailExtraInfos[i].BrandName = productProto.BrandName
-		}
-
-		foundInvoiceIdInvoiceDetailViewsMap[invoiceId] = dto.ToListInvoiceDetailView(invoiceDetails, foundInvoiceDetailExtraInfos)
+		foundProductProtos := grpcRes.Products
+		foundProductProtosMap[invoiceId] = foundProductProtos
 	}
 
-	return dto.ToListInvoiceView(foundInvoices, foundInvoiceIdInvoiceDetailViewsMap), nil
+	return dto.ToListInvoiceView(foundInvoices, foundInvoiceDetailsMap, foundProductProtosMap), nil
 }
 
-func (invoiceService *invoiceService) GetInvoices(ctx context.Context, reqDTO *dto.GetInvoicesRequest) ([]dto.InvoiceView, error) {
+func (invoiceService *invoiceService) GetInvoices(ctx context.Context, reqDTO *dto.GetInvoicesRequest) ([]*dto.InvoiceView, error) {
 	return nil, nil
 }

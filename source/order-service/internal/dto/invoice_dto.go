@@ -1,18 +1,19 @@
 package dto
 
 import (
+	"thanhldt060802/internal/grpc/client/catalogservicepb"
 	"thanhldt060802/internal/model"
 	"time"
 )
 
 type InvoiceView struct {
-	Id          string              `json:"id"`
-	UserId      string              `json:"user_id"`
-	TotalAmount int64               `json:"total_amount"`
-	Stautus     string              `json:"status"`
-	CreatedAt   time.Time           `json:"created_at"`
-	UpdatedAt   time.Time           `json:"updated_at"`
-	Details     []InvoiceDetailView `json:"details,omitempty"`
+	Id             string               `json:"id"`
+	UserId         string               `json:"user_id"`
+	TotalAmount    int64                `json:"total_amount"`
+	Stautus        string               `json:"status"`
+	CreatedAt      time.Time            `json:"created_at"`
+	UpdatedAt      time.Time            `json:"updated_at"`
+	InvoiceDetails []*InvoiceDetailView `json:"invoice_details"`
 }
 
 type InvoiceDetailView struct {
@@ -22,56 +23,65 @@ type InvoiceDetailView struct {
 	DiscountPercentage int32  `json:"discount_percentage"`
 	Quantity           int32  `json:"quantity"`
 	TotalPrice         int64  `json:"total_price"`
-	InvoiceDetailExtraInfo
+
+	ProductName         string `json:"product_name"`
+	ProductSex          string `json:"product_sex"`
+	ProductImageURL     string `json:"product_image_url"`
+	ProductCategoryId   string `json:"product_category_id"`
+	ProductCategoryName string `json:"product_category_name"`
+	ProductBrandId      string `json:"product_brand_id"`
+	ProductBrandName    string `json:"product_brand_name"`
 }
 
-type InvoiceDetailExtraInfo struct {
-	Name     string `json:"name"`
-	Sex      string `json:"sex"`
-	ImageURL string `json:"image_url"`
-
-	CategoryId   string `json:"category_id"`
-	CategoryName string `json:"category_name"`
-	BrandId      string `json:"brand_id"`
-	BrandName    string `json:"brand_name"`
-}
-
-func ToInvoiceView(invoice *model.Invoice, invoiceDetailViews []InvoiceDetailView) *InvoiceView {
+func ToInvoiceView(invoice *model.Invoice, invoiceDetails []*model.InvoiceDetail, productProtos []*catalogservicepb.Product) *InvoiceView {
 	return &InvoiceView{
-		Id:          invoice.Id,
-		UserId:      invoice.UserId,
-		TotalAmount: invoice.TotalAmount,
-		Stautus:     invoice.Status,
-		CreatedAt:   *invoice.CreatedAt,
-		UpdatedAt:   *invoice.UpdatedAt,
-		Details:     invoiceDetailViews,
+		Id:             invoice.Id,
+		UserId:         invoice.UserId,
+		TotalAmount:    invoice.TotalAmount,
+		Stautus:        invoice.Status,
+		CreatedAt:      *invoice.CreatedAt,
+		UpdatedAt:      *invoice.UpdatedAt,
+		InvoiceDetails: ToListInvoiceDetailView(invoiceDetails, productProtos),
 	}
 }
 
-func ToListInvoiceView(invoices []model.Invoice, invoiceIdInvoiceDetailViewsMap map[string][]InvoiceDetailView) []InvoiceView {
-	invoiceViews := make([]InvoiceView, len(invoices))
+func ToListInvoiceView(invoices []*model.Invoice, invoiceDetailsMap map[string][]*model.InvoiceDetail, productProtosMap map[string][]*catalogservicepb.Product) []*InvoiceView {
+	invoiceViews := make([]*InvoiceView, len(invoices))
 	for i, invoice := range invoices {
-		invoiceViews[i] = *ToInvoiceView(&invoice, invoiceIdInvoiceDetailViewsMap[invoice.Id])
+		invoiceViews[i] = ToInvoiceView(invoice, invoiceDetailsMap[invoice.Id], productProtosMap[invoice.Id])
 	}
 	return invoiceViews
 }
 
-func ToInvoiceDetailView(invoiceDetail *model.InvoiceDetail, invoiceDetailExtraInfo *InvoiceDetailExtraInfo) *InvoiceDetailView {
+func ToInvoiceDetailView(invoiceDetail *model.InvoiceDetail, productProto *catalogservicepb.Product) *InvoiceDetailView {
 	return &InvoiceDetailView{
-		Id:                     invoiceDetail.Id,
-		ProductId:              invoiceDetail.ProductId,
-		Price:                  invoiceDetail.Price,
-		DiscountPercentage:     invoiceDetail.DiscountPercentage,
-		Quantity:               invoiceDetail.Quantity,
-		TotalPrice:             invoiceDetail.TotalPrice,
-		InvoiceDetailExtraInfo: *invoiceDetailExtraInfo,
+		Id:                 invoiceDetail.Id,
+		ProductId:          invoiceDetail.ProductId,
+		Price:              invoiceDetail.Price,
+		DiscountPercentage: invoiceDetail.DiscountPercentage,
+		Quantity:           invoiceDetail.Quantity,
+		TotalPrice:         invoiceDetail.TotalPrice,
+
+		ProductName:         productProto.Name,
+		ProductSex:          productProto.Sex,
+		ProductImageURL:     productProto.ImageUrl,
+		ProductCategoryId:   productProto.CategoryId,
+		ProductCategoryName: productProto.CategoryName,
+		ProductBrandId:      productProto.BrandId,
+		ProductBrandName:    productProto.BrandName,
 	}
 }
 
-func ToListInvoiceDetailView(invoiceDetails []model.InvoiceDetail, invoiceDetailExtraInfos []InvoiceDetailExtraInfo) []InvoiceDetailView {
-	invoiceDetailViews := make([]InvoiceDetailView, len(invoiceDetails))
-	for i := range invoiceDetails {
-		invoiceDetailViews[i] = *ToInvoiceDetailView(&invoiceDetails[i], &invoiceDetailExtraInfos[i])
+func ToListInvoiceDetailView(invoiceDetails []*model.InvoiceDetail, productProtos []*catalogservicepb.Product) []*InvoiceDetailView {
+	productProtoMap := make(map[string]*catalogservicepb.Product)
+	for _, productProto := range productProtos {
+		productProtoMap[productProto.Id] = productProto
 	}
+
+	invoiceDetailViews := make([]*InvoiceDetailView, len(invoiceDetails))
+	for i := range invoiceDetails {
+		invoiceDetailViews[i] = ToInvoiceDetailView(invoiceDetails[i], productProtoMap[invoiceDetails[i].ProductId])
+	}
+
 	return invoiceDetailViews
 }

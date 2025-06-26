@@ -6,19 +6,23 @@ import (
 	"net"
 	"thanhldt060802/config"
 	"thanhldt060802/internal/grpc/client/catalogservicepb"
+	"thanhldt060802/internal/grpc/client/userservicepb"
 	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+var UserServiceGRPCClient userservicepb.UserServiceGRPCClient
 var CatalogServiceGRPCClient catalogservicepb.CatalogServiceGRPCClient
 
 type serviceGRPCConnectionManager struct {
+	userServiceGRPCConnection    *grpc.ClientConn
 	catalogServiceGRPCConnection *grpc.ClientConn
 }
 
 func (serviceGRPCConnectionManager *serviceGRPCConnectionManager) CloseAll() {
+	serviceGRPCConnectionManager.userServiceGRPCConnection.Close()
 	serviceGRPCConnectionManager.catalogServiceGRPCConnection.Close()
 }
 
@@ -26,6 +30,37 @@ var ServiceGRPCConnectionManager *serviceGRPCConnectionManager
 
 func InitAllServiceGRPCClients() {
 	ServiceGRPCConnectionManager = &serviceGRPCConnectionManager{}
+
+	// Kết nối user-service
+	go func() {
+		userServiceGRPCServerAddress := net.JoinHostPort(config.AppConfig.UserServiceGRPCHost, config.AppConfig.UserServiceGRPCPort)
+		for {
+			testingConn, err := net.DialTimeout("tcp", userServiceGRPCServerAddress, 2*time.Second)
+			if err == nil {
+				testingConn.Close()
+
+				userServiceGRPCServerAddress = fmt.Sprintf(
+					"%s:%s",
+					config.AppConfig.UserServiceGRPCHost,
+					config.AppConfig.UserServiceGRPCPort,
+				)
+
+				conn, err := grpc.NewClient(userServiceGRPCServerAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+				if err != nil {
+					log.Fatalf("connect to user-service failed: %s", err.Error())
+				}
+				ServiceGRPCConnectionManager.userServiceGRPCConnection = conn
+				UserServiceGRPCClient = userservicepb.NewUserServiceGRPCClient(conn)
+
+				log.Printf("Connect to user-service successful")
+
+				return
+			}
+
+			log.Printf("Waiting for user-service (%s) to be ready...", userServiceGRPCServerAddress)
+			time.Sleep(1 * time.Second)
+		}
+	}()
 
 	// Kết nối catalog-service
 	go func() {
@@ -43,12 +78,12 @@ func InitAllServiceGRPCClients() {
 
 				conn, err := grpc.NewClient(catalogServiceGRPCServerAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 				if err != nil {
-					log.Fatalf("connect to elasticsearch-service failed: %s", err.Error())
+					log.Fatalf("connect to catalog-service failed: %s", err.Error())
 				}
 				ServiceGRPCConnectionManager.catalogServiceGRPCConnection = conn
 				CatalogServiceGRPCClient = catalogservicepb.NewCatalogServiceGRPCClient(conn)
 
-				log.Printf("Connect to elasticsearch-service successful")
+				log.Printf("Connect to catalog-service successful")
 
 				return
 			}
