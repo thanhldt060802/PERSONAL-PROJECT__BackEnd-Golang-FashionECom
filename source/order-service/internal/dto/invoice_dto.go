@@ -7,13 +7,13 @@ import (
 )
 
 type InvoiceView struct {
-	Id             string               `json:"id"`
-	UserId         string               `json:"user_id"`
-	TotalAmount    int64                `json:"total_amount"`
-	Stautus        string               `json:"status"`
-	CreatedAt      time.Time            `json:"created_at"`
-	UpdatedAt      time.Time            `json:"updated_at"`
-	InvoiceDetails []*InvoiceDetailView `json:"invoice_details"`
+	Id             string              `json:"id"`
+	UserId         string              `json:"user_id"`
+	TotalAmount    int64               `json:"total_amount"`
+	Status         string              `json:"status"`
+	CreatedAt      time.Time           `json:"created_at"`
+	UpdatedAt      time.Time           `json:"updated_at"`
+	InvoiceDetails []InvoiceDetailView `json:"invoice_details"`
 }
 
 type InvoiceDetailView struct {
@@ -38,7 +38,7 @@ func ToInvoiceView(invoice *model.Invoice, invoiceDetails []*model.InvoiceDetail
 		Id:             invoice.Id,
 		UserId:         invoice.UserId,
 		TotalAmount:    invoice.TotalAmount,
-		Stautus:        invoice.Status,
+		Status:         invoice.Status,
 		CreatedAt:      *invoice.CreatedAt,
 		UpdatedAt:      *invoice.UpdatedAt,
 		InvoiceDetails: ToListInvoiceDetailView(invoiceDetails, productProtos),
@@ -72,15 +72,15 @@ func ToInvoiceDetailView(invoiceDetail *model.InvoiceDetail, productProto *catal
 	}
 }
 
-func ToListInvoiceDetailView(invoiceDetails []*model.InvoiceDetail, productProtos []*catalogservicepb.Product) []*InvoiceDetailView {
+func ToListInvoiceDetailView(invoiceDetails []*model.InvoiceDetail, productProtos []*catalogservicepb.Product) []InvoiceDetailView {
 	productProtoMap := make(map[string]*catalogservicepb.Product)
 	for _, productProto := range productProtos {
 		productProtoMap[productProto.Id] = productProto
 	}
 
-	invoiceDetailViews := make([]*InvoiceDetailView, len(invoiceDetails))
+	invoiceDetailViews := make([]InvoiceDetailView, len(invoiceDetails))
 	for i := range invoiceDetails {
-		invoiceDetailViews[i] = ToInvoiceDetailView(invoiceDetails[i], productProtoMap[invoiceDetails[i].ProductId])
+		invoiceDetailViews[i] = *ToInvoiceDetailView(invoiceDetails[i], productProtoMap[invoiceDetails[i].ProductId])
 	}
 
 	return invoiceDetailViews

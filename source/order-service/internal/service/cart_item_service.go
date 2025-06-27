@@ -80,7 +80,12 @@ func (cartItemService *cartItemService) CreateCartItem(ctx context.Context, reqD
 		}
 
 		{
-			// Missing->ValidateProduct
+			convertReqDTO := &catalogservicepb.GetProductByIdRequest{}
+			convertReqDTO.Id = reqDTO.Body.ProductId
+			_, err := infrastructure.CatalogServiceGRPCClient.GetProductById(ctx, convertReqDTO)
+			if err != nil {
+				return fmt.Errorf("get product from catalog-service failed: %s", err.Error())
+			}
 		}
 
 		newCartItem := model.CartItem{

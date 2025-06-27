@@ -68,7 +68,7 @@ func (invoiceService *invoiceService) CreateInvoice(ctx context.Context, reqDTO 
 	}
 
 	newInvoiceDetails := []*model.InvoiceDetail{}
-	for _, invoiceDetail := range reqDTO.Body.Details {
+	for _, invoiceDetail := range reqDTO.Body.InvoiceDetails {
 		newInvoiceDetails = append(newInvoiceDetails, &model.InvoiceDetail{
 			Id:                 uuid.New().String(),
 			InvoiceId:          newInvoice.Id,

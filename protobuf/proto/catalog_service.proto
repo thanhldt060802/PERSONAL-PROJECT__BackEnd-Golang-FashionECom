@@ -8,11 +8,16 @@ import "google/protobuf/timestamp.proto";
 
 service CatalogServiceGRPC {
   rpc GetAllProducts (GetAllProductsRequest) returns (GetAllProductsResponse);
+  rpc GetProductById (GetProductByIdRequest) returns (GetProductByIdResponse);
   rpc GetProductsByListId (GetProductsByListIdRequest) returns (GetProductsByListIdResponse);
   rpc UpdateProductsByListInvoiceDetail (UpdateProductsByListInvoiceDetailRequest) returns (UpdateProductsByListInvoiceDetailResponse);
 }
 
 message GetAllProductsRequest {}
+
+message GetProductByIdRequest {
+  string id = 1;
+}
 
 message GetProductsByListIdRequest {
   repeated string ids = 1;
@@ -24,6 +29,10 @@ message UpdateProductsByListInvoiceDetailRequest {
 
 message GetAllProductsResponse {
   repeated Product products = 1;
+}
+
+message GetProductByIdResponse {
+  Product product = 1;
 }
 
 message GetProductsByListIdResponse {

@@ -27,6 +27,20 @@ func (catalogServiceGRPC *CatalogServiceGRPCImpl) GetAllProducts(ctx context.Con
 	return res, nil
 }
 
+func (catalogServiceGRPC *CatalogServiceGRPCImpl) GetProductById(ctx context.Context, req *catalogservicepb.GetProductByIdRequest) (*catalogservicepb.GetProductByIdResponse, error) {
+	convertReqDTO := &dto.GetProductByIdRequest{}
+	convertReqDTO.Id = req.Id
+
+	product, err := catalogServiceGRPC.productService.GetProductById(ctx, convertReqDTO)
+	if err != nil {
+		return nil, err
+	}
+
+	res := &catalogservicepb.GetProductByIdResponse{}
+	res.Product = dto.FromProductViewToProductProto(product)
+	return res, nil
+}
+
 func (catalogServiceGRPC *CatalogServiceGRPCImpl) GetProductsByListId(ctx context.Context, req *catalogservicepb.GetProductsByListIdRequest) (*catalogservicepb.GetProductsByListIdResponse, error) {
 	convertReqDTO := &dto.GetProductsByListIdRequest{}
 	convertReqDTO.Ids = req.Ids
