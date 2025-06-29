@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"thanhldt060802/internal/dto"
 	"thanhldt060802/internal/middleware"
+	"thanhldt060802/internal/model"
 	"thanhldt060802/internal/service"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -12,21 +13,99 @@ import (
 
 type InvoiceHandler struct {
 	invoiceService    service.InvoiceService
-	cartItemService   service.CartItemService
 	jwtAuthMiddleware *middleware.JWTAuthMiddleware
 }
 
-func NewInvoiceHandler(api huma.API, invoiceService service.InvoiceService, cartItemService service.CartItemService, jwtAuthMiddleware *middleware.JWTAuthMiddleware) *InvoiceHandler {
+func NewInvoiceHandler(api huma.API, invoiceService service.InvoiceService, jwtAuthMiddleware *middleware.JWTAuthMiddleware) *InvoiceHandler {
 	invoiceHandler := &InvoiceHandler{
 		invoiceService:    invoiceService,
-		cartItemService:   cartItemService,
 		jwtAuthMiddleware: jwtAuthMiddleware,
 	}
+
+	// Get invoices
+	huma.Register(api, huma.Operation{
+		Method:      http.MethodGet,
+		Path:        "/invoices",
+		Summary:     "/invoices",
+		Description: "Get invoices.",
+		Tags:        []string{"Invoice"},
+		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
+	}, invoiceHandler.GetInvocies)
+
+	// Get invoice by id
+	huma.Register(api, huma.Operation{
+		Method:      http.MethodGet,
+		Path:        "/invoices/id/{id}",
+		Summary:     "/invoices/id/{id}",
+		Description: "Get invoice by id.",
+		Tags:        []string{"Invoice"},
+		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
+	}, invoiceHandler.GetInvoiceById)
+
+	// Create invoice
+	huma.Register(api, huma.Operation{
+		Method:      http.MethodPost,
+		Path:        "/invoices",
+		Summary:     "/invoices",
+		Description: "Create invoice.",
+		Tags:        []string{"Invoice"},
+		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
+	}, invoiceHandler.CreateInvoice)
+
+	// Update invoice by id
+	huma.Register(api, huma.Operation{
+		Method:      http.MethodPut,
+		Path:        "/invoices/id/{id}",
+		Summary:     "/invoices/id/{id}",
+		Description: "Update invoice by id.",
+		Tags:        []string{"Invoice"},
+		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
+	}, invoiceHandler.UpdateInvoiceById)
+
+	// Delete invoice by id
+	huma.Register(api, huma.Operation{
+		Method:      http.MethodDelete,
+		Path:        "/invoices/id/{id}",
+		Summary:     "/invoices/id/{id}",
+		Description: "Delete invoice by id.",
+		Tags:        []string{"Invoice"},
+		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
+	}, invoiceHandler.DeleteInvoiceById)
+
+	// Get my invoices
+	huma.Register(api, huma.Operation{
+		Method:      http.MethodGet,
+		Path:        "/my-invoices",
+		Summary:     "/my-invoices",
+		Description: "Get my invoices.",
+		Tags:        []string{"Invoice"},
+		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication},
+	}, invoiceHandler.GetMyInvoices)
+
+	// Get my invoice by id
+	huma.Register(api, huma.Operation{
+		Method:      http.MethodGet,
+		Path:        "/my-invoices/id/{id}",
+		Summary:     "/my-invoices/id/{id}",
+		Description: "Get my invoice by id.",
+		Tags:        []string{"Invoice"},
+		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication},
+	}, invoiceHandler.GetMyInvoiceById)
+
+	// Create my invoice
+	huma.Register(api, huma.Operation{
+		Method:      http.MethodPost,
+		Path:        "/my-invoices",
+		Summary:     "/my-invoices",
+		Description: "Create my invoice.",
+		Tags:        []string{"Invoice"},
+		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication},
+	}, invoiceHandler.CreateMyInvoice)
 
 	return invoiceHandler
 }
 
-func (invoiceHandler *InvoiceHandler) GetInvocies(ctx context.Context, reqDTO *dto.GetInvoicesRequest) (*dto.PaginationBodyResponseList[*dto.InvoiceView], error) {
+func (invoiceHandler *InvoiceHandler) GetInvocies(ctx context.Context, reqDTO *dto.GetInvoicesRequest) (*dto.PaginationBodyResponseList[*model.InvoiceView], error) {
 	invoices, err := invoiceHandler.invoiceService.GetInvoices(ctx, reqDTO)
 	if err != nil {
 		res := &dto.ErrorResponse{}
@@ -37,7 +116,7 @@ func (invoiceHandler *InvoiceHandler) GetInvocies(ctx context.Context, reqDTO *d
 		return nil, res
 	}
 
-	res := &dto.PaginationBodyResponseList[*dto.InvoiceView]{}
+	res := &dto.PaginationBodyResponseList[*model.InvoiceView]{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Get invoices successful"
 	res.Body.Data = invoices
@@ -45,7 +124,7 @@ func (invoiceHandler *InvoiceHandler) GetInvocies(ctx context.Context, reqDTO *d
 	return res, nil
 }
 
-func (invoiceHandler *InvoiceHandler) GetInvoiceById(ctx context.Context, reqDTO *dto.GetInvoiceByIdRequest) (*dto.BodyResponse[dto.InvoiceView], error) {
+func (invoiceHandler *InvoiceHandler) GetInvoiceById(ctx context.Context, reqDTO *dto.GetInvoiceByIdRequest) (*dto.BodyResponse[*model.InvoiceView], error) {
 	foundInvoice, err := invoiceHandler.invoiceService.GetInvoiceById(ctx, reqDTO)
 	if err != nil {
 		res := &dto.ErrorResponse{}
@@ -56,10 +135,10 @@ func (invoiceHandler *InvoiceHandler) GetInvoiceById(ctx context.Context, reqDTO
 		return nil, res
 	}
 
-	res := &dto.BodyResponse[dto.InvoiceView]{}
+	res := &dto.BodyResponse[*model.InvoiceView]{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Get invoice by id successful"
-	res.Body.Data = *foundInvoice
+	res.Body.Data = foundInvoice
 	return res, nil
 }
 
@@ -111,7 +190,7 @@ func (invoiceHandler *InvoiceHandler) DeleteInvoiceById(ctx context.Context, req
 	return res, nil
 }
 
-func (invoiceHandler *InvoiceHandler) GetMyInvoices(ctx context.Context, reqDTO *dto.GetMyInvoicesRequest) (*dto.PaginationBodyResponseList[*dto.InvoiceView], error) {
+func (invoiceHandler *InvoiceHandler) GetMyInvoices(ctx context.Context, reqDTO *dto.GetMyInvoicesRequest) (*dto.PaginationBodyResponseList[*model.InvoiceView], error) {
 	convertReqDTO := &dto.GetInvoicesRequest{}
 	convertReqDTO.Offset = reqDTO.Offset
 	convertReqDTO.Limit = reqDTO.Limit
@@ -133,7 +212,7 @@ func (invoiceHandler *InvoiceHandler) GetMyInvoices(ctx context.Context, reqDTO 
 		return nil, res
 	}
 
-	res := &dto.PaginationBodyResponseList[*dto.InvoiceView]{}
+	res := &dto.PaginationBodyResponseList[*model.InvoiceView]{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Get my invoices successful"
 	res.Body.Data = invoices
@@ -141,23 +220,34 @@ func (invoiceHandler *InvoiceHandler) GetMyInvoices(ctx context.Context, reqDTO 
 	return res, nil
 }
 
-func (invoiceHandler *InvoiceHandler) CreateMyInvoice(ctx context.Context, _ *struct{}) (*dto.SuccessResponse, error) {
-	convertReqDTO := &dto.CreateInvoiceRequest{}
-	convertReqDTO.Body.UserId = ctx.Value("user_id").(string)
+func (invoiceHandler *InvoiceHandler) GetMyInvoiceById(ctx context.Context, reqDTO *dto.GetMyInvoiceByIdRequest) (*dto.BodyResponse[*model.InvoiceView], error) {
+	convertReqDTO := &dto.GetInvoiceByIdRequest{}
+	convertReqDTO.Id = reqDTO.Id
+	convertReqDTO.UserId = ctx.Value("user_id").(string)
 
-	cartItems, err := invoiceHandler.cartItemService.GetCartItems(ctx, convertReqDT)
+	foundInvoice, err := invoiceHandler.invoiceService.GetInvoiceById(ctx, convertReqDTO)
 	if err != nil {
 		res := &dto.ErrorResponse{}
-		res.Status = http.StatusInternalServerError
-		res.Code = "ERR_INTERNAL_SERVER"
-		res.Message = "Get my cart items failed"
+		res.Status = http.StatusBadRequest
+		res.Code = "ERR_BAD_REQUEST"
+		res.Message = "Get my invoice by id failed"
 		res.Details = []string{err.Error()}
 		return nil, res
 	}
 
-	convertReqDTO.Body.ProductId = reqDTO.Body.ProductId
+	res := &dto.BodyResponse[*model.InvoiceView]{}
+	res.Body.Code = "OK"
+	res.Body.Message = "Get my invoice by id successful"
+	res.Body.Data = foundInvoice
+	return res, nil
+}
 
-	if err := cartItemHandler.cartItemService.CreateCartItem(ctx, convertReqDTO); err != nil {
+func (invoiceHandler *InvoiceHandler) CreateMyInvoice(ctx context.Context, _ *struct{}) (*dto.SuccessResponse, error) {
+	convertReqDTO := &dto.CreateInvoiceRequest{}
+	convertReqDTO.Body.UserId = ctx.Value("user_id").(string)
+	convertReqDTO.Body.InvoiceDetails = []dto.InvoiceDetail{}
+
+	if err := invoiceHandler.invoiceService.CreateInvoice(ctx, convertReqDTO); err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusBadRequest
 		res.Code = "ERR_BAD_REQUEST"

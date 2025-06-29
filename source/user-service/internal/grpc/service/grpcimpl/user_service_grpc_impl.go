@@ -4,6 +4,7 @@ import (
 	"context"
 	"thanhldt060802/internal/dto"
 	"thanhldt060802/internal/grpc/service/userservicepb"
+	"thanhldt060802/internal/model"
 	"thanhldt060802/internal/service"
 )
 
@@ -23,7 +24,7 @@ func (userServiceGRPC *UserServiceGRPCImpl) GetAllUsers(ctx context.Context, req
 	}
 
 	res := &userservicepb.GetAllUsersResponse{}
-	res.Users = dto.FromListUserViewToListUserProto(users)
+	res.Users = model.FromListUserViewToListUserProto(users)
 	return res, nil
 }
 
@@ -37,6 +38,6 @@ func (userServiceGRPC *UserServiceGRPCImpl) GetUserById(ctx context.Context, req
 	}
 
 	res := &userservicepb.GetUserByIdResponse{}
-	res.User = dto.FromUserViewToUserProto(user)
+	res.User = model.FromUserViewToUserProto(user)
 	return res, nil
 }

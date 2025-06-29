@@ -10,32 +10,63 @@ type invoiceRepository struct {
 }
 
 type InvoiceRepository interface {
-	GetById(ctx context.Context, id string) (*model.Invoice, []*model.InvoiceDetail, error)
+	GetViewById(ctx context.Context, id string, dataExpansion bool) (*model.InvoiceView, error)
+
+	GetById(ctx context.Context, id string) (*model.Invoice, error)
 	Create(ctx context.Context, newInvoice *model.Invoice, newInvoiceDetails []*model.InvoiceDetail) error
 	Update(ctx context.Context, updatedInvoice *model.Invoice) error
 	DeleteById(ctx context.Context, id string) error
 
 	// Elasticsearch integration (init data for elasticsearch-service)
-	GetAll(ctx context.Context) ([]*model.Invoice, map[string][]*model.InvoiceDetail, error)
+	GetAllViews(ctx context.Context, dataExpansion bool) ([]*model.InvoiceView, error)
 }
 
 func NewInvoiceRepository() InvoiceRepository {
 	return &invoiceRepository{}
 }
 
-func (invoiceRepository *invoiceRepository) GetById(ctx context.Context, id string) (*model.Invoice, []*model.InvoiceDetail, error) {
-	var invoice model.Invoice
-	var invoiceDetails []*model.InvoiceDetail
+func (invoiceRepository *invoiceRepository) GetViewById(ctx context.Context, id string, dataExpansion bool) (*model.InvoiceView, error) {
+	invoice := new(model.InvoiceView)
+
+	if err := infrastructure.PostgresDB.NewSelect().Model(invoice).Where("_invoice.id = ?", id).Scan(ctx); err != nil {
+		return nil, err
+	}
+
+	if dataExpansion {
+		var invoiceDetails []*model.InvoiceDetailView
+
+		err := infrastructure.PostgresDB.NewSelect().Model(&invoiceDetails).
+			TableExpr("tb_invoice_detail AS _invoice_detail").
+			Column("_invoice_detail.*").
+			ColumnExpr("_product.name AS product_name").
+			ColumnExpr("_product.sex AS product_sex").
+			ColumnExpr("_product.image_url AS product_image_url").
+			ColumnExpr("_product.category_id AS product_category_id").
+			ColumnExpr("_product.brand_id AS product_brand_id").
+			ColumnExpr("_category.name AS product_category_name").
+			ColumnExpr("_brand.name AS product_brand_name").
+			Join("JOIN tb_product AS _product ON _product.id = _invoice_detail.product_id").
+			Join("JOIN tb_category AS _category ON _category.id = _product.category_id").
+			Join("JOIN tb_brand AS _brand ON _brand.id = _product.brand_id").
+			Where("_invoice_detail.invoice_id = ?", id).Scan(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		invoice.InvoiceDetails = invoiceDetails
+	}
+
+	return invoice, nil
+}
+
+func (invoiceRepository *invoiceRepository) GetById(ctx context.Context, id string) (*model.Invoice, error) {
+	invoice := new(model.Invoice)
 
 	if err := infrastructure.PostgresDB.NewSelect().Model(&invoice).Where("id = ?", id).Scan(ctx); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	if err := infrastructure.PostgresDB.NewSelect().Model(&invoiceDetails).Where("invoice_id = ?", id).Scan(ctx); err != nil {
-		return nil, nil, err
-	}
-
-	return &invoice, invoiceDetails, nil
+	return invoice, nil
 }
 
 func (invoiceRepository *invoiceRepository) Create(ctx context.Context, newInvoice *model.Invoice, newInvoiceDetails []*model.InvoiceDetail) error {
@@ -45,7 +76,7 @@ func (invoiceRepository *invoiceRepository) Create(ctx context.Context, newInvoi
 	}
 	defer tx.Rollback()
 
-	if _, err = tx.NewInsert().Model(newInvoice).Exec(ctx); err != nil {
+	if _, err = tx.NewInsert().Model(newInvoice).Returning("*").Exec(ctx); err != nil {
 		return err
 	}
 
@@ -79,22 +110,38 @@ func (invoiceRepository *invoiceRepository) DeleteById(ctx context.Context, id s
 	return nil
 }
 
-func (invoiceRepository *invoiceRepository) GetAll(ctx context.Context) ([]*model.Invoice, map[string][]*model.InvoiceDetail, error) {
-	var invoices []*model.Invoice
-	var invoiceDetails []*model.InvoiceDetail
+func (invoiceRepository *invoiceRepository) GetAllViews(ctx context.Context, dataExpansion bool) ([]*model.InvoiceView, error) {
+	var invoices []*model.InvoiceView
 
 	if err := infrastructure.PostgresDB.NewSelect().Model(&invoices).Scan(ctx); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	if err := infrastructure.PostgresDB.NewSelect().Model(&invoiceDetails).Scan(ctx); err != nil {
-		return nil, nil, err
+	if dataExpansion {
+		for i := range invoices {
+			var invoiceDetails []*model.InvoiceDetailView
+
+			err := infrastructure.PostgresDB.NewSelect().Model(&invoiceDetails).
+				TableExpr("tb_invoice_detail AS _invoice_detail").
+				Column("_invoice_detail.*").
+				ColumnExpr("_product.name AS product_name").
+				ColumnExpr("_product.sex AS product_sex").
+				ColumnExpr("_product.image_url AS product_image_url").
+				ColumnExpr("_product.category_id AS product_category_id").
+				ColumnExpr("_product.brand_id AS product_brand_id").
+				ColumnExpr("_category.name AS product_category_name").
+				ColumnExpr("_brand.name AS product_brand_name").
+				Join("JOIN tb_product AS _product ON _product.id = _invoice_detail.product_id").
+				Join("JOIN tb_category AS _category ON _category.id = _product.category_id").
+				Join("JOIN tb_brand AS _brand ON _brand.id = _product.brand_id").
+				Where("_invoice_detail.invoice_id = ?", invoices[i].Id).Scan(ctx)
+			if err != nil {
+				return nil, err
+			}
+
+			invoices[i].InvoiceDetails = invoiceDetails
+		}
 	}
 
-	invoiceDetailsMap := make(map[string][]*model.InvoiceDetail)
-	for _, invoiceDetail := range invoiceDetails {
-		invoiceDetailsMap[invoiceDetail.InvoiceId] = append(invoiceDetailsMap[invoiceDetail.InvoiceId], invoiceDetail)
-	}
-
-	return invoices, invoiceDetailsMap, nil
+	return invoices, nil
 }

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"thanhldt060802/internal/dto"
 	"thanhldt060802/internal/middleware"
+	"thanhldt060802/internal/model"
 	"thanhldt060802/internal/service"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -72,7 +73,7 @@ func NewBrandHandler(api huma.API, brandService service.BrandService, jwtAuthMid
 	return brandHandler
 }
 
-func (brandHandler *BrandHandler) GetAllBrands(ctx context.Context, reqDTO *dto.GetAllBrandsRequest) (*dto.PaginationBodyResponseList[*dto.BrandView], error) {
+func (brandHandler *BrandHandler) GetAllBrands(ctx context.Context, reqDTO *dto.GetAllBrandsRequest) (*dto.PaginationBodyResponseList[*model.BrandView], error) {
 	brands, err := brandHandler.brandService.GetAllBrands(ctx, reqDTO)
 	if err != nil {
 		res := &dto.ErrorResponse{}
@@ -83,7 +84,7 @@ func (brandHandler *BrandHandler) GetAllBrands(ctx context.Context, reqDTO *dto.
 		return nil, res
 	}
 
-	res := &dto.PaginationBodyResponseList[*dto.BrandView]{}
+	res := &dto.PaginationBodyResponseList[*model.BrandView]{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Get all brands successful"
 	res.Body.Data = brands
@@ -91,7 +92,7 @@ func (brandHandler *BrandHandler) GetAllBrands(ctx context.Context, reqDTO *dto.
 	return res, nil
 }
 
-func (brandHandler *BrandHandler) GetBrandById(ctx context.Context, reqDTO *dto.GetBrandByIdRequest) (*dto.BodyResponse[*dto.BrandView], error) {
+func (brandHandler *BrandHandler) GetBrandById(ctx context.Context, reqDTO *dto.GetBrandByIdRequest) (*dto.BodyResponse[*model.BrandView], error) {
 	if reqDTO.Id == "{id}" {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusBadRequest
@@ -111,7 +112,7 @@ func (brandHandler *BrandHandler) GetBrandById(ctx context.Context, reqDTO *dto.
 		return nil, res
 	}
 
-	res := &dto.BodyResponse[*dto.BrandView]{}
+	res := &dto.BodyResponse[*model.BrandView]{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Get brand by id successful"
 	res.Body.Data = foundBrand

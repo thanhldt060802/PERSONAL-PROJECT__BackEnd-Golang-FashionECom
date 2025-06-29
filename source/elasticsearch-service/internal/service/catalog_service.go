@@ -93,7 +93,7 @@ func (catalogService *catalogService) SyncAllAvailableProducts() error {
 
 	grpcRes, err := infrastructure.CatalogServiceGRPCClient.GetAllProducts(context.Background(), &catalogservicepb.GetAllProductsRequest{})
 	if err != nil {
-		return fmt.Errorf("get all product from catalog-service failed: %s", err.Error())
+		return fmt.Errorf("get all products from catalog-service failed: %s", err.Error())
 	}
 	products := grpcRes.Products
 

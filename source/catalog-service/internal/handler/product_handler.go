@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"thanhldt060802/internal/dto"
 	"thanhldt060802/internal/middleware"
+	"thanhldt060802/internal/model"
 	"thanhldt060802/internal/service"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -72,7 +73,7 @@ func NewProductHandler(api huma.API, productService service.ProductService, jwtA
 	return productHandler
 }
 
-func (productHandler *ProductHandler) GetProducts(ctx context.Context, reqDTO *dto.GetProductsRequest) (*dto.PaginationBodyResponseList[*dto.ProductView], error) {
+func (productHandler *ProductHandler) GetProducts(ctx context.Context, reqDTO *dto.GetProductsRequest) (*dto.PaginationBodyResponseList[*model.ProductView], error) {
 	products, err := productHandler.productService.GetProducts(ctx, reqDTO)
 	if err != nil {
 		res := &dto.ErrorResponse{}
@@ -83,7 +84,7 @@ func (productHandler *ProductHandler) GetProducts(ctx context.Context, reqDTO *d
 		return nil, res
 	}
 
-	res := &dto.PaginationBodyResponseList[*dto.ProductView]{}
+	res := &dto.PaginationBodyResponseList[*model.ProductView]{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Get products successful"
 	res.Body.Data = products
@@ -91,7 +92,7 @@ func (productHandler *ProductHandler) GetProducts(ctx context.Context, reqDTO *d
 	return res, nil
 }
 
-func (productHandler *ProductHandler) GetProductById(ctx context.Context, reqDTO *dto.GetProductByIdRequest) (*dto.BodyResponse[dto.ProductView], error) {
+func (productHandler *ProductHandler) GetProductById(ctx context.Context, reqDTO *dto.GetProductByIdRequest) (*dto.BodyResponse[*model.ProductView], error) {
 	if reqDTO.Id == "{id}" {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusBadRequest
@@ -111,10 +112,10 @@ func (productHandler *ProductHandler) GetProductById(ctx context.Context, reqDTO
 		return nil, res
 	}
 
-	res := &dto.BodyResponse[dto.ProductView]{}
+	res := &dto.BodyResponse[*model.ProductView]{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Get product by id successful"
-	res.Body.Data = *foundProduct
+	res.Body.Data = foundProduct
 	return res, nil
 }
 

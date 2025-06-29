@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	ElasticsearchServiceGRPC_GetUsers_FullMethodName    = "/elasticsearchservicepb.ElasticsearchServiceGRPC/GetUsers"
 	ElasticsearchServiceGRPC_GetProducts_FullMethodName = "/elasticsearchservicepb.ElasticsearchServiceGRPC/GetProducts"
+	ElasticsearchServiceGRPC_GetInvoices_FullMethodName = "/elasticsearchservicepb.ElasticsearchServiceGRPC/GetInvoices"
 )
 
 // ElasticsearchServiceGRPCClient is the client API for ElasticsearchServiceGRPC service.
@@ -29,6 +30,7 @@ const (
 type ElasticsearchServiceGRPCClient interface {
 	GetUsers(ctx context.Context, in *GetUsersRequest, opts ...grpc.CallOption) (*GetUsersResponse, error)
 	GetProducts(ctx context.Context, in *GetProductsRequest, opts ...grpc.CallOption) (*GetProductsResponse, error)
+	GetInvoices(ctx context.Context, in *GetInvoicesRequest, opts ...grpc.CallOption) (*GetInvoicesResponse, error)
 }
 
 type elasticsearchServiceGRPCClient struct {
@@ -59,12 +61,23 @@ func (c *elasticsearchServiceGRPCClient) GetProducts(ctx context.Context, in *Ge
 	return out, nil
 }
 
+func (c *elasticsearchServiceGRPCClient) GetInvoices(ctx context.Context, in *GetInvoicesRequest, opts ...grpc.CallOption) (*GetInvoicesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetInvoicesResponse)
+	err := c.cc.Invoke(ctx, ElasticsearchServiceGRPC_GetInvoices_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ElasticsearchServiceGRPCServer is the server API for ElasticsearchServiceGRPC service.
 // All implementations must embed UnimplementedElasticsearchServiceGRPCServer
 // for forward compatibility.
 type ElasticsearchServiceGRPCServer interface {
 	GetUsers(context.Context, *GetUsersRequest) (*GetUsersResponse, error)
 	GetProducts(context.Context, *GetProductsRequest) (*GetProductsResponse, error)
+	GetInvoices(context.Context, *GetInvoicesRequest) (*GetInvoicesResponse, error)
 	mustEmbedUnimplementedElasticsearchServiceGRPCServer()
 }
 
@@ -80,6 +93,9 @@ func (UnimplementedElasticsearchServiceGRPCServer) GetUsers(context.Context, *Ge
 }
 func (UnimplementedElasticsearchServiceGRPCServer) GetProducts(context.Context, *GetProductsRequest) (*GetProductsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProducts not implemented")
+}
+func (UnimplementedElasticsearchServiceGRPCServer) GetInvoices(context.Context, *GetInvoicesRequest) (*GetInvoicesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetInvoices not implemented")
 }
 func (UnimplementedElasticsearchServiceGRPCServer) mustEmbedUnimplementedElasticsearchServiceGRPCServer() {
 }
@@ -139,6 +155,24 @@ func _ElasticsearchServiceGRPC_GetProducts_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ElasticsearchServiceGRPC_GetInvoices_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetInvoicesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ElasticsearchServiceGRPCServer).GetInvoices(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ElasticsearchServiceGRPC_GetInvoices_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ElasticsearchServiceGRPCServer).GetInvoices(ctx, req.(*GetInvoicesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ElasticsearchServiceGRPC_ServiceDesc is the grpc.ServiceDesc for ElasticsearchServiceGRPC service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -153,6 +187,10 @@ var ElasticsearchServiceGRPC_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetProducts",
 			Handler:    _ElasticsearchServiceGRPC_GetProducts_Handler,
+		},
+		{
+			MethodName: "GetInvoices",
+			Handler:    _ElasticsearchServiceGRPC_GetInvoices_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

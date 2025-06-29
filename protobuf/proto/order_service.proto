@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package orderservice;
+
+option go_package = "orderservicepb/";
+
+import "google/protobuf/timestamp.proto";
+
+service OrderServiceGRPC {
+  rpc GetAllInvoices (GetAllInvoicesRequest) returns (GetAllInvoicesResponse);
+}
+
+message GetAllInvoicesRequest {}
+
+message GetAllInvoicesResponse {
+  repeated Invoice invoices = 1;
+}
+
+message Invoice {
+  string id = 1;
+  string user_id = 2;
+  int64 total_amount = 3;
+  string status = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}

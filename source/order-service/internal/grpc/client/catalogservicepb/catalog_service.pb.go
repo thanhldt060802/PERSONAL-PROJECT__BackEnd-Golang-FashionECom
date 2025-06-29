@@ -102,72 +102,28 @@ func (x *GetProductByIdRequest) GetId() string {
 	return ""
 }
 
-type GetProductsByListIdRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Ids           []string               `protobuf:"bytes,1,rep,name=ids,proto3" json:"ids,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetProductsByListIdRequest) Reset() {
-	*x = GetProductsByListIdRequest{}
-	mi := &file_catalog_service_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetProductsByListIdRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetProductsByListIdRequest) ProtoMessage() {}
-
-func (x *GetProductsByListIdRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_catalog_service_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetProductsByListIdRequest.ProtoReflect.Descriptor instead.
-func (*GetProductsByListIdRequest) Descriptor() ([]byte, []int) {
-	return file_catalog_service_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *GetProductsByListIdRequest) GetIds() []string {
-	if x != nil {
-		return x.Ids
-	}
-	return nil
-}
-
-type UpdateProductsByListInvoiceDetailRequest struct {
+type UpdateProductStocksByListInvoiceDetailRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	InvoiceDetails []*InvoiceDetail       `protobuf:"bytes,1,rep,name=invoice_details,json=invoiceDetails,proto3" json:"invoice_details,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
 
-func (x *UpdateProductsByListInvoiceDetailRequest) Reset() {
-	*x = UpdateProductsByListInvoiceDetailRequest{}
-	mi := &file_catalog_service_proto_msgTypes[3]
+func (x *UpdateProductStocksByListInvoiceDetailRequest) Reset() {
+	*x = UpdateProductStocksByListInvoiceDetailRequest{}
+	mi := &file_catalog_service_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *UpdateProductsByListInvoiceDetailRequest) String() string {
+func (x *UpdateProductStocksByListInvoiceDetailRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*UpdateProductsByListInvoiceDetailRequest) ProtoMessage() {}
+func (*UpdateProductStocksByListInvoiceDetailRequest) ProtoMessage() {}
 
-func (x *UpdateProductsByListInvoiceDetailRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_catalog_service_proto_msgTypes[3]
+func (x *UpdateProductStocksByListInvoiceDetailRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_catalog_service_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -178,12 +134,12 @@ func (x *UpdateProductsByListInvoiceDetailRequest) ProtoReflect() protoreflect.M
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use UpdateProductsByListInvoiceDetailRequest.ProtoReflect.Descriptor instead.
-func (*UpdateProductsByListInvoiceDetailRequest) Descriptor() ([]byte, []int) {
-	return file_catalog_service_proto_rawDescGZIP(), []int{3}
+// Deprecated: Use UpdateProductStocksByListInvoiceDetailRequest.ProtoReflect.Descriptor instead.
+func (*UpdateProductStocksByListInvoiceDetailRequest) Descriptor() ([]byte, []int) {
+	return file_catalog_service_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *UpdateProductsByListInvoiceDetailRequest) GetInvoiceDetails() []*InvoiceDetail {
+func (x *UpdateProductStocksByListInvoiceDetailRequest) GetInvoiceDetails() []*InvoiceDetail {
 	if x != nil {
 		return x.InvoiceDetails
 	}
@@ -199,7 +155,7 @@ type GetAllProductsResponse struct {
 
 func (x *GetAllProductsResponse) Reset() {
 	*x = GetAllProductsResponse{}
-	mi := &file_catalog_service_proto_msgTypes[4]
+	mi := &file_catalog_service_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -211,7 +167,7 @@ func (x *GetAllProductsResponse) String() string {
 func (*GetAllProductsResponse) ProtoMessage() {}
 
 func (x *GetAllProductsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_catalog_service_proto_msgTypes[4]
+	mi := &file_catalog_service_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -224,7 +180,7 @@ func (x *GetAllProductsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAllProductsResponse.ProtoReflect.Descriptor instead.
 func (*GetAllProductsResponse) Descriptor() ([]byte, []int) {
-	return file_catalog_service_proto_rawDescGZIP(), []int{4}
+	return file_catalog_service_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *GetAllProductsResponse) GetProducts() []*Product {
@@ -243,7 +199,7 @@ type GetProductByIdResponse struct {
 
 func (x *GetProductByIdResponse) Reset() {
 	*x = GetProductByIdResponse{}
-	mi := &file_catalog_service_proto_msgTypes[5]
+	mi := &file_catalog_service_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -255,7 +211,7 @@ func (x *GetProductByIdResponse) String() string {
 func (*GetProductByIdResponse) ProtoMessage() {}
 
 func (x *GetProductByIdResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_catalog_service_proto_msgTypes[5]
+	mi := &file_catalog_service_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -268,7 +224,7 @@ func (x *GetProductByIdResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetProductByIdResponse.ProtoReflect.Descriptor instead.
 func (*GetProductByIdResponse) Descriptor() ([]byte, []int) {
-	return file_catalog_service_proto_rawDescGZIP(), []int{5}
+	return file_catalog_service_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *GetProductByIdResponse) GetProduct() *Product {
@@ -278,28 +234,27 @@ func (x *GetProductByIdResponse) GetProduct() *Product {
 	return nil
 }
 
-type GetProductsByListIdResponse struct {
+type UpdateProductStocksByListInvoiceDetailResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Products      []*Product             `protobuf:"bytes,1,rep,name=products,proto3" json:"products,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GetProductsByListIdResponse) Reset() {
-	*x = GetProductsByListIdResponse{}
-	mi := &file_catalog_service_proto_msgTypes[6]
+func (x *UpdateProductStocksByListInvoiceDetailResponse) Reset() {
+	*x = UpdateProductStocksByListInvoiceDetailResponse{}
+	mi := &file_catalog_service_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetProductsByListIdResponse) String() string {
+func (x *UpdateProductStocksByListInvoiceDetailResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetProductsByListIdResponse) ProtoMessage() {}
+func (*UpdateProductStocksByListInvoiceDetailResponse) ProtoMessage() {}
 
-func (x *GetProductsByListIdResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_catalog_service_proto_msgTypes[6]
+func (x *UpdateProductStocksByListInvoiceDetailResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_catalog_service_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -310,52 +265,9 @@ func (x *GetProductsByListIdResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetProductsByListIdResponse.ProtoReflect.Descriptor instead.
-func (*GetProductsByListIdResponse) Descriptor() ([]byte, []int) {
-	return file_catalog_service_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *GetProductsByListIdResponse) GetProducts() []*Product {
-	if x != nil {
-		return x.Products
-	}
-	return nil
-}
-
-type UpdateProductsByListInvoiceDetailResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UpdateProductsByListInvoiceDetailResponse) Reset() {
-	*x = UpdateProductsByListInvoiceDetailResponse{}
-	mi := &file_catalog_service_proto_msgTypes[7]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpdateProductsByListInvoiceDetailResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpdateProductsByListInvoiceDetailResponse) ProtoMessage() {}
-
-func (x *UpdateProductsByListInvoiceDetailResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_catalog_service_proto_msgTypes[7]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpdateProductsByListInvoiceDetailResponse.ProtoReflect.Descriptor instead.
-func (*UpdateProductsByListInvoiceDetailResponse) Descriptor() ([]byte, []int) {
-	return file_catalog_service_proto_rawDescGZIP(), []int{7}
+// Deprecated: Use UpdateProductStocksByListInvoiceDetailResponse.ProtoReflect.Descriptor instead.
+func (*UpdateProductStocksByListInvoiceDetailResponse) Descriptor() ([]byte, []int) {
+	return file_catalog_service_proto_rawDescGZIP(), []int{5}
 }
 
 type Product struct {
@@ -380,7 +292,7 @@ type Product struct {
 
 func (x *Product) Reset() {
 	*x = Product{}
-	mi := &file_catalog_service_proto_msgTypes[8]
+	mi := &file_catalog_service_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -392,7 +304,7 @@ func (x *Product) String() string {
 func (*Product) ProtoMessage() {}
 
 func (x *Product) ProtoReflect() protoreflect.Message {
-	mi := &file_catalog_service_proto_msgTypes[8]
+	mi := &file_catalog_service_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -405,7 +317,7 @@ func (x *Product) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Product.ProtoReflect.Descriptor instead.
 func (*Product) Descriptor() ([]byte, []int) {
-	return file_catalog_service_proto_rawDescGZIP(), []int{8}
+	return file_catalog_service_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *Product) GetId() string {
@@ -516,7 +428,7 @@ type InvoiceDetail struct {
 
 func (x *InvoiceDetail) Reset() {
 	*x = InvoiceDetail{}
-	mi := &file_catalog_service_proto_msgTypes[9]
+	mi := &file_catalog_service_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -528,7 +440,7 @@ func (x *InvoiceDetail) String() string {
 func (*InvoiceDetail) ProtoMessage() {}
 
 func (x *InvoiceDetail) ProtoReflect() protoreflect.Message {
-	mi := &file_catalog_service_proto_msgTypes[9]
+	mi := &file_catalog_service_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -541,7 +453,7 @@ func (x *InvoiceDetail) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InvoiceDetail.ProtoReflect.Descriptor instead.
 func (*InvoiceDetail) Descriptor() ([]byte, []int) {
-	return file_catalog_service_proto_rawDescGZIP(), []int{9}
+	return file_catalog_service_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *InvoiceDetail) GetProductId() string {
@@ -565,18 +477,14 @@ const file_catalog_service_proto_rawDesc = "" +
 	"\x15catalog_service.proto\x12\x0ecatalogservice\x1a\x1fgoogle/protobuf/timestamp.proto\"\x17\n" +
 	"\x15GetAllProductsRequest\"'\n" +
 	"\x15GetProductByIdRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\".\n" +
-	"\x1aGetProductsByListIdRequest\x12\x10\n" +
-	"\x03ids\x18\x01 \x03(\tR\x03ids\"r\n" +
-	"(UpdateProductsByListInvoiceDetailRequest\x12F\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"w\n" +
+	"-UpdateProductStocksByListInvoiceDetailRequest\x12F\n" +
 	"\x0finvoice_details\x18\x01 \x03(\v2\x1d.catalogservice.InvoiceDetailR\x0einvoiceDetails\"M\n" +
 	"\x16GetAllProductsResponse\x123\n" +
 	"\bproducts\x18\x01 \x03(\v2\x17.catalogservice.ProductR\bproducts\"K\n" +
 	"\x16GetProductByIdResponse\x121\n" +
-	"\aproduct\x18\x01 \x01(\v2\x17.catalogservice.ProductR\aproduct\"R\n" +
-	"\x1bGetProductsByListIdResponse\x123\n" +
-	"\bproducts\x18\x01 \x03(\v2\x17.catalogservice.ProductR\bproducts\"+\n" +
-	")UpdateProductsByListInvoiceDetailResponse\"\xd1\x03\n" +
+	"\aproduct\x18\x01 \x01(\v2\x17.catalogservice.ProductR\aproduct\"0\n" +
+	".UpdateProductStocksByListInvoiceDetailResponse\"\xd1\x03\n" +
 	"\aProduct\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
@@ -600,12 +508,11 @@ const file_catalog_service_proto_rawDesc = "" +
 	"\rInvoiceDetail\x12\x1d\n" +
 	"\n" +
 	"product_id\x18\x01 \x01(\tR\tproductId\x12\x1a\n" +
-	"\bquantity\x18\x02 \x01(\x05R\bquantity2\xe1\x03\n" +
+	"\bquantity\x18\x02 \x01(\x05R\bquantity2\x80\x03\n" +
 	"\x12CatalogServiceGRPC\x12_\n" +
 	"\x0eGetAllProducts\x12%.catalogservice.GetAllProductsRequest\x1a&.catalogservice.GetAllProductsResponse\x12_\n" +
-	"\x0eGetProductById\x12%.catalogservice.GetProductByIdRequest\x1a&.catalogservice.GetProductByIdResponse\x12n\n" +
-	"\x13GetProductsByListId\x12*.catalogservice.GetProductsByListIdRequest\x1a+.catalogservice.GetProductsByListIdResponse\x12\x98\x01\n" +
-	"!UpdateProductsByListInvoiceDetail\x128.catalogservice.UpdateProductsByListInvoiceDetailRequest\x1a9.catalogservice.UpdateProductsByListInvoiceDetailResponseB\x13Z\x11catalogservicepb/b\x06proto3"
+	"\x0eGetProductById\x12%.catalogservice.GetProductByIdRequest\x1a&.catalogservice.GetProductByIdResponse\x12\xa7\x01\n" +
+	"&UpdateProductStocksByListInvoiceDetail\x12=.catalogservice.UpdateProductStocksByListInvoiceDetailRequest\x1a>.catalogservice.UpdateProductStocksByListInvoiceDetailResponseB\x13Z\x11catalogservicepb/b\x06proto3"
 
 var (
 	file_catalog_service_proto_rawDescOnce sync.Once
@@ -619,40 +526,35 @@ func file_catalog_service_proto_rawDescGZIP() []byte {
 	return file_catalog_service_proto_rawDescData
 }
 
-var file_catalog_service_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_catalog_service_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_catalog_service_proto_goTypes = []any{
-	(*GetAllProductsRequest)(nil),                     // 0: catalogservice.GetAllProductsRequest
-	(*GetProductByIdRequest)(nil),                     // 1: catalogservice.GetProductByIdRequest
-	(*GetProductsByListIdRequest)(nil),                // 2: catalogservice.GetProductsByListIdRequest
-	(*UpdateProductsByListInvoiceDetailRequest)(nil),  // 3: catalogservice.UpdateProductsByListInvoiceDetailRequest
-	(*GetAllProductsResponse)(nil),                    // 4: catalogservice.GetAllProductsResponse
-	(*GetProductByIdResponse)(nil),                    // 5: catalogservice.GetProductByIdResponse
-	(*GetProductsByListIdResponse)(nil),               // 6: catalogservice.GetProductsByListIdResponse
-	(*UpdateProductsByListInvoiceDetailResponse)(nil), // 7: catalogservice.UpdateProductsByListInvoiceDetailResponse
-	(*Product)(nil),                                   // 8: catalogservice.Product
-	(*InvoiceDetail)(nil),                             // 9: catalogservice.InvoiceDetail
-	(*timestamppb.Timestamp)(nil),                     // 10: google.protobuf.Timestamp
+	(*GetAllProductsRequest)(nil),                          // 0: catalogservice.GetAllProductsRequest
+	(*GetProductByIdRequest)(nil),                          // 1: catalogservice.GetProductByIdRequest
+	(*UpdateProductStocksByListInvoiceDetailRequest)(nil),  // 2: catalogservice.UpdateProductStocksByListInvoiceDetailRequest
+	(*GetAllProductsResponse)(nil),                         // 3: catalogservice.GetAllProductsResponse
+	(*GetProductByIdResponse)(nil),                         // 4: catalogservice.GetProductByIdResponse
+	(*UpdateProductStocksByListInvoiceDetailResponse)(nil), // 5: catalogservice.UpdateProductStocksByListInvoiceDetailResponse
+	(*Product)(nil),                                        // 6: catalogservice.Product
+	(*InvoiceDetail)(nil),                                  // 7: catalogservice.InvoiceDetail
+	(*timestamppb.Timestamp)(nil),                          // 8: google.protobuf.Timestamp
 }
 var file_catalog_service_proto_depIdxs = []int32{
-	9,  // 0: catalogservice.UpdateProductsByListInvoiceDetailRequest.invoice_details:type_name -> catalogservice.InvoiceDetail
-	8,  // 1: catalogservice.GetAllProductsResponse.products:type_name -> catalogservice.Product
-	8,  // 2: catalogservice.GetProductByIdResponse.product:type_name -> catalogservice.Product
-	8,  // 3: catalogservice.GetProductsByListIdResponse.products:type_name -> catalogservice.Product
-	10, // 4: catalogservice.Product.created_at:type_name -> google.protobuf.Timestamp
-	10, // 5: catalogservice.Product.updated_at:type_name -> google.protobuf.Timestamp
-	0,  // 6: catalogservice.CatalogServiceGRPC.GetAllProducts:input_type -> catalogservice.GetAllProductsRequest
-	1,  // 7: catalogservice.CatalogServiceGRPC.GetProductById:input_type -> catalogservice.GetProductByIdRequest
-	2,  // 8: catalogservice.CatalogServiceGRPC.GetProductsByListId:input_type -> catalogservice.GetProductsByListIdRequest
-	3,  // 9: catalogservice.CatalogServiceGRPC.UpdateProductsByListInvoiceDetail:input_type -> catalogservice.UpdateProductsByListInvoiceDetailRequest
-	4,  // 10: catalogservice.CatalogServiceGRPC.GetAllProducts:output_type -> catalogservice.GetAllProductsResponse
-	5,  // 11: catalogservice.CatalogServiceGRPC.GetProductById:output_type -> catalogservice.GetProductByIdResponse
-	6,  // 12: catalogservice.CatalogServiceGRPC.GetProductsByListId:output_type -> catalogservice.GetProductsByListIdResponse
-	7,  // 13: catalogservice.CatalogServiceGRPC.UpdateProductsByListInvoiceDetail:output_type -> catalogservice.UpdateProductsByListInvoiceDetailResponse
-	10, // [10:14] is the sub-list for method output_type
-	6,  // [6:10] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	7, // 0: catalogservice.UpdateProductStocksByListInvoiceDetailRequest.invoice_details:type_name -> catalogservice.InvoiceDetail
+	6, // 1: catalogservice.GetAllProductsResponse.products:type_name -> catalogservice.Product
+	6, // 2: catalogservice.GetProductByIdResponse.product:type_name -> catalogservice.Product
+	8, // 3: catalogservice.Product.created_at:type_name -> google.protobuf.Timestamp
+	8, // 4: catalogservice.Product.updated_at:type_name -> google.protobuf.Timestamp
+	0, // 5: catalogservice.CatalogServiceGRPC.GetAllProducts:input_type -> catalogservice.GetAllProductsRequest
+	1, // 6: catalogservice.CatalogServiceGRPC.GetProductById:input_type -> catalogservice.GetProductByIdRequest
+	2, // 7: catalogservice.CatalogServiceGRPC.UpdateProductStocksByListInvoiceDetail:input_type -> catalogservice.UpdateProductStocksByListInvoiceDetailRequest
+	3, // 8: catalogservice.CatalogServiceGRPC.GetAllProducts:output_type -> catalogservice.GetAllProductsResponse
+	4, // 9: catalogservice.CatalogServiceGRPC.GetProductById:output_type -> catalogservice.GetProductByIdResponse
+	5, // 10: catalogservice.CatalogServiceGRPC.UpdateProductStocksByListInvoiceDetail:output_type -> catalogservice.UpdateProductStocksByListInvoiceDetailResponse
+	8, // [8:11] is the sub-list for method output_type
+	5, // [5:8] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_catalog_service_proto_init() }
@@ -666,7 +568,7 @@ func file_catalog_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_catalog_service_proto_rawDesc), len(file_catalog_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

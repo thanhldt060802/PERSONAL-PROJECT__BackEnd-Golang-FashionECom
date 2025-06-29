@@ -6,6 +6,7 @@ import (
 	"net"
 	"thanhldt060802/config"
 	"thanhldt060802/internal/grpc/client/catalogservicepb"
+	"thanhldt060802/internal/grpc/client/orderservicepb"
 	"thanhldt060802/internal/grpc/client/userservicepb"
 	"time"
 
@@ -15,12 +16,15 @@ import (
 
 var UserServiceGRPCConnection *grpc.ClientConn
 var CatalogServiceGRPCConnection *grpc.ClientConn
+var OrderServiceGRPCConnection *grpc.ClientConn
 
 var UserServiceGRPCClient userservicepb.UserServiceGRPCClient
 var CatalogServiceGRPCClient catalogservicepb.CatalogServiceGRPCClient
+var OrderServiceGRPCClient orderservicepb.OrderServiceGRPCClient
 
 var UserServiceGRPCClientConnectionEvent chan struct{} = make(chan struct{}, 1)
 var CatalogServiceGRPCClientConnectionEvent chan struct{} = make(chan struct{}, 1)
+var OrderServiceGRPCClientConnectionEvent chan struct{} = make(chan struct{}, 1)
 
 func InitAllServiceGRPCClients() {
 	// Kết nối user-service
@@ -94,4 +98,37 @@ func InitAllServiceGRPCClients() {
 	}
 
 	// Kết nối order-service
+	if config.AppConfig.SyncAvailableDataFromOrderService == "true" {
+		go func() {
+			orderServiceGRPCServerAddress := net.JoinHostPort(config.AppConfig.OrderServiceGRPCHost, config.AppConfig.OrderServiceGRPCPort)
+			for {
+				testingConn, err := net.DialTimeout("tcp", orderServiceGRPCServerAddress, 2*time.Second)
+				if err == nil {
+					testingConn.Close()
+
+					orderServiceGRPCServerAddress := fmt.Sprintf(
+						"%s:%s",
+						config.AppConfig.OrderServiceGRPCHost,
+						config.AppConfig.OrderServiceGRPCPort,
+					)
+
+					conn, err := grpc.NewClient(orderServiceGRPCServerAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+					if err != nil {
+						log.Fatalf("connect to order-service failed: %s", err.Error())
+					}
+					OrderServiceGRPCConnection = conn
+					OrderServiceGRPCClient = orderservicepb.NewOrderServiceGRPCClient(conn)
+
+					log.Printf("Connect to order-service successful")
+
+					OrderServiceGRPCClientConnectionEvent <- struct{}{}
+
+					return
+				}
+
+				log.Printf("Waiting for order-service (%s) to be ready...", orderServiceGRPCServerAddress)
+				time.Sleep(1 * time.Second)
+			}
+		}()
+	}
 }

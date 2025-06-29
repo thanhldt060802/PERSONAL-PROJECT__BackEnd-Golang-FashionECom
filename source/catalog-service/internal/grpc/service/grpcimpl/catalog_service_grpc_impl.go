@@ -4,6 +4,7 @@ import (
 	"context"
 	"thanhldt060802/internal/dto"
 	"thanhldt060802/internal/grpc/service/catalogservicepb"
+	"thanhldt060802/internal/model"
 	"thanhldt060802/internal/service"
 )
 
@@ -23,7 +24,7 @@ func (catalogServiceGRPC *CatalogServiceGRPCImpl) GetAllProducts(ctx context.Con
 	}
 
 	res := &catalogservicepb.GetAllProductsResponse{}
-	res.Products = dto.FromListProductViewToListProductProto(products)
+	res.Products = model.FromListProductViewToListProductProto(products)
 	return res, nil
 }
 
@@ -37,25 +38,11 @@ func (catalogServiceGRPC *CatalogServiceGRPCImpl) GetProductById(ctx context.Con
 	}
 
 	res := &catalogservicepb.GetProductByIdResponse{}
-	res.Product = dto.FromProductViewToProductProto(product)
+	res.Product = model.FromProductViewToProductProto(product)
 	return res, nil
 }
 
-func (catalogServiceGRPC *CatalogServiceGRPCImpl) GetProductsByListId(ctx context.Context, req *catalogservicepb.GetProductsByListIdRequest) (*catalogservicepb.GetProductsByListIdResponse, error) {
-	convertReqDTO := &dto.GetProductsByListIdRequest{}
-	convertReqDTO.Ids = req.Ids
-
-	products, err := catalogServiceGRPC.productService.GetProductsByListId(ctx, convertReqDTO)
-	if err != nil {
-		return nil, err
-	}
-
-	res := &catalogservicepb.GetProductsByListIdResponse{}
-	res.Products = dto.FromListProductViewToListProductProto(products)
-	return res, nil
-}
-
-func (catalogServiceGRPC *CatalogServiceGRPCImpl) UpdateProductsByListInvoiceDetail(ctx context.Context, req *catalogservicepb.UpdateProductsByListInvoiceDetailRequest) (*catalogservicepb.UpdateProductsByListInvoiceDetailResponse, error) {
+func (catalogServiceGRPC *CatalogServiceGRPCImpl) UpdateProductStocksByListInvoiceDetail(ctx context.Context, req *catalogservicepb.UpdateProductStocksByListInvoiceDetailRequest) (*catalogservicepb.UpdateProductStocksByListInvoiceDetailResponse, error) {
 	convertReqDTO := &dto.UpdateProductStocksByListInvoiceDetailRequest{}
 	convertReqDTO.InvoiceDetails = make([]dto.InvoiceDetail, len(req.InvoiceDetails))
 	for _, invoiceDetailProto := range req.InvoiceDetails {
@@ -69,6 +56,6 @@ func (catalogServiceGRPC *CatalogServiceGRPCImpl) UpdateProductsByListInvoiceDet
 		return nil, err
 	}
 
-	res := &catalogservicepb.UpdateProductsByListInvoiceDetailResponse{}
+	res := &catalogservicepb.UpdateProductStocksByListInvoiceDetailResponse{}
 	return res, nil
 }

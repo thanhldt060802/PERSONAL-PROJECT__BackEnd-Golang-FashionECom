@@ -22,15 +22,16 @@ type GetInvoiceByIdRequest struct {
 
 type CreateInvoiceRequest struct {
 	Body struct {
-		UserId         string `json:"user_id" required:"true" minimum:"1" doc:"User id of invoice."`
-		InvoiceDetails []struct {
-			ProductId          string `json:"product_id" required:"true" minimum:"1" doc:"Product id of invoice detail."`
-			Price              int64  `json:"product_price" required:"true" minimum:"0" doc:"Price of product of invoice detail."`
-			DiscountPercentage int32  `json:"discount_percentage" required:"true" minimum:"0" doc:"Discount percentage of product of invoice detail."`
-			Quantity           int32  `json:"quantity" required:"true" minimum:"1" doc:"Quantity of product of invoice detail."`
-			TotalPrice         int64  `json:"total_price" required:"true" minimum:"0" doc:"Total price of product of invoice detail."`
-		} `json:"invoice_details" required:"true" doc:"Invoice details."`
+		UserId         string          `json:"user_id" required:"true" minimum:"1" doc:"User id of invoice."`
+		InvoiceDetails []InvoiceDetail `json:"invoice_details" required:"true" doc:"Invoice details."`
 	}
+}
+type InvoiceDetail struct {
+	ProductId          string `json:"product_id" required:"true" minimum:"1" doc:"Product id of invoice detail."`
+	Price              int64  `json:"product_price" required:"true" minimum:"0" doc:"Price of product of invoice detail."`
+	DiscountPercentage int32  `json:"discount_percentage" required:"true" minimum:"0" doc:"Discount percentage of product of invoice detail."`
+	Quantity           int32  `json:"quantity" required:"true" minimum:"1" doc:"Quantity of product of invoice detail."`
+	TotalPrice         int64  `json:"total_price" required:"true" minimum:"0" doc:"Total price of product of invoice detail."`
 }
 
 type UpdateInvoiceByIdRequest struct {

@@ -12,7 +12,9 @@ type brandRepository struct {
 }
 
 type BrandRepository interface {
-	GetAll(ctx context.Context, sortFields []*utils.SortField) ([]*model.Brand, error)
+	GetAllViews(ctx context.Context, sortFields []*utils.SortField) ([]*model.BrandView, error)
+	GetViewById(ctx context.Context, id string) (*model.BrandView, error)
+
 	GetById(ctx context.Context, id string) (*model.Brand, error)
 	GetByName(ctx context.Context, name string) (*model.Brand, error)
 	Create(ctx context.Context, newBrand *model.Brand) error
@@ -24,13 +26,13 @@ func NewBrandRepository() BrandRepository {
 	return &brandRepository{}
 }
 
-func (brandRepository *brandRepository) GetAll(ctx context.Context, sortFields []*utils.SortField) ([]*model.Brand, error) {
-	var brands []*model.Brand
+func (brandRepository *brandRepository) GetAllViews(ctx context.Context, sortFields []*utils.SortField) ([]*model.BrandView, error) {
+	var brands []*model.BrandView
 
 	query := infrastructure.PostgresDB.NewSelect().Model(&brands)
 
 	for _, sortField := range sortFields {
-		query = query.Order(fmt.Sprintf("%s %s", sortField.Field, sortField.Direction))
+		query = query.Order(fmt.Sprintf("_brand.%s %s", sortField.Field, sortField.Direction))
 	}
 
 	if err := query.Scan(ctx); err != nil {
@@ -40,28 +42,38 @@ func (brandRepository *brandRepository) GetAll(ctx context.Context, sortFields [
 	return brands, nil
 }
 
-func (brandRepository *brandRepository) GetById(ctx context.Context, id string) (*model.Brand, error) {
-	var brand model.Brand
+func (brandRepository *brandRepository) GetViewById(ctx context.Context, id string) (*model.BrandView, error) {
+	brand := new(model.BrandView)
 
-	if err := infrastructure.PostgresDB.NewSelect().Model(&brand).Where("id = ?", id).Scan(ctx); err != nil {
+	if err := infrastructure.PostgresDB.NewSelect().Model(brand).Where("_brand.id = ?", id).Scan(ctx); err != nil {
 		return nil, err
 	}
 
-	return &brand, nil
+	return brand, nil
+}
+
+func (brandRepository *brandRepository) GetById(ctx context.Context, id string) (*model.Brand, error) {
+	brand := new(model.Brand)
+
+	if err := infrastructure.PostgresDB.NewSelect().Model(brand).Where("id = ?", id).Scan(ctx); err != nil {
+		return nil, err
+	}
+
+	return brand, nil
 }
 
 func (brandRepository *brandRepository) GetByName(ctx context.Context, name string) (*model.Brand, error) {
-	var brand model.Brand
+	brand := new(model.Brand)
 
-	if err := infrastructure.PostgresDB.NewSelect().Model(&brand).Where("name = ?", name).Scan(ctx); err != nil {
+	if err := infrastructure.PostgresDB.NewSelect().Model(brand).Where("name = ?", name).Scan(ctx); err != nil {
 		return nil, err
 	}
 
-	return &brand, nil
+	return brand, nil
 }
 
 func (brandRepository *brandRepository) Create(ctx context.Context, newBrand *model.Brand) error {
-	_, err := infrastructure.PostgresDB.NewInsert().Model(newBrand).Exec(ctx)
+	_, err := infrastructure.PostgresDB.NewInsert().Model(newBrand).Returning("*").Exec(ctx)
 	return err
 }
 

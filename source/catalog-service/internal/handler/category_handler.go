@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"thanhldt060802/internal/dto"
 	"thanhldt060802/internal/middleware"
+	"thanhldt060802/internal/model"
 	"thanhldt060802/internal/service"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -77,7 +78,7 @@ func NewCategoryHandler(api huma.API, categoryService service.CategoryService, j
 	return categoryHandler
 }
 
-func (categoryHandler *CategoryHandler) GetAllCategories(ctx context.Context, reqDTO *dto.GetAllCategoriesRequest) (*dto.PaginationBodyResponseList[*dto.CategoryView], error) {
+func (categoryHandler *CategoryHandler) GetAllCategories(ctx context.Context, reqDTO *dto.GetAllCategoriesRequest) (*dto.PaginationBodyResponseList[*model.CategoryView], error) {
 	categories, err := categoryHandler.categoryService.GetAllCategories(ctx, reqDTO)
 	if err != nil {
 		res := &dto.ErrorResponse{}
@@ -88,7 +89,7 @@ func (categoryHandler *CategoryHandler) GetAllCategories(ctx context.Context, re
 		return nil, res
 	}
 
-	res := &dto.PaginationBodyResponseList[*dto.CategoryView]{}
+	res := &dto.PaginationBodyResponseList[*model.CategoryView]{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Get all categories successful"
 	res.Body.Data = categories
@@ -96,7 +97,7 @@ func (categoryHandler *CategoryHandler) GetAllCategories(ctx context.Context, re
 	return res, nil
 }
 
-func (categoryHandler *CategoryHandler) GetCategoryById(ctx context.Context, reqDTO *dto.GetCategoryByIdRequest) (*dto.BodyResponse[dto.CategoryView], error) {
+func (categoryHandler *CategoryHandler) GetCategoryById(ctx context.Context, reqDTO *dto.GetCategoryByIdRequest) (*dto.BodyResponse[*model.CategoryView], error) {
 	if reqDTO.Id == "{id}" {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusBadRequest
@@ -116,10 +117,10 @@ func (categoryHandler *CategoryHandler) GetCategoryById(ctx context.Context, req
 		return nil, res
 	}
 
-	res := &dto.BodyResponse[dto.CategoryView]{}
+	res := &dto.BodyResponse[*model.CategoryView]{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Get category by id successful"
-	res.Body.Data = *foundCategory
+	res.Body.Data = foundCategory
 	return res, nil
 }
 

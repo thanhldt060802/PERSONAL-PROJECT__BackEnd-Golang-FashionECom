@@ -19,10 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	CatalogServiceGRPC_GetAllProducts_FullMethodName                    = "/catalogservice.CatalogServiceGRPC/GetAllProducts"
-	CatalogServiceGRPC_GetProductById_FullMethodName                    = "/catalogservice.CatalogServiceGRPC/GetProductById"
-	CatalogServiceGRPC_GetProductsByListId_FullMethodName               = "/catalogservice.CatalogServiceGRPC/GetProductsByListId"
-	CatalogServiceGRPC_UpdateProductsByListInvoiceDetail_FullMethodName = "/catalogservice.CatalogServiceGRPC/UpdateProductsByListInvoiceDetail"
+	CatalogServiceGRPC_GetAllProducts_FullMethodName                         = "/catalogservice.CatalogServiceGRPC/GetAllProducts"
+	CatalogServiceGRPC_GetProductById_FullMethodName                         = "/catalogservice.CatalogServiceGRPC/GetProductById"
+	CatalogServiceGRPC_UpdateProductStocksByListInvoiceDetail_FullMethodName = "/catalogservice.CatalogServiceGRPC/UpdateProductStocksByListInvoiceDetail"
 )
 
 // CatalogServiceGRPCClient is the client API for CatalogServiceGRPC service.
@@ -31,8 +30,7 @@ const (
 type CatalogServiceGRPCClient interface {
 	GetAllProducts(ctx context.Context, in *GetAllProductsRequest, opts ...grpc.CallOption) (*GetAllProductsResponse, error)
 	GetProductById(ctx context.Context, in *GetProductByIdRequest, opts ...grpc.CallOption) (*GetProductByIdResponse, error)
-	GetProductsByListId(ctx context.Context, in *GetProductsByListIdRequest, opts ...grpc.CallOption) (*GetProductsByListIdResponse, error)
-	UpdateProductsByListInvoiceDetail(ctx context.Context, in *UpdateProductsByListInvoiceDetailRequest, opts ...grpc.CallOption) (*UpdateProductsByListInvoiceDetailResponse, error)
+	UpdateProductStocksByListInvoiceDetail(ctx context.Context, in *UpdateProductStocksByListInvoiceDetailRequest, opts ...grpc.CallOption) (*UpdateProductStocksByListInvoiceDetailResponse, error)
 }
 
 type catalogServiceGRPCClient struct {
@@ -63,20 +61,10 @@ func (c *catalogServiceGRPCClient) GetProductById(ctx context.Context, in *GetPr
 	return out, nil
 }
 
-func (c *catalogServiceGRPCClient) GetProductsByListId(ctx context.Context, in *GetProductsByListIdRequest, opts ...grpc.CallOption) (*GetProductsByListIdResponse, error) {
+func (c *catalogServiceGRPCClient) UpdateProductStocksByListInvoiceDetail(ctx context.Context, in *UpdateProductStocksByListInvoiceDetailRequest, opts ...grpc.CallOption) (*UpdateProductStocksByListInvoiceDetailResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetProductsByListIdResponse)
-	err := c.cc.Invoke(ctx, CatalogServiceGRPC_GetProductsByListId_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *catalogServiceGRPCClient) UpdateProductsByListInvoiceDetail(ctx context.Context, in *UpdateProductsByListInvoiceDetailRequest, opts ...grpc.CallOption) (*UpdateProductsByListInvoiceDetailResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UpdateProductsByListInvoiceDetailResponse)
-	err := c.cc.Invoke(ctx, CatalogServiceGRPC_UpdateProductsByListInvoiceDetail_FullMethodName, in, out, cOpts...)
+	out := new(UpdateProductStocksByListInvoiceDetailResponse)
+	err := c.cc.Invoke(ctx, CatalogServiceGRPC_UpdateProductStocksByListInvoiceDetail_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -89,8 +77,7 @@ func (c *catalogServiceGRPCClient) UpdateProductsByListInvoiceDetail(ctx context
 type CatalogServiceGRPCServer interface {
 	GetAllProducts(context.Context, *GetAllProductsRequest) (*GetAllProductsResponse, error)
 	GetProductById(context.Context, *GetProductByIdRequest) (*GetProductByIdResponse, error)
-	GetProductsByListId(context.Context, *GetProductsByListIdRequest) (*GetProductsByListIdResponse, error)
-	UpdateProductsByListInvoiceDetail(context.Context, *UpdateProductsByListInvoiceDetailRequest) (*UpdateProductsByListInvoiceDetailResponse, error)
+	UpdateProductStocksByListInvoiceDetail(context.Context, *UpdateProductStocksByListInvoiceDetailRequest) (*UpdateProductStocksByListInvoiceDetailResponse, error)
 	mustEmbedUnimplementedCatalogServiceGRPCServer()
 }
 
@@ -107,11 +94,8 @@ func (UnimplementedCatalogServiceGRPCServer) GetAllProducts(context.Context, *Ge
 func (UnimplementedCatalogServiceGRPCServer) GetProductById(context.Context, *GetProductByIdRequest) (*GetProductByIdResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProductById not implemented")
 }
-func (UnimplementedCatalogServiceGRPCServer) GetProductsByListId(context.Context, *GetProductsByListIdRequest) (*GetProductsByListIdResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetProductsByListId not implemented")
-}
-func (UnimplementedCatalogServiceGRPCServer) UpdateProductsByListInvoiceDetail(context.Context, *UpdateProductsByListInvoiceDetailRequest) (*UpdateProductsByListInvoiceDetailResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateProductsByListInvoiceDetail not implemented")
+func (UnimplementedCatalogServiceGRPCServer) UpdateProductStocksByListInvoiceDetail(context.Context, *UpdateProductStocksByListInvoiceDetailRequest) (*UpdateProductStocksByListInvoiceDetailResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateProductStocksByListInvoiceDetail not implemented")
 }
 func (UnimplementedCatalogServiceGRPCServer) mustEmbedUnimplementedCatalogServiceGRPCServer() {}
 func (UnimplementedCatalogServiceGRPCServer) testEmbeddedByValue()                            {}
@@ -170,38 +154,20 @@ func _CatalogServiceGRPC_GetProductById_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
-func _CatalogServiceGRPC_GetProductsByListId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetProductsByListIdRequest)
+func _CatalogServiceGRPC_UpdateProductStocksByListInvoiceDetail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateProductStocksByListInvoiceDetailRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CatalogServiceGRPCServer).GetProductsByListId(ctx, in)
+		return srv.(CatalogServiceGRPCServer).UpdateProductStocksByListInvoiceDetail(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: CatalogServiceGRPC_GetProductsByListId_FullMethodName,
+		FullMethod: CatalogServiceGRPC_UpdateProductStocksByListInvoiceDetail_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CatalogServiceGRPCServer).GetProductsByListId(ctx, req.(*GetProductsByListIdRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _CatalogServiceGRPC_UpdateProductsByListInvoiceDetail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateProductsByListInvoiceDetailRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(CatalogServiceGRPCServer).UpdateProductsByListInvoiceDetail(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: CatalogServiceGRPC_UpdateProductsByListInvoiceDetail_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CatalogServiceGRPCServer).UpdateProductsByListInvoiceDetail(ctx, req.(*UpdateProductsByListInvoiceDetailRequest))
+		return srv.(CatalogServiceGRPCServer).UpdateProductStocksByListInvoiceDetail(ctx, req.(*UpdateProductStocksByListInvoiceDetailRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -222,12 +188,8 @@ var CatalogServiceGRPC_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _CatalogServiceGRPC_GetProductById_Handler,
 		},
 		{
-			MethodName: "GetProductsByListId",
-			Handler:    _CatalogServiceGRPC_GetProductsByListId_Handler,
-		},
-		{
-			MethodName: "UpdateProductsByListInvoiceDetail",
-			Handler:    _CatalogServiceGRPC_UpdateProductsByListInvoiceDetail_Handler,
+			MethodName: "UpdateProductStocksByListInvoiceDetail",
+			Handler:    _CatalogServiceGRPC_UpdateProductStocksByListInvoiceDetail_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

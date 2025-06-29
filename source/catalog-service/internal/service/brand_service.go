@@ -17,8 +17,8 @@ type brandService struct {
 }
 
 type BrandService interface {
-	GetAllBrands(ctx context.Context, reqDTO *dto.GetAllBrandsRequest) ([]*dto.BrandView, error)
-	GetBrandById(ctx context.Context, reqDTO *dto.GetBrandByIdRequest) (*dto.BrandView, error)
+	GetAllBrands(ctx context.Context, reqDTO *dto.GetAllBrandsRequest) ([]*model.BrandView, error)
+	GetBrandById(ctx context.Context, reqDTO *dto.GetBrandByIdRequest) (*model.BrandView, error)
 	CreateBrand(ctx context.Context, reqDTO *dto.CreateBrandRequest) error
 	UpdateBrandById(ctx context.Context, reqDTO *dto.UpdateBrandByIdRequest) error
 	DeleteBrandById(ctx context.Context, reqDTO *dto.DeleteBrandByIdRequest) error
@@ -30,24 +30,24 @@ func NewBrandService(brandRepository repository.BrandRepository) BrandService {
 	}
 }
 
-func (brandService *brandService) GetAllBrands(ctx context.Context, redDTO *dto.GetAllBrandsRequest) ([]*dto.BrandView, error) {
+func (brandService *brandService) GetAllBrands(ctx context.Context, redDTO *dto.GetAllBrandsRequest) ([]*model.BrandView, error) {
 	sortFields := utils.ParseSorter(redDTO.SortBy)
 
-	brands, err := brandService.brandRepository.GetAll(ctx, sortFields)
+	brands, err := brandService.brandRepository.GetAllViews(ctx, sortFields)
 	if err != nil {
 		return nil, fmt.Errorf("query brands from postgresql failed: %s", err.Error())
 	}
 
-	return dto.ToListBrandView(brands), nil
+	return brands, nil
 }
 
-func (brandService *brandService) GetBrandById(ctx context.Context, reqDTO *dto.GetBrandByIdRequest) (*dto.BrandView, error) {
-	foundBrand, err := brandService.brandRepository.GetById(ctx, reqDTO.Id)
+func (brandService *brandService) GetBrandById(ctx context.Context, reqDTO *dto.GetBrandByIdRequest) (*model.BrandView, error) {
+	foundBrand, err := brandService.brandRepository.GetViewById(ctx, reqDTO.Id)
 	if err != nil {
 		return nil, fmt.Errorf("id of brand is not valid: %s", err.Error())
 	}
 
-	return dto.ToBrandView(foundBrand), nil
+	return foundBrand, nil
 }
 
 func (brandService *brandService) CreateBrand(ctx context.Context, reqDTO *dto.CreateBrandRequest) error {

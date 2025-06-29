@@ -22,7 +22,7 @@ type userService struct {
 }
 
 type UserService interface {
-	GetUserById(ctx context.Context, reqDTO *dto.GetUserByIdRequest) (*dto.UserView, error)
+	GetUserById(ctx context.Context, reqDTO *dto.GetUserByIdRequest) (*model.UserView, error)
 	CreateUser(ctx context.Context, reqDTO *dto.CreateUserRequest) error
 	UpdateUserById(ctx context.Context, reqDTO *dto.UpdateUserByIdRequest) error
 	DeleteUserById(ctx context.Context, reqDTO *dto.DeleteUserByIdRequest) error
@@ -32,10 +32,10 @@ type UserService interface {
 	GetAllLoggedInAccounts(ctx context.Context) ([]string, error)
 
 	// Elasticsearch integration (init data for elasticsearch-service)
-	GetAllUsers(ctx context.Context) ([]*dto.UserView, error)
+	GetAllUsers(ctx context.Context) ([]*model.UserView, error)
 
 	// Elasticsearch integration features
-	GetUsers(ctx context.Context, reqDTO *dto.GetUsersRequest) ([]*dto.UserView, error)
+	GetUsers(ctx context.Context, reqDTO *dto.GetUsersRequest) ([]*model.UserView, error)
 }
 
 func NewUserService(userRepository repository.UserRepository) UserService {
@@ -44,13 +44,13 @@ func NewUserService(userRepository repository.UserRepository) UserService {
 	}
 }
 
-func (userService *userService) GetUserById(ctx context.Context, reqDTO *dto.GetUserByIdRequest) (*dto.UserView, error) {
-	foundUser, err := userService.userRepository.GetById(ctx, reqDTO.Id)
+func (userService *userService) GetUserById(ctx context.Context, reqDTO *dto.GetUserByIdRequest) (*model.UserView, error) {
+	foundUser, err := userService.userRepository.GetViewById(ctx, reqDTO.Id)
 	if err != nil {
 		return nil, fmt.Errorf("id of user is not valid: %s", err.Error())
 	}
 
-	return dto.ToUserView(foundUser), nil
+	return foundUser, nil
 }
 
 func (userService *userService) CreateUser(ctx context.Context, reqDTO *dto.CreateUserRequest) error {
@@ -79,7 +79,7 @@ func (userService *userService) CreateUser(ctx context.Context, reqDTO *dto.Crea
 		return fmt.Errorf("insert user to postgresql failed: %s", err.Error())
 	}
 
-	newUserView := dto.ToUserView(&newUser)
+	newUserView, _ := userService.userRepository.GetViewById(ctx, newUser.Id)
 	payload, _ := json.Marshal(newUserView)
 	if err := infrastructure.RedisClient.Publish(ctx, "user-service.created-user", payload).Err(); err != nil {
 		return fmt.Errorf("pulish event user-service.created-user failed: %s", err.Error())
@@ -123,7 +123,7 @@ func (userService *userService) UpdateUserById(ctx context.Context, reqDTO *dto.
 		return fmt.Errorf("update user on postgresql failed: %s", err.Error())
 	}
 
-	updatedUserView := dto.ToUserView(foundUser)
+	updatedUserView, _ := userService.userRepository.GetViewById(ctx, foundUser.Id)
 	payload, _ := json.Marshal(updatedUserView)
 	if err := infrastructure.RedisClient.Publish(ctx, "user-service.updated-user", payload).Err(); err != nil {
 		return fmt.Errorf("pulish event user-service.updated-user failed: %s", err.Error())
@@ -260,16 +260,16 @@ func (userService *userService) GetAllLoggedInAccounts(ctx context.Context) ([]s
 	return loggedInAccounts, nil
 }
 
-func (userService *userService) GetAllUsers(ctx context.Context) ([]*dto.UserView, error) {
-	users, err := userService.userRepository.GetAll(ctx)
+func (userService *userService) GetAllUsers(ctx context.Context) ([]*model.UserView, error) {
+	users, err := userService.userRepository.GetAllViews(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("query users from postgresql failed: %s", err.Error())
 	}
 
-	return dto.ToListUserView(users), nil
+	return users, nil
 }
 
-func (userService *userService) GetUsers(ctx context.Context, reqDTO *dto.GetUsersRequest) ([]*dto.UserView, error) {
+func (userService *userService) GetUsers(ctx context.Context, reqDTO *dto.GetUsersRequest) ([]*model.UserView, error) {
 	if infrastructure.ElasticsearchServiceGRPCClient != nil {
 		convertReqDTO := &elasticsearchservicepb.GetUsersRequest{}
 		convertReqDTO.Offset = reqDTO.Offset
@@ -288,7 +288,7 @@ func (userService *userService) GetUsers(ctx context.Context, reqDTO *dto.GetUse
 			return nil, fmt.Errorf("get users from user-service failed: %s", err.Error())
 		}
 
-		return dto.FromListUserProtoToListUserView(grpcRes.Users), nil
+		return model.FromListUserProtoToListUserView(grpcRes.Users), nil
 	} else {
 		return nil, fmt.Errorf("elasticsearch-service is not running")
 	}

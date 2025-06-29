@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"thanhldt060802/internal/dto"
 	"thanhldt060802/internal/middleware"
+	"thanhldt060802/internal/model"
 	"thanhldt060802/internal/service"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -142,7 +143,7 @@ func NewUserHandler(api huma.API, userService service.UserService, jwtAuthMiddle
 	return userHandler
 }
 
-func (userHandler *UserHandler) GetUsers(ctx context.Context, reqDTO *dto.GetUsersRequest) (*dto.PaginationBodyResponseList[*dto.UserView], error) {
+func (userHandler *UserHandler) GetUsers(ctx context.Context, reqDTO *dto.GetUsersRequest) (*dto.PaginationBodyResponseList[*model.UserView], error) {
 	users, err := userHandler.userService.GetUsers(ctx, reqDTO)
 	if err != nil {
 		res := &dto.ErrorResponse{}
@@ -153,7 +154,7 @@ func (userHandler *UserHandler) GetUsers(ctx context.Context, reqDTO *dto.GetUse
 		return nil, res
 	}
 
-	res := &dto.PaginationBodyResponseList[*dto.UserView]{}
+	res := &dto.PaginationBodyResponseList[*model.UserView]{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Get users successful"
 	res.Body.Data = users
@@ -161,7 +162,7 @@ func (userHandler *UserHandler) GetUsers(ctx context.Context, reqDTO *dto.GetUse
 	return res, nil
 }
 
-func (userHandler *UserHandler) GetUserById(ctx context.Context, reqDTO *dto.GetUserByIdRequest) (*dto.BodyResponse[*dto.UserView], error) {
+func (userHandler *UserHandler) GetUserById(ctx context.Context, reqDTO *dto.GetUserByIdRequest) (*dto.BodyResponse[*model.UserView], error) {
 	if reqDTO.Id == "{id}" {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusBadRequest
@@ -181,7 +182,7 @@ func (userHandler *UserHandler) GetUserById(ctx context.Context, reqDTO *dto.Get
 		return nil, res
 	}
 
-	res := &dto.BodyResponse[*dto.UserView]{}
+	res := &dto.BodyResponse[*model.UserView]{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Get user by id successful"
 	res.Body.Data = foundUser
@@ -312,7 +313,7 @@ func (userHandler *UserHandler) RegisterAccount(ctx context.Context, reqDTO *dto
 	return res, nil
 }
 
-func (userHandler *UserHandler) GetMyAccount(ctx context.Context, _ *struct{}) (*dto.BodyResponse[*dto.UserView], error) {
+func (userHandler *UserHandler) GetMyAccount(ctx context.Context, _ *struct{}) (*dto.BodyResponse[*model.UserView], error) {
 	convertReqDTO := &dto.GetUserByIdRequest{}
 	convertReqDTO.Id = ctx.Value("user_id").(string)
 
@@ -326,7 +327,7 @@ func (userHandler *UserHandler) GetMyAccount(ctx context.Context, _ *struct{}) (
 		return nil, res
 	}
 
-	res := &dto.BodyResponse[*dto.UserView]{}
+	res := &dto.BodyResponse[*model.UserView]{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Get account successful"
 	res.Body.Data = foundUser

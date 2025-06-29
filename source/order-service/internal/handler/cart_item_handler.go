@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"thanhldt060802/internal/dto"
 	"thanhldt060802/internal/middleware"
+	"thanhldt060802/internal/model"
 	"thanhldt060802/internal/service"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -51,7 +52,7 @@ func NewCartItemHandler(api huma.API, cartItemService service.CartItemService, j
 		Middlewares: huma.Middlewares{jwtAuthMiddleware.Authentication, jwtAuthMiddleware.RequireAdmin},
 	}, cartItemHandler.UpdateCartItemById)
 
-	// Delte cart item by id
+	// Delete cart item by id
 	huma.Register(api, huma.Operation{
 		Method:      http.MethodDelete,
 		Path:        "/cart-items/id/{id}",
@@ -104,7 +105,7 @@ func NewCartItemHandler(api huma.API, cartItemService service.CartItemService, j
 	return cartItemHandler
 }
 
-func (cartItemHandler *CartItemHandler) GetCartItems(ctx context.Context, reqDTO *dto.GetCartItemsRequest) (*dto.PaginationBodyResponseList[*dto.CartItemView], error) {
+func (cartItemHandler *CartItemHandler) GetCartItems(ctx context.Context, reqDTO *dto.GetCartItemsRequest) (*dto.PaginationBodyResponseList[*model.CartItemView], error) {
 	cartItems, err := cartItemHandler.cartItemService.GetCartItems(ctx, reqDTO)
 	if err != nil {
 		res := &dto.ErrorResponse{}
@@ -115,7 +116,7 @@ func (cartItemHandler *CartItemHandler) GetCartItems(ctx context.Context, reqDTO
 		return nil, res
 	}
 
-	res := &dto.PaginationBodyResponseList[*dto.CartItemView]{}
+	res := &dto.PaginationBodyResponseList[*model.CartItemView]{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Get cart items successful"
 	res.Body.Data = cartItems
@@ -189,7 +190,7 @@ func (cartItemHandler *CartItemHandler) DeleteCartItemById(ctx context.Context, 
 	return res, nil
 }
 
-func (cartItemHandler *CartItemHandler) GetMyCartItems(ctx context.Context, reqDTO *dto.GetMyCartItemsRequest) (*dto.PaginationBodyResponseList[*dto.CartItemView], error) {
+func (cartItemHandler *CartItemHandler) GetMyCartItems(ctx context.Context, reqDTO *dto.GetMyCartItemsRequest) (*dto.PaginationBodyResponseList[*model.CartItemView], error) {
 	convertReqDTO := &dto.GetCartItemsRequest{}
 	convertReqDTO.Offset = reqDTO.Offset
 	convertReqDTO.Limit = reqDTO.Limit
@@ -206,7 +207,7 @@ func (cartItemHandler *CartItemHandler) GetMyCartItems(ctx context.Context, reqD
 		return nil, res
 	}
 
-	res := &dto.PaginationBodyResponseList[*dto.CartItemView]{}
+	res := &dto.PaginationBodyResponseList[*model.CartItemView]{}
 	res.Body.Code = "OK"
 	res.Body.Message = "Get my cart items successful"
 	res.Body.Data = cartItems
@@ -289,6 +290,6 @@ func (cartItemHandler *CartItemHandler) DeleteMyCartItemById(ctx context.Context
 
 	res := &dto.SuccessResponse{}
 	res.Body.Code = "OK"
-	res.Body.Message = "Delete cart item by id successful"
+	res.Body.Message = "Delete my cart item by id successful"
 	return res, nil
 }

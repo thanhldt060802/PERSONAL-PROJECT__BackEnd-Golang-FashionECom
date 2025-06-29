@@ -22,7 +22,7 @@ func InitTableUsers() {
 			WHERE table_schema = 'public' AND table_name = ?
 		)
 	`
-	if err := infrastructure.PostgresDB.QueryRowContext(ctx, query, "users").Scan(&exists); err != nil {
+	if err := infrastructure.PostgresDB.QueryRowContext(ctx, query, "tb_user").Scan(&exists); err != nil {
 		log.Fatal("Check table users on PostgreSQL failed: ", err)
 	}
 

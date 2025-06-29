@@ -27,6 +27,9 @@ type Config struct {
 	CatalogServiceGRPCHost              string
 	CatalogServiceGRPCPort              string
 	SyncAvailableDataFromCatalogService string
+	OrderServiceGRPCHost                string
+	OrderServiceGRPCPort                string
+	SyncAvailableDataFromOrderService   string
 }
 
 var AppConfig *Config
@@ -56,6 +59,9 @@ func InitConfig() {
 		CatalogServiceGRPCHost:              GetEnv("CATALOG_SERVICE_GRPC_HOST", "localhost"),
 		CatalogServiceGRPCPort:              GetEnv("CATALOG_SERVICE_GRPC_PORT", "50050"),
 		SyncAvailableDataFromCatalogService: GetEnv("SYNC_AVAILABLE_DATA_FROM_CATALOG_SERVICE", "false"),
+		OrderServiceGRPCHost:                GetEnv("ORDER_SERVICE_GRPC_HOST", "localhost"),
+		OrderServiceGRPCPort:                GetEnv("ORDER_SERVICE_GRPC_PORT", "50050"),
+		SyncAvailableDataFromOrderService:   GetEnv("SYNC_AVAILABLE_DATA_FROM_ORDER_SERVICE", "false"),
 	}
 
 	log.Println("Load .env file successful")

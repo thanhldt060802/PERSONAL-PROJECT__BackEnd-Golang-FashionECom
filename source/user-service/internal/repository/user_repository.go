@@ -10,6 +10,8 @@ type userRepository struct {
 }
 
 type UserRepository interface {
+	GetViewById(ctx context.Context, id string) (*model.UserView, error)
+
 	GetById(ctx context.Context, id string) (*model.User, error)
 	GetByUsername(ctx context.Context, username string) (*model.User, error)
 	GetByEmail(ctx context.Context, email string) (*model.User, error)
@@ -18,45 +20,55 @@ type UserRepository interface {
 	DeleteById(ctx context.Context, id string) error
 
 	// Elasticsearch integrattion (init data for elasticsearch-service)
-	GetAll(ctx context.Context) ([]*model.User, error)
+	GetAllViews(ctx context.Context) ([]*model.UserView, error)
 }
 
 func NewUserRepository() UserRepository {
 	return &userRepository{}
 }
 
-func (userRepository *userRepository) GetById(ctx context.Context, id string) (*model.User, error) {
-	var user model.User
+func (userRepository *userRepository) GetViewById(ctx context.Context, id string) (*model.UserView, error) {
+	user := new(model.UserView)
 
-	if err := infrastructure.PostgresDB.NewSelect().Model(&user).Where("id = ?", id).Scan(ctx); err != nil {
+	if err := infrastructure.PostgresDB.NewSelect().Model(user).Where("_user.id = ?", id).Scan(ctx); err != nil {
 		return nil, err
 	}
 
-	return &user, nil
+	return user, nil
+}
+
+func (userRepository *userRepository) GetById(ctx context.Context, id string) (*model.User, error) {
+	user := new(model.User)
+
+	if err := infrastructure.PostgresDB.NewSelect().Model(user).Where("id = ?", id).Scan(ctx); err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }
 
 func (userRepository *userRepository) GetByUsername(ctx context.Context, username string) (*model.User, error) {
-	var user model.User
+	user := new(model.User)
 
-	if err := infrastructure.PostgresDB.NewSelect().Model(&user).Where("username = ?", username).Scan(ctx); err != nil {
+	if err := infrastructure.PostgresDB.NewSelect().Model(user).Where("username = ?", username).Scan(ctx); err != nil {
 		return nil, err
 	}
 
-	return &user, nil
+	return user, nil
 }
 
 func (userRepository *userRepository) GetByEmail(ctx context.Context, email string) (*model.User, error) {
-	var user model.User
+	user := new(model.User)
 
-	if err := infrastructure.PostgresDB.NewSelect().Model(&user).Where("email = ?", email).Scan(ctx); err != nil {
+	if err := infrastructure.PostgresDB.NewSelect().Model(user).Where("email = ?", email).Scan(ctx); err != nil {
 		return nil, err
 	}
 
-	return &user, nil
+	return user, nil
 }
 
 func (userRepository *userRepository) Create(ctx context.Context, newUser *model.User) error {
-	_, err := infrastructure.PostgresDB.NewInsert().Model(newUser).Exec(ctx)
+	_, err := infrastructure.PostgresDB.NewInsert().Model(newUser).Returning("*").Exec(ctx)
 	return err
 }
 
@@ -70,8 +82,8 @@ func (userRepository *userRepository) DeleteById(ctx context.Context, id string)
 	return err
 }
 
-func (userRepository *userRepository) GetAll(ctx context.Context) ([]*model.User, error) {
-	var users []*model.User
+func (userRepository *userRepository) GetAllViews(ctx context.Context) ([]*model.UserView, error) {
+	var users []*model.UserView
 
 	if err := infrastructure.PostgresDB.NewSelect().Model(&users).Scan(ctx); err != nil {
 		return nil, err

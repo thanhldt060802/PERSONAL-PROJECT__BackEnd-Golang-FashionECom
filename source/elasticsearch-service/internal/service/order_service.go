@@ -9,7 +9,7 @@ import (
 	"strings"
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/dto"
-	"thanhldt060802/internal/grpc/client/userservicepb"
+	"thanhldt060802/internal/grpc/client/orderservicepb"
 	"thanhldt060802/internal/grpc/service/elasticsearchservicepb"
 	"thanhldt060802/internal/schema"
 	"thanhldt060802/utils"
@@ -17,48 +17,48 @@ import (
 	"github.com/elastic/go-elasticsearch/v8/esutil"
 )
 
-type userService struct {
+type orderService struct {
 }
 
-type UserService interface {
-	SyncAllAvailableUsers() error
+type OrderService interface {
+	SyncAllAvailableInvoices() error
 
-	GetUsers(ctx context.Context, reqDTO *elasticsearchservicepb.GetUsersRequest) ([]*elasticsearchservicepb.User, error)
-	syncCreatingUserLoop()
-	syncUpdatingUserLoop()
-	syncDeletingUserLoop()
+	GetInvoices(ctx context.Context, reqDTO *elasticsearchservicepb.GetInvoicesRequest) ([]*elasticsearchservicepb.Invoice, error)
+	syncCreatingInvoiceLoop()
+	syncUpdatingInvoiceLoop()
+	syncDeletingInvoiceLoop()
 }
 
-func NewUserService(sync string) UserService {
-	userService := &userService{}
+func NewOrderService(sync string) OrderService {
+	orderService := &orderService{}
 
 	go func() {
 		if sync == "true" {
-			for range infrastructure.UserServiceGRPCClientConnectionEvent {
-				close(infrastructure.UserServiceGRPCClientConnectionEvent)
+			for range infrastructure.OrderServiceGRPCClientConnectionEvent {
+				close(infrastructure.OrderServiceGRPCClientConnectionEvent)
 				break
 			}
 
-			if err := userService.SyncAllAvailableUsers(); err != nil {
+			if err := userService.SyncAllAvailableInvoices(); err != nil {
 				log.Printf("Sync all available users the first time failed: %s", err.Error())
 			} else {
 				log.Printf("Sync all available users the first time successful")
 			}
 
-			infrastructure.UserServiceGRPCConnection.Close()
+			infrastructure.OrderServiceGRPCConnection.Close()
 		}
 
-		go userService.syncCreatingUserLoop()
-		go userService.syncUpdatingUserLoop()
-		go userService.syncDeletingUserLoop()
+		go userService.syncCreatingInvoiceLoop()
+		go userService.syncUpdatingInvoiceLoop()
+		go userService.syncDeletingInvoiceLoop()
 	}()
 
-	return userService
+	return orderService
 }
 
-func (userService *userService) SyncAllAvailableUsers() error {
+func (userService *userService) SyncAllAvailableInvoices() error {
 	// Check if index already exists on Elasticsearch
-	existsRes, err := infrastructure.ElasticsearchClient.Indices.Exists([]string{"users"})
+	existsRes, err := infrastructure.ElasticsearchClient.Indices.Exists([]string{"invoices"})
 	if err != nil {
 		return err
 	}
@@ -67,34 +67,34 @@ func (userService *userService) SyncAllAvailableUsers() error {
 	// If index exists on Elasticsearch
 	if existsRes.StatusCode == 200 {
 		// Delete index on Elasticsearch
-		res, err := infrastructure.ElasticsearchClient.Indices.Delete([]string{"users"})
+		res, err := infrastructure.ElasticsearchClient.Indices.Delete([]string{"invoices"})
 		if err != nil {
-			log.Fatalf("Cannot delete index users: %s", err)
+			log.Fatalf("Cannot delete index invoices: %s", err)
 		}
 		defer res.Body.Close()
 
 		if res.IsError() {
-			return fmt.Errorf("delete users index on elasticsearch failed: %s", res.String())
+			return fmt.Errorf("delete invoices index on elasticsearch failed: %s", res.String())
 		}
 	}
 
 	// Create index on Elasticsearch using custom schema
-	res, err := infrastructure.ElasticsearchClient.Indices.Create("users",
-		infrastructure.ElasticsearchClient.Indices.Create.WithBody(bytes.NewReader([]byte(schema.User))))
+	res, err := infrastructure.ElasticsearchClient.Indices.Create("invoices",
+		infrastructure.ElasticsearchClient.Indices.Create.WithBody(bytes.NewReader([]byte(schema.Invoice))))
 	if err != nil {
 		return err
 	}
 	defer res.Body.Close()
 
 	if res.IsError() {
-		return fmt.Errorf("create users index on elasticsearch failed: %s", res.String())
+		return fmt.Errorf("create invoices index on elasticsearch failed: %s", res.String())
 	}
 
-	grpcRes, err := infrastructure.UserServiceGRPCClient.GetAllUsers(context.Background(), &userservicepb.GetAllUsersRequest{})
+	grpcRes, err := infrastructure.OrderServiceGRPCClient.GetAllInvoices(context.Background(), &orderservicepb.GetAllInvoicesRequest{})
 	if err != nil {
-		return fmt.Errorf("get all users from user-service failed: %s", err.Error())
+		return fmt.Errorf("get all invoices from order-service failed: %s", err.Error())
 	}
-	users := grpcRes.Users
+	invoices := grpcRes.Invoices
 
 	hasFailure := false
 	var closeBulkIndexer error
@@ -102,7 +102,7 @@ func (userService *userService) SyncAllAvailableUsers() error {
 	// Create BulkIndexer for above index to index to Elasticsearch
 	indexer, err := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
 		Client: infrastructure.ElasticsearchClient,
-		Index:  "users",
+		Index:  "invoices",
 	})
 	if err != nil {
 		return err
@@ -114,7 +114,7 @@ func (userService *userService) SyncAllAvailableUsers() error {
 	}()
 
 	// Add all available data on PostgreSQL to BulkIndexer
-	for _, user := range users {
+	for _, invoice := range invoices {
 		// Convert data to JSON data
 		userJSON, err := json.Marshal(dto.FromUserProtoToUserView(user))
 		if err != nil {

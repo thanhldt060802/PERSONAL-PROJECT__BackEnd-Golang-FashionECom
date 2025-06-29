@@ -17,7 +17,7 @@ type cartItemService struct {
 }
 
 type CartItemService interface {
-	GetCartItems(ctx context.Context, reqDTO *dto.GetCartItemsRequest) ([]*dto.CartItemView, error)
+	GetCartItems(ctx context.Context, reqDTO *dto.GetCartItemsRequest) ([]*model.CartItemView, error)
 	CreateCartItem(ctx context.Context, reqDTO *dto.CreateCartItemRequest) error
 	UpdateCartItemById(ctx context.Context, reqDTO *dto.UpdateCartItemByIdRequest) error
 	DeleteCartItemById(ctx context.Context, reqDTO *dto.DeleteCartItemByIdRequest) error
@@ -29,40 +29,26 @@ func NewCartItemService(cartItemRepository repository.CartItemRepository) CartIt
 	}
 }
 
-func (cartItemService *cartItemService) GetCartItems(ctx context.Context, reqDTO *dto.GetCartItemsRequest) ([]*dto.CartItemView, error) {
+func (cartItemService *cartItemService) GetCartItems(ctx context.Context, reqDTO *dto.GetCartItemsRequest) ([]*model.CartItemView, error) {
 	if infrastructure.CatalogServiceGRPCClient != nil {
 		sortFields := utils.ParseSorter(reqDTO.SortBy)
 
-		var foundCartItems []*model.CartItem
+		var foundCartItems []*model.CartItemView
 		if reqDTO.UserId == "" {
-			cartItems, err := cartItemService.cartItemRepository.Get(ctx, reqDTO.Offset, reqDTO.Limit, sortFields)
+			cartItems, err := cartItemService.cartItemRepository.GetViews(ctx, reqDTO.Offset, reqDTO.Limit, sortFields)
 			if err != nil {
 				return nil, fmt.Errorf("query cart items from postgresql failed: %s", err.Error())
 			}
 			foundCartItems = cartItems
 		} else {
-			cartItems, err := cartItemService.cartItemRepository.GetByUserId(ctx, reqDTO.UserId, reqDTO.Offset, reqDTO.Limit, sortFields)
+			cartItems, err := cartItemService.cartItemRepository.GetViewsByUserId(ctx, reqDTO.UserId, reqDTO.Offset, reqDTO.Limit, sortFields)
 			if err != nil {
 				return nil, fmt.Errorf("query cart items from postgresql failed: %s", err.Error())
 			}
 			foundCartItems = cartItems
 		}
 
-		ids := make([]string, len(foundCartItems))
-		for i, cartItem := range foundCartItems {
-			ids[i] = cartItem.ProductId
-		}
-
-		convertReqDTO := &catalogservicepb.GetProductsByListIdRequest{}
-		convertReqDTO.Ids = ids
-		grpcRes, err := infrastructure.CatalogServiceGRPCClient.GetProductsByListId(ctx, convertReqDTO)
-		if err != nil {
-			return nil, fmt.Errorf("get products from catalog-service failed: %s", err.Error())
-		}
-
-		foundProductProtos := grpcRes.Products
-
-		return dto.ToListCartItemView(foundCartItems, foundProductProtos), nil
+		return foundCartItems, nil
 	} else {
 		return nil, fmt.Errorf("catalog-service is not running")
 	}

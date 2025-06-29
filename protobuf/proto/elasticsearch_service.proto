@@ -9,6 +9,7 @@ import "google/protobuf/timestamp.proto";
 service ElasticsearchServiceGRPC {
   rpc GetUsers (GetUsersRequest) returns (GetUsersResponse);
   rpc GetProducts (GetProductsRequest) returns (GetProductsResponse);
+  rpc GetInvoices (GetInvoicesRequest) returns (GetInvoicesResponse);
 }
 
 // user-service
@@ -83,4 +84,30 @@ message Product {
   string brand_name = 12;   
   google.protobuf.Timestamp created_at = 13;
   google.protobuf.Timestamp updated_at = 14;
+}
+
+// order-service
+
+message GetInvoicesRequest {
+    int32 offset = 1;
+    int32 limit = 2;
+    string sort_by = 3;
+    string user_id = 4;
+    int64 total_amount = 5;
+    string status = 6;
+    string created_at_gte = 7;
+    string created_at_lte = 8;
+}
+
+message GetInvoicesResponse {
+  repeated Invoice invoices = 1;
+}
+
+message Invoice {
+  string id = 1;
+  string user_id = 2;
+  int64 total_amount = 3;
+  string status = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
 }

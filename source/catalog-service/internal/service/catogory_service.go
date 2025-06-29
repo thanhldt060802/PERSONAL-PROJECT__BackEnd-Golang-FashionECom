@@ -17,9 +17,8 @@ type categoryService struct {
 }
 
 type CategoryService interface {
-	// Main features
-	GetAllCategories(ctx context.Context, reqDTO *dto.GetAllCategoriesRequest) ([]*dto.CategoryView, error)
-	GetCategoryById(ctx context.Context, reqDTO *dto.GetCategoryByIdRequest) (*dto.CategoryView, error)
+	GetAllCategories(ctx context.Context, reqDTO *dto.GetAllCategoriesRequest) ([]*model.CategoryView, error)
+	GetCategoryById(ctx context.Context, reqDTO *dto.GetCategoryByIdRequest) (*model.CategoryView, error)
 	CreateCategory(ctx context.Context, reqDTO *dto.CreateCategoryRequest) error
 	UpdateCategoryById(ctx context.Context, reqDTO *dto.UpdateCategoryByIdRequest) error
 	DeleteCategoryById(ctx context.Context, reqDTO *dto.DeleteCategoryByIdRequest) error
@@ -31,24 +30,24 @@ func NewCategoryService(categoryRepository repository.CategoryRepository) Catego
 	}
 }
 
-func (categoryService *categoryService) GetAllCategories(ctx context.Context, reqDTO *dto.GetAllCategoriesRequest) ([]*dto.CategoryView, error) {
+func (categoryService *categoryService) GetAllCategories(ctx context.Context, reqDTO *dto.GetAllCategoriesRequest) ([]*model.CategoryView, error) {
 	sortFields := utils.ParseSorter(reqDTO.SortBy)
 
-	categories, err := categoryService.categoryRepository.GetAll(ctx, sortFields)
+	categories, err := categoryService.categoryRepository.GetAllViews(ctx, sortFields)
 	if err != nil {
 		return nil, fmt.Errorf("query categories from postgresql failed: %s", err.Error())
 	}
 
-	return dto.ToListCategoryView(categories), nil
+	return categories, nil
 }
 
-func (categoryService *categoryService) GetCategoryById(ctx context.Context, reqDTO *dto.GetCategoryByIdRequest) (*dto.CategoryView, error) {
-	foundCategory, err := categoryService.categoryRepository.GetById(ctx, reqDTO.Id)
+func (categoryService *categoryService) GetCategoryById(ctx context.Context, reqDTO *dto.GetCategoryByIdRequest) (*model.CategoryView, error) {
+	foundCategory, err := categoryService.categoryRepository.GetViewById(ctx, reqDTO.Id)
 	if err != nil {
 		return nil, fmt.Errorf("id of category is not valid: %s", err.Error())
 	}
 
-	return dto.ToCategoryView(foundCategory), nil
+	return foundCategory, nil
 }
 
 func (categoryService *categoryService) CreateCategory(ctx context.Context, reqDTO *dto.CreateCategoryRequest) error {

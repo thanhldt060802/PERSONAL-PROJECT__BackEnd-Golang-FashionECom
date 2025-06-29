@@ -12,7 +12,9 @@ type categoryRepository struct {
 }
 
 type CategoryRepository interface {
-	GetAll(ctx context.Context, sortFields []*utils.SortField) ([]*model.Category, error)
+	GetAllViews(ctx context.Context, sortFields []*utils.SortField) ([]*model.CategoryView, error)
+	GetViewById(ctx context.Context, id string) (*model.CategoryView, error)
+
 	GetById(ctx context.Context, id string) (*model.Category, error)
 	GetByName(ctx context.Context, name string) (*model.Category, error)
 	Create(ctx context.Context, newCategory *model.Category) error
@@ -24,13 +26,13 @@ func NewCategoryRepository() CategoryRepository {
 	return &categoryRepository{}
 }
 
-func (categoryRepository *categoryRepository) GetAll(ctx context.Context, sortFields []*utils.SortField) ([]*model.Category, error) {
-	var categories []*model.Category
+func (categoryRepository *categoryRepository) GetAllViews(ctx context.Context, sortFields []*utils.SortField) ([]*model.CategoryView, error) {
+	var categories []*model.CategoryView
 
 	query := infrastructure.PostgresDB.NewSelect().Model(&categories)
 
 	for _, sortField := range sortFields {
-		query = query.Order(fmt.Sprintf("%s %s", sortField.Field, sortField.Direction))
+		query = query.Order(fmt.Sprintf("_category.%s %s", sortField.Field, sortField.Direction))
 	}
 
 	if err := query.Scan(ctx); err != nil {
@@ -40,28 +42,38 @@ func (categoryRepository *categoryRepository) GetAll(ctx context.Context, sortFi
 	return categories, nil
 }
 
-func (categoryRepository *categoryRepository) GetById(ctx context.Context, id string) (*model.Category, error) {
-	var category model.Category
+func (categoryRepository *categoryRepository) GetViewById(ctx context.Context, id string) (*model.CategoryView, error) {
+	category := new(model.CategoryView)
 
-	if err := infrastructure.PostgresDB.NewSelect().Model(&category).Where("id = ?", id).Scan(ctx); err != nil {
+	if err := infrastructure.PostgresDB.NewSelect().Model(category).Where("_category.id = ?", id).Scan(ctx); err != nil {
 		return nil, err
 	}
 
-	return &category, nil
+	return category, nil
+}
+
+func (categoryRepository *categoryRepository) GetById(ctx context.Context, id string) (*model.Category, error) {
+	category := new(model.Category)
+
+	if err := infrastructure.PostgresDB.NewSelect().Model(category).Where("id = ?", id).Scan(ctx); err != nil {
+		return nil, err
+	}
+
+	return category, nil
 }
 
 func (categoryRepository *categoryRepository) GetByName(ctx context.Context, name string) (*model.Category, error) {
-	var category model.Category
+	category := new(model.Category)
 
-	if err := infrastructure.PostgresDB.NewSelect().Model(&category).Where("name = ?", name).Scan(ctx); err != nil {
+	if err := infrastructure.PostgresDB.NewSelect().Model(category).Where("name = ?", name).Scan(ctx); err != nil {
 		return nil, err
 	}
 
-	return &category, nil
+	return category, nil
 }
 
 func (categoryRepository *categoryRepository) Create(ctx context.Context, newCategory *model.Category) error {
-	_, err := infrastructure.PostgresDB.NewInsert().Model(newCategory).Exec(ctx)
+	_, err := infrastructure.PostgresDB.NewInsert().Model(newCategory).Returning("*").Exec(ctx)
 	return err
 }
 

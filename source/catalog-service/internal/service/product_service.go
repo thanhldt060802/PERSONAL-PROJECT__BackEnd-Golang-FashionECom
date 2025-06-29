@@ -21,20 +21,19 @@ type productService struct {
 }
 
 type ProductService interface {
-	GetProductById(ctx context.Context, reqDTO *dto.GetProductByIdRequest) (*dto.ProductView, error)
+	GetProductById(ctx context.Context, reqDTO *dto.GetProductByIdRequest) (*model.ProductView, error)
 	CreateProduct(ctx context.Context, reqDTO *dto.CreateProductRequest) error
 	UpdateProductById(ctx context.Context, reqDTO *dto.UpdateProductByIdRequest) error
 	DeleteProductById(ctx context.Context, reqDTO *dto.DeleteProductByIdRequest) error
 
 	// Elasticsearch integration (init data for elasticsearch-service)
-	GetAllProducts(ctx context.Context) ([]*dto.ProductView, error)
+	GetAllProducts(ctx context.Context) ([]*model.ProductView, error)
 
 	// Order integration (extra features for order-service)
-	GetProductsByListId(ctx context.Context, reqDTO *dto.GetProductsByListIdRequest) ([]*dto.ProductView, error)
 	UpdateProductStocksByListInvoiceDetail(ctx context.Context, reqDTO *dto.UpdateProductStocksByListInvoiceDetailRequest) error
 
 	// Elasticsearch integration features
-	GetProducts(ctx context.Context, reqDTO *dto.GetProductsRequest) ([]*dto.ProductView, error)
+	GetProducts(ctx context.Context, reqDTO *dto.GetProductsRequest) ([]*model.ProductView, error)
 }
 
 func NewProductService(productRepository repository.ProductRepository, categoryRepository repository.CategoryRepository, brandRepository repository.BrandRepository) ProductService {
@@ -45,30 +44,16 @@ func NewProductService(productRepository repository.ProductRepository, categoryR
 	}
 }
 
-func (productService *productService) GetProductById(ctx context.Context, reqDTO *dto.GetProductByIdRequest) (*dto.ProductView, error) {
-	foundProduct, err := productService.productRepository.GetById(ctx, reqDTO.Id)
+func (productService *productService) GetProductById(ctx context.Context, reqDTO *dto.GetProductByIdRequest) (*model.ProductView, error) {
+	foundProduct, err := productService.productRepository.GetViewById(ctx, reqDTO.Id)
 	if err != nil {
 		return nil, fmt.Errorf("id of product is not valid: %s", err.Error())
 	}
 
-	foundCategory, _ := productService.categoryRepository.GetById(ctx, foundProduct.CategoryId)
-
-	foundBrand, _ := productService.brandRepository.GetById(ctx, foundProduct.BrandId)
-
-	return dto.ToProductView(foundProduct, foundCategory, foundBrand), nil
+	return foundProduct, nil
 }
 
 func (productService *productService) CreateProduct(ctx context.Context, reqDTO *dto.CreateProductRequest) error {
-	foundCategory, err := productService.categoryRepository.GetById(ctx, reqDTO.Body.CategoryId)
-	if err != nil {
-		return fmt.Errorf("id of category not found")
-	}
-
-	foundBrand, err := productService.brandRepository.GetById(ctx, reqDTO.Body.BrandId)
-	if err != nil {
-		return fmt.Errorf("id of brand not found")
-	}
-
 	newProduct := model.Product{
 		Id:                 uuid.New().String(),
 		Name:               reqDTO.Body.Name,
@@ -85,7 +70,7 @@ func (productService *productService) CreateProduct(ctx context.Context, reqDTO 
 		return fmt.Errorf("insert product to postgresql failed: %s", err.Error())
 	}
 
-	newProductView := dto.ToProductView(&newProduct, foundCategory, foundBrand)
+	newProductView, _ := productService.productRepository.GetViewById(ctx, newProduct.Id)
 	payload, _ := json.Marshal(newProductView)
 	if err := infrastructure.RedisClient.Publish(ctx, "catalog-service.created-product", payload).Err(); err != nil {
 		return fmt.Errorf("pulish event catalog-service.created-product failed: %s", err.Error())
@@ -121,16 +106,14 @@ func (productService *productService) UpdateProductById(ctx context.Context, req
 	if reqDTO.Body.ImageURL != nil {
 		foundProduct.ImageURL = *reqDTO.Body.ImageURL
 	}
-	foundCategory, _ := productService.categoryRepository.GetById(ctx, foundProduct.CategoryId)
 	if reqDTO.Body.CategoryId != nil {
-		if foundCategory, err = productService.categoryRepository.GetById(ctx, *reqDTO.Body.CategoryId); err != nil {
+		if _, err = productService.categoryRepository.GetById(ctx, *reqDTO.Body.CategoryId); err != nil {
 			return fmt.Errorf("id of category not found")
 		}
 		foundProduct.CategoryId = *reqDTO.Body.CategoryId
 	}
-	foundBrand, _ := productService.brandRepository.GetById(ctx, foundProduct.BrandId)
 	if reqDTO.Body.BrandId != nil {
-		if foundBrand, err = productService.brandRepository.GetById(ctx, *reqDTO.Body.BrandId); err != nil {
+		if _, err = productService.brandRepository.GetById(ctx, *reqDTO.Body.BrandId); err != nil {
 			return fmt.Errorf("id of brand not found")
 		}
 		foundProduct.BrandId = *reqDTO.Body.BrandId
@@ -142,7 +125,7 @@ func (productService *productService) UpdateProductById(ctx context.Context, req
 		return fmt.Errorf("update product on postgresql failed: %s", err.Error())
 	}
 
-	updatedProductView := dto.ToProductView(foundProduct, foundCategory, foundBrand)
+	updatedProductView, _ := productService.productRepository.GetViewById(ctx, foundProduct.Id)
 	payload, _ := json.Marshal(updatedProductView)
 	if err := infrastructure.RedisClient.Publish(ctx, "catalog-service.updated-product", payload).Err(); err != nil {
 		return fmt.Errorf("pulish event catalog-service.updated-product failed: %s", err.Error())
@@ -167,50 +150,21 @@ func (productService *productService) DeleteProductById(ctx context.Context, req
 	return nil
 }
 
-func (productService *productService) GetAllProducts(ctx context.Context) ([]*dto.ProductView, error) {
-	products, err := productService.productRepository.GetAll(ctx)
+func (productService *productService) GetAllProducts(ctx context.Context) ([]*model.ProductView, error) {
+	products, err := productService.productRepository.GetAllViews(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("query products from postgresql failed: %s", err.Error())
 	}
 
-	categories, err := productService.categoryRepository.GetAll(ctx, nil)
-	if err != nil {
-		return nil, fmt.Errorf("query categories from postgresql failed: %s", err.Error())
-	}
-
-	brands, err := productService.brandRepository.GetAll(ctx, nil)
-	if err != nil {
-		return nil, fmt.Errorf("query brands from postgresql failed: %s", err.Error())
-	}
-
-	return dto.ToListProductView(products, categories, brands), nil
-}
-
-func (productService *productService) GetProductsByListId(ctx context.Context, reqDTO *dto.GetProductsByListIdRequest) ([]*dto.ProductView, error) {
-	foundProducts, err := productService.productRepository.GetByListId(ctx, reqDTO.Ids)
-	if err != nil {
-		return nil, fmt.Errorf("query products from postgresql failed: %s", err.Error())
-	}
-
-	categories, err := productService.categoryRepository.GetAll(ctx, nil)
-	if err != nil {
-		return nil, fmt.Errorf("query categories from postgresql failed: %s", err.Error())
-	}
-
-	brands, err := productService.brandRepository.GetAll(ctx, nil)
-	if err != nil {
-		return nil, fmt.Errorf("query brands from postgresql failed: %s", err.Error())
-	}
-
-	return dto.ToListProductView(foundProducts, categories, brands), nil
+	return products, nil
 }
 
 func (productService *productService) UpdateProductStocksByListInvoiceDetail(ctx context.Context, reqDTO *dto.UpdateProductStocksByListInvoiceDetailRequest) error {
 	ids := make([]string, len(reqDTO.InvoiceDetails))
-	productIdQuantityMap := map[string]int32{}
+	quantityMap := map[string]int32{}
 	for i, invoiceDetail := range reqDTO.InvoiceDetails {
 		ids[i] = invoiceDetail.ProductId
-		productIdQuantityMap[invoiceDetail.ProductId] = invoiceDetail.Quantity
+		quantityMap[invoiceDetail.ProductId] = invoiceDetail.Quantity
 	}
 
 	foundProducts, err := productService.productRepository.GetByListId(ctx, ids)
@@ -219,10 +173,10 @@ func (productService *productService) UpdateProductStocksByListInvoiceDetail(ctx
 	}
 
 	for i := range foundProducts {
-		if foundProducts[i].Stock < productIdQuantityMap[foundProducts[i].Id] {
+		if foundProducts[i].Stock < quantityMap[foundProducts[i].Id] {
 			return fmt.Errorf("not enough stock for product id: %s", foundProducts[i].Id)
 		}
-		foundProducts[i].Stock = foundProducts[i].Stock - productIdQuantityMap[foundProducts[i].Id]
+		foundProducts[i].Stock = foundProducts[i].Stock - quantityMap[foundProducts[i].Id]
 		timeUpdate := time.Now().UTC()
 		foundProducts[i].UpdatedAt = &timeUpdate
 	}
@@ -232,9 +186,7 @@ func (productService *productService) UpdateProductStocksByListInvoiceDetail(ctx
 	}
 
 	for _, foundProduct := range foundProducts {
-		foundCategory, _ := productService.categoryRepository.GetById(ctx, foundProduct.CategoryId)
-		foundBrand, _ := productService.brandRepository.GetById(ctx, foundProduct.BrandId)
-		updatedProductView := dto.ToProductView(foundProduct, foundCategory, foundBrand)
+		updatedProductView, _ := productService.productRepository.GetViewById(ctx, foundProduct.Id)
 		payload, _ := json.Marshal(updatedProductView)
 		if err := infrastructure.RedisClient.Publish(ctx, "catalog-service.updated-product", payload).Err(); err != nil {
 			return fmt.Errorf("pulish event catalog-service.updated-product failed: %s", err.Error())
@@ -244,7 +196,7 @@ func (productService *productService) UpdateProductStocksByListInvoiceDetail(ctx
 	return nil
 }
 
-func (productService *productService) GetProducts(ctx context.Context, reqDTO *dto.GetProductsRequest) ([]*dto.ProductView, error) {
+func (productService *productService) GetProducts(ctx context.Context, reqDTO *dto.GetProductsRequest) ([]*model.ProductView, error) {
 	if infrastructure.ElasticsearchServiceGRPCClient != nil {
 		convertReqDTO := &elasticsearchservicepb.GetProductsRequest{}
 		convertReqDTO.Offset = reqDTO.Offset
@@ -271,7 +223,7 @@ func (productService *productService) GetProducts(ctx context.Context, reqDTO *d
 			return nil, fmt.Errorf("get products from catalog-service failed: %s", err.Error())
 		}
 
-		return dto.FromListProductProtoToListProductView(grpcRes.Products), nil
+		return model.FromListProductProtoToListProductView(grpcRes.Products), nil
 	} else {
 		return nil, fmt.Errorf("elasticsearch-service is not running")
 	}
