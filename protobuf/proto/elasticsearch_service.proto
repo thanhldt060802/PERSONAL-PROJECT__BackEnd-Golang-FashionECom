@@ -93,10 +93,11 @@ message GetInvoicesRequest {
     int32 limit = 2;
     string sort_by = 3;
     string user_id = 4;
-    int64 total_amount = 5;
-    string status = 6;
-    string created_at_gte = 7;
-    string created_at_lte = 8;
+    string total_amount_gte = 5;
+    string total_amount_lte = 6;
+    string status = 7;
+    string created_at_gte = 8;
+    string created_at_lte = 9;
 }
 
 message GetInvoicesResponse {

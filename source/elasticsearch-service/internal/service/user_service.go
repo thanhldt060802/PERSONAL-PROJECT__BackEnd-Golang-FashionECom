@@ -250,7 +250,7 @@ func (userService *userService) syncDeletingUserLoop() {
 func (userService *userService) GetUsers(ctx context.Context, reqDTO *elasticsearchservicepb.GetUsersRequest) ([]*elasticsearchservicepb.User, error) {
 	mustConditions := []map[string]interface{}{}
 
-	// If filtering by full_name
+	// If searching by full_name
 	if reqDTO.FullName != "" {
 		mustConditions = append(mustConditions, map[string]interface{}{
 			"match": map[string]interface{}{
@@ -259,7 +259,7 @@ func (userService *userService) GetUsers(ctx context.Context, reqDTO *elasticsea
 		})
 	}
 
-	// If filtering by email
+	// If searching by email
 	if reqDTO.Email != "" {
 		mustConditions = append(mustConditions, map[string]interface{}{
 			"match": map[string]interface{}{
@@ -268,7 +268,7 @@ func (userService *userService) GetUsers(ctx context.Context, reqDTO *elasticsea
 		})
 	}
 
-	// If filtering by username
+	// If searching by username
 	if reqDTO.Username != "" {
 		mustConditions = append(mustConditions, map[string]interface{}{
 			"match": map[string]interface{}{
@@ -277,7 +277,7 @@ func (userService *userService) GetUsers(ctx context.Context, reqDTO *elasticsea
 		})
 	}
 
-	// If filtering by address
+	// If searching by address
 	if reqDTO.Address != "" {
 		mustConditions = append(mustConditions, map[string]interface{}{
 			"match": map[string]interface{}{
@@ -286,7 +286,7 @@ func (userService *userService) GetUsers(ctx context.Context, reqDTO *elasticsea
 		})
 	}
 
-	// If filtering by role_name
+	// If searching by role_name
 	if reqDTO.RoleName != "" {
 		mustConditions = append(mustConditions, map[string]interface{}{
 			"match": map[string]interface{}{
@@ -295,7 +295,7 @@ func (userService *userService) GetUsers(ctx context.Context, reqDTO *elasticsea
 		})
 	}
 
-	// If filtering by created_at in range or partial range
+	// If searching by created_at in range or partial range
 	createdAtRange := map[string]interface{}{}
 	if reqDTO.CreatedAtGte != "" {
 		createdAtRange["gte"] = reqDTO.CreatedAtGte
@@ -312,7 +312,7 @@ func (userService *userService) GetUsers(ctx context.Context, reqDTO *elasticsea
 		})
 	}
 
-	// If not filtering -> get all
+	// If not searching -> get all
 	if len(mustConditions) == 0 {
 		mustConditions = append(mustConditions, map[string]interface{}{
 			"match_all": map[string]interface{}{},

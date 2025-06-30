@@ -10,12 +10,14 @@ type ElasticsearchServiceGRPCImpl struct {
 	elasticsearchservicepb.UnimplementedElasticsearchServiceGRPCServer
 	userService    service.UserService
 	catalogService service.CatalogService
+	orderService   service.OrderService
 }
 
-func NewElasticsearchServiceGRPCImpl(userService service.UserService, catalogService service.CatalogService) *ElasticsearchServiceGRPCImpl {
+func NewElasticsearchServiceGRPCImpl(userService service.UserService, catalogService service.CatalogService, orderService service.OrderService) *ElasticsearchServiceGRPCImpl {
 	return &ElasticsearchServiceGRPCImpl{
 		userService:    userService,
 		catalogService: catalogService,
+		orderService:   orderService,
 	}
 }
 
@@ -38,5 +40,16 @@ func (elasticsearchServiceGRPCImpl *ElasticsearchServiceGRPCImpl) GetProducts(ct
 
 	res := &elasticsearchservicepb.GetProductsResponse{}
 	res.Products = productProtos
+	return res, nil
+}
+
+func (elasticsearchServiceGRPCImpl *ElasticsearchServiceGRPCImpl) GetInvoices(ctx context.Context, reqDTO *elasticsearchservicepb.GetInvoicesRequest) (*elasticsearchservicepb.GetInvoicesResponse, error) {
+	invoiceProtos, err := elasticsearchServiceGRPCImpl.orderService.GetInvoices(ctx, reqDTO)
+	if err != nil {
+		return nil, err
+	}
+
+	res := &elasticsearchservicepb.GetInvoicesResponse{}
+	res.Invoices = invoiceProtos
 	return res, nil
 }

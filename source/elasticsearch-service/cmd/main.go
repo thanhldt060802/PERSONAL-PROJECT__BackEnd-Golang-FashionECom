@@ -18,6 +18,7 @@ func main() {
 	grpcimpl.StartGRPCServer(grpcimpl.NewElasticsearchServiceGRPCImpl(
 		service.NewUserService(config.AppConfig.SyncAvailableDataFromUserService),
 		service.NewCatalogService(config.AppConfig.SyncAvailableDataFromCatalogService),
+		service.NewOrderService(config.AppConfig.SyncAvailableDataFromOrderService),
 	))
 
 	select {}

@@ -37,7 +37,7 @@ func main() {
 	config.InitConfig()
 	infrastructure.InitPostgesDB()
 	defer infrastructure.PostgresDB.Close()
-	repository.InitTableUsers()
+	repository.InitTableUser()
 	infrastructure.InitRedisClient()
 	defer infrastructure.RedisClient.Close()
 	infrastructure.InitAllServiceGRPCClients()

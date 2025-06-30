@@ -655,17 +655,18 @@ func (x *Product) GetUpdatedAt() *timestamppb.Timestamp {
 }
 
 type GetInvoicesRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Offset        int32                  `protobuf:"varint,1,opt,name=offset,proto3" json:"offset,omitempty"`
-	Limit         int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
-	SortBy        string                 `protobuf:"bytes,3,opt,name=sort_by,json=sortBy,proto3" json:"sort_by,omitempty"`
-	UserId        string                 `protobuf:"bytes,4,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	TotalAmount   int64                  `protobuf:"varint,5,opt,name=total_amount,json=totalAmount,proto3" json:"total_amount,omitempty"`
-	Status        string                 `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"`
-	CreatedAtGte  string                 `protobuf:"bytes,7,opt,name=created_at_gte,json=createdAtGte,proto3" json:"created_at_gte,omitempty"`
-	CreatedAtLte  string                 `protobuf:"bytes,8,opt,name=created_at_lte,json=createdAtLte,proto3" json:"created_at_lte,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Offset         int32                  `protobuf:"varint,1,opt,name=offset,proto3" json:"offset,omitempty"`
+	Limit          int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
+	SortBy         string                 `protobuf:"bytes,3,opt,name=sort_by,json=sortBy,proto3" json:"sort_by,omitempty"`
+	UserId         string                 `protobuf:"bytes,4,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	TotalAmountGte string                 `protobuf:"bytes,5,opt,name=total_amount_gte,json=totalAmountGte,proto3" json:"total_amount_gte,omitempty"`
+	TotalAmountLte string                 `protobuf:"bytes,6,opt,name=total_amount_lte,json=totalAmountLte,proto3" json:"total_amount_lte,omitempty"`
+	Status         string                 `protobuf:"bytes,7,opt,name=status,proto3" json:"status,omitempty"`
+	CreatedAtGte   string                 `protobuf:"bytes,8,opt,name=created_at_gte,json=createdAtGte,proto3" json:"created_at_gte,omitempty"`
+	CreatedAtLte   string                 `protobuf:"bytes,9,opt,name=created_at_lte,json=createdAtLte,proto3" json:"created_at_lte,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *GetInvoicesRequest) Reset() {
@@ -726,11 +727,18 @@ func (x *GetInvoicesRequest) GetUserId() string {
 	return ""
 }
 
-func (x *GetInvoicesRequest) GetTotalAmount() int64 {
+func (x *GetInvoicesRequest) GetTotalAmountGte() string {
 	if x != nil {
-		return x.TotalAmount
+		return x.TotalAmountGte
 	}
-	return 0
+	return ""
+}
+
+func (x *GetInvoicesRequest) GetTotalAmountLte() string {
+	if x != nil {
+		return x.TotalAmountLte
+	}
+	return ""
 }
 
 func (x *GetInvoicesRequest) GetStatus() string {
@@ -955,16 +963,17 @@ const file_elasticsearch_service_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xfb\x01\n" +
+	"updated_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xac\x02\n" +
 	"\x12GetInvoicesRequest\x12\x16\n" +
 	"\x06offset\x18\x01 \x01(\x05R\x06offset\x12\x14\n" +
 	"\x05limit\x18\x02 \x01(\x05R\x05limit\x12\x17\n" +
 	"\asort_by\x18\x03 \x01(\tR\x06sortBy\x12\x17\n" +
-	"\auser_id\x18\x04 \x01(\tR\x06userId\x12!\n" +
-	"\ftotal_amount\x18\x05 \x01(\x03R\vtotalAmount\x12\x16\n" +
-	"\x06status\x18\x06 \x01(\tR\x06status\x12$\n" +
-	"\x0ecreated_at_gte\x18\a \x01(\tR\fcreatedAtGte\x12$\n" +
-	"\x0ecreated_at_lte\x18\b \x01(\tR\fcreatedAtLte\"R\n" +
+	"\auser_id\x18\x04 \x01(\tR\x06userId\x12(\n" +
+	"\x10total_amount_gte\x18\x05 \x01(\tR\x0etotalAmountGte\x12(\n" +
+	"\x10total_amount_lte\x18\x06 \x01(\tR\x0etotalAmountLte\x12\x16\n" +
+	"\x06status\x18\a \x01(\tR\x06status\x12$\n" +
+	"\x0ecreated_at_gte\x18\b \x01(\tR\fcreatedAtGte\x12$\n" +
+	"\x0ecreated_at_lte\x18\t \x01(\tR\fcreatedAtLte\"R\n" +
 	"\x13GetInvoicesResponse\x12;\n" +
 	"\binvoices\x18\x01 \x03(\v2\x1f.elasticsearchservicepb.InvoiceR\binvoices\"\xe3\x01\n" +
 	"\aInvoice\x12\x0e\n" +

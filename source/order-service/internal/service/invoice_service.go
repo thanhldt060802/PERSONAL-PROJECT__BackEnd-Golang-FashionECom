@@ -7,6 +7,7 @@ import (
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/dto"
 	"thanhldt060802/internal/grpc/client/catalogservicepb"
+	"thanhldt060802/internal/grpc/client/elasticsearchservicepb"
 	"thanhldt060802/internal/model"
 	"thanhldt060802/internal/repository"
 	"time"
@@ -200,5 +201,25 @@ func (invoiceService *invoiceService) GetAllInvoices(ctx context.Context) ([]*mo
 }
 
 func (invoiceService *invoiceService) GetInvoices(ctx context.Context, reqDTO *dto.GetInvoicesRequest) ([]*model.InvoiceView, error) {
-	return nil, nil
+	if infrastructure.ElasticsearchServiceGRPCClient != nil {
+		convertReqDTO := &elasticsearchservicepb.GetInvoicesRequest{}
+		convertReqDTO.Offset = reqDTO.Offset
+		convertReqDTO.Limit = reqDTO.Limit
+		convertReqDTO.SortBy = reqDTO.SortBy
+		convertReqDTO.UserId = reqDTO.UserId
+		convertReqDTO.TotalAmountGte = reqDTO.TotalAmountGTE
+		convertReqDTO.TotalAmountLte = reqDTO.TotalAmountLTE
+		convertReqDTO.Status = reqDTO.Status
+		convertReqDTO.CreatedAtGte = reqDTO.CreatedAtGTE
+		convertReqDTO.CreatedAtLte = reqDTO.CreatedAtLTE
+
+		grpcRes, err := infrastructure.ElasticsearchServiceGRPCClient.GetInvoices(ctx, convertReqDTO)
+		if err != nil {
+			return nil, fmt.Errorf("get invoices from elasticsearch-service failed: %s", err.Error())
+		}
+
+		return model.FromListInvoiceProtoToListInvoiceView(grpcRes.Invoices), nil
+	} else {
+		return nil, fmt.Errorf("elasticsearch-service is not running")
+	}
 }

@@ -220,7 +220,7 @@ func (productService *productService) GetProducts(ctx context.Context, reqDTO *d
 
 		grpcRes, err := infrastructure.ElasticsearchServiceGRPCClient.GetProducts(ctx, convertReqDTO)
 		if err != nil {
-			return nil, fmt.Errorf("get products from catalog-service failed: %s", err.Error())
+			return nil, fmt.Errorf("get products from elasticsearch-service failed: %s", err.Error())
 		}
 
 		return model.FromListProductProtoToListProductView(grpcRes.Products), nil

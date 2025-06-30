@@ -1,6 +1,7 @@
 package model
 
 import (
+	"thanhldt060802/internal/grpc/client/elasticsearchservicepb"
 	"thanhldt060802/internal/grpc/service/orderservicepb"
 	"time"
 
@@ -88,24 +89,22 @@ func FromListInvoiceViewToListInvoiceProto(invoiceViews []*InvoiceView) []*order
 
 // Proto -> View
 
-// func FromUserProtoToUserView(userProto *elasticsearchservicepb.User) *UserView {
-// 	return &UserView{
-// 		Id:        userProto.Id,
-// 		FullName:  userProto.FullName,
-// 		Email:     userProto.Email,
-// 		Username:  userProto.Username,
-// 		Address:   userProto.Address,
-// 		RoleName:  userProto.RoleName,
-// 		CreatedAt: userProto.CreatedAt.AsTime(),
-// 		UpdatedAt: userProto.UpdatedAt.AsTime(),
-// 	}
-// }
+func FromInvoiceProtoToInvoiceView(invoiceProto *elasticsearchservicepb.Invoice) *InvoiceView {
+	return &InvoiceView{
+		Id:          invoiceProto.Id,
+		UserId:      invoiceProto.UserId,
+		TotalAmount: invoiceProto.TotalAmount,
+		Status:      invoiceProto.Status,
+		CreatedAt:   invoiceProto.CreatedAt.AsTime(),
+		UpdatedAt:   invoiceProto.UpdatedAt.AsTime(),
+	}
+}
 
-// func FromListUserProtoToListUserView(userProtos []*elasticsearchservicepb.User) []*UserView {
-// 	userViews := make([]*UserView, len(userProtos))
-// 	for i, userProto := range userProtos {
-// 		userViews[i] = FromUserProtoToUserView(userProto)
-// 	}
+func FromListInvoiceProtoToListInvoiceView(invoiceProtos []*elasticsearchservicepb.Invoice) []*InvoiceView {
+	invoiceViews := make([]*InvoiceView, len(invoiceProtos))
+	for i, invoiceProto := range invoiceProtos {
+		invoiceViews[i] = FromInvoiceProtoToInvoiceView(invoiceProto)
+	}
 
-// 	return userViews
-// }
+	return invoiceViews
+}

@@ -285,7 +285,7 @@ func (userService *userService) GetUsers(ctx context.Context, reqDTO *dto.GetUse
 
 		grpcRes, err := infrastructure.ElasticsearchServiceGRPCClient.GetUsers(ctx, convertReqDTO)
 		if err != nil {
-			return nil, fmt.Errorf("get users from user-service failed: %s", err.Error())
+			return nil, fmt.Errorf("get users from elasticsearch-service failed: %s", err.Error())
 		}
 
 		return model.FromListUserProtoToListUserView(grpcRes.Users), nil

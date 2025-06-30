@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func InitTableUsers() {
+func InitTableUser() {
 	ctx := context.Background()
 
 	var exists bool
@@ -28,7 +28,7 @@ func InitTableUsers() {
 
 	if !exists {
 		if _, err := infrastructure.PostgresDB.NewCreateTable().Model(&model.User{}).Exec(ctx); err != nil {
-			log.Fatal("Create table users on PostgreSQL failed: ", err)
+			log.Fatal("Create table tb_user on PostgreSQL failed: ", err)
 		}
 
 		userData := []*model.User{}
@@ -58,7 +58,7 @@ func InitTableUsers() {
 		}
 
 		if _, err := infrastructure.PostgresDB.NewInsert().Model(&userData).Exec(ctx); err != nil {
-			log.Fatal("Create data for table users on PostgreSQL failed: ", err)
+			log.Fatal("Create data for table tb_user on PostgreSQL failed: ", err)
 		}
 	}
 }

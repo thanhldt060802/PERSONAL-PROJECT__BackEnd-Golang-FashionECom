@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"thanhldt060802/infrastructure"
 	"thanhldt060802/internal/dto"
@@ -39,7 +40,7 @@ func NewOrderService(sync string) OrderService {
 				break
 			}
 
-			if err := userService.SyncAllAvailableInvoices(); err != nil {
+			if err := orderService.SyncAllAvailableInvoices(); err != nil {
 				log.Printf("Sync all available users the first time failed: %s", err.Error())
 			} else {
 				log.Printf("Sync all available users the first time successful")
@@ -48,15 +49,15 @@ func NewOrderService(sync string) OrderService {
 			infrastructure.OrderServiceGRPCConnection.Close()
 		}
 
-		go userService.syncCreatingInvoiceLoop()
-		go userService.syncUpdatingInvoiceLoop()
-		go userService.syncDeletingInvoiceLoop()
+		go orderService.syncCreatingInvoiceLoop()
+		go orderService.syncUpdatingInvoiceLoop()
+		go orderService.syncDeletingInvoiceLoop()
 	}()
 
 	return orderService
 }
 
-func (userService *userService) SyncAllAvailableInvoices() error {
+func (orderService *orderService) SyncAllAvailableInvoices() error {
 	// Check if index already exists on Elasticsearch
 	existsRes, err := infrastructure.ElasticsearchClient.Indices.Exists([]string{"invoices"})
 	if err != nil {
@@ -116,7 +117,7 @@ func (userService *userService) SyncAllAvailableInvoices() error {
 	// Add all available data on PostgreSQL to BulkIndexer
 	for _, invoice := range invoices {
 		// Convert data to JSON data
-		userJSON, err := json.Marshal(dto.FromUserProtoToUserView(user))
+		invoiceJSON, err := json.Marshal(dto.FromInvoiceProtoToInvoiceView(invoice))
 		if err != nil {
 			return err
 		}
@@ -124,13 +125,13 @@ func (userService *userService) SyncAllAvailableInvoices() error {
 		// Add data to BulkIndexer
 		err = indexer.Add(context.Background(), esutil.BulkIndexerItem{
 			Action:     "index",
-			DocumentID: user.Id,
-			Body:       bytes.NewReader(userJSON),
+			DocumentID: invoice.Id,
+			Body:       bytes.NewReader(invoiceJSON),
 			OnFailure: func(ctx context.Context, item esutil.BulkIndexerItem, resp esutil.BulkIndexerResponseItem, err error) {
 				if err != nil {
 					log.Printf("Bulk index failed: %s", err.Error())
 				} else {
-					log.Printf("Index user with id = %s failed: %s", item.DocumentID, resp.Error.Reason)
+					log.Printf("Index invoice with id = %s failed: %s", item.DocumentID, resp.Error.Reason)
 				}
 				hasFailure = true
 			},
@@ -141,161 +142,152 @@ func (userService *userService) SyncAllAvailableInvoices() error {
 	}
 
 	if hasFailure {
-		return fmt.Errorf("sync all available users to elasticsearch failed: index user to bulk")
+		return fmt.Errorf("sync all available invoices to elasticsearch failed: index invoice to bulk")
 	}
 	if closeBulkIndexer != nil {
-		return fmt.Errorf("sync all available users to elasticsearch failed: %s", closeBulkIndexer.Error())
+		return fmt.Errorf("sync all available invoices to elasticsearch failed: %s", closeBulkIndexer.Error())
 	}
 
 	return nil
 }
 
-func (userService *userService) syncCreatingUserLoop() {
-	subscribe := infrastructure.RedisClient.Subscribe(context.Background(), "user-service.created-user")
+func (orderService *orderService) syncCreatingInvoiceLoop() {
+	subscribe := infrastructure.RedisClient.Subscribe(context.Background(), "order-service.created-invoice")
 	defer subscribe.Close()
 
 	ch := subscribe.Channel()
 
 	for msg := range ch {
-		var newUserView dto.UserView
-		if err := json.Unmarshal([]byte(msg.Payload), &newUserView); err != nil {
-			log.Printf("Parse payload from event user-service.created-user failed: %s", err.Error())
+		var newInvoiceView dto.InvoiceView
+		if err := json.Unmarshal([]byte(msg.Payload), &newInvoiceView); err != nil {
+			log.Printf("Parse payload from event order-service.created-invoice failed: %s", err.Error())
 			continue
 		}
 
 		func() {
 			res, err := infrastructure.ElasticsearchClient.Index(
-				"users",
-				esutil.NewJSONReader(newUserView),
-				infrastructure.ElasticsearchClient.Index.WithDocumentID(newUserView.Id),
+				"invoices",
+				esutil.NewJSONReader(newInvoiceView),
+				infrastructure.ElasticsearchClient.Index.WithDocumentID(newInvoiceView.Id),
 				infrastructure.ElasticsearchClient.Index.WithRefresh("true"),
 			)
 			if err != nil {
-				log.Printf("Insert user to Elasticsearch failed: %s", err.Error())
+				log.Printf("Insert invoice to Elasticsearch failed: %s", err.Error())
 			}
 			defer res.Body.Close()
 
 			if res.IsError() {
-				log.Printf("Sync creating user failed: %s", res.String())
+				log.Printf("Sync creating invoice failed: %s", res.String())
 			} else {
-				log.Printf("Sync creating user successful")
+				log.Printf("Sync creating invoice successful")
 			}
 		}()
 	}
 }
 
-func (userService *userService) syncUpdatingUserLoop() {
-	subscribe := infrastructure.RedisClient.Subscribe(context.Background(), "user-service.updated-user")
+func (orderService *orderService) syncUpdatingInvoiceLoop() {
+	subscribe := infrastructure.RedisClient.Subscribe(context.Background(), "order-service.updated-invoice")
 	defer subscribe.Close()
 
 	ch := subscribe.Channel()
 
 	for msg := range ch {
-		var updatedUserView dto.UserView
-		if err := json.Unmarshal([]byte(msg.Payload), &updatedUserView); err != nil {
-			log.Printf("Parse payload from event user-service.updated-user failed: %s", err.Error())
+		var updatedInvoiceView dto.InvoiceView
+		if err := json.Unmarshal([]byte(msg.Payload), &updatedInvoiceView); err != nil {
+			log.Printf("Parse payload from event order-service.updated-invoice failed: %s", err.Error())
 			continue
 		}
 
 		func() {
 			res, err := infrastructure.ElasticsearchClient.Index(
-				"users",
-				esutil.NewJSONReader(updatedUserView),
-				infrastructure.ElasticsearchClient.Index.WithDocumentID(updatedUserView.Id),
+				"invoices",
+				esutil.NewJSONReader(updatedInvoiceView),
+				infrastructure.ElasticsearchClient.Index.WithDocumentID(updatedInvoiceView.Id),
 				infrastructure.ElasticsearchClient.Index.WithRefresh("true"),
 			)
 			if err != nil {
-				log.Printf("Update user on Elasticsearch failed: %s", err.Error())
+				log.Printf("Update invoice on Elasticsearch failed: %s", err.Error())
 			}
 			defer res.Body.Close()
 
 			if res.IsError() {
-				log.Printf("Sync updating user failed: %s", res.String())
+				log.Printf("Sync updating invoice failed: %s", res.String())
 			} else {
-				log.Printf("Sync updating user successful")
+				log.Printf("Sync updating invoice successful")
 			}
 		}()
 	}
 }
 
-func (userService *userService) syncDeletingUserLoop() {
-	subscribe := infrastructure.RedisClient.Subscribe(context.Background(), "user-service.deleted-user")
+func (orderService *orderService) syncDeletingInvoiceLoop() {
+	subscribe := infrastructure.RedisClient.Subscribe(context.Background(), "order-service.deleted-invoice")
 	defer subscribe.Close()
 
 	ch := subscribe.Channel()
 
 	for msg := range ch {
-		userIdStr := msg.Payload
+		invoiceIdStr := msg.Payload
 
 		func() {
 			res, err := infrastructure.ElasticsearchClient.Delete(
-				"users",
-				userIdStr,
+				"invoices",
+				invoiceIdStr,
 				infrastructure.ElasticsearchClient.Delete.WithRefresh("true"),
 			)
 			if err != nil {
-				log.Printf("Delete user from Elasticsearch failed: %s", err.Error())
+				log.Printf("Delete invoice from Elasticsearch failed: %s", err.Error())
 			}
 			defer res.Body.Close()
 
 			if res.IsError() {
-				log.Printf("Sync deleting user failed: %s", res.String())
+				log.Printf("Sync deleting invoice failed: %s", res.String())
 			} else {
-				log.Printf("Sync deleting user successful")
+				log.Printf("Sync deleting invoice successful")
 			}
 		}()
 	}
 }
 
-func (userService *userService) GetUsers(ctx context.Context, reqDTO *elasticsearchservicepb.GetUsersRequest) ([]*elasticsearchservicepb.User, error) {
+func (orderService *orderService) GetInvoices(ctx context.Context, reqDTO *elasticsearchservicepb.GetInvoicesRequest) ([]*elasticsearchservicepb.Invoice, error) {
 	mustConditions := []map[string]interface{}{}
 
-	// If filtering by full_name
-	if reqDTO.FullName != "" {
+	// If filtering by user_id
+	if reqDTO.UserId != "" {
 		mustConditions = append(mustConditions, map[string]interface{}{
-			"match": map[string]interface{}{
-				"full_name": reqDTO.FullName,
+			"term": map[string]interface{}{
+				"user_id.keyword": reqDTO.UserId,
 			},
 		})
 	}
 
-	// If filtering by email
-	if reqDTO.Email != "" {
+	// If searching by total_amount in range or partial range
+	totalAmountRange := map[string]interface{}{}
+	if reqDTO.TotalAmountGte != "" {
+		value, _ := strconv.ParseInt(reqDTO.TotalAmountGte, 10, 64)
+		totalAmountRange["gte"] = value
+	}
+	if reqDTO.TotalAmountLte != "" {
+		value, _ := strconv.ParseInt(reqDTO.TotalAmountLte, 10, 64)
+		totalAmountRange["lte"] = value
+	}
+	if len(totalAmountRange) > 0 {
 		mustConditions = append(mustConditions, map[string]interface{}{
-			"match": map[string]interface{}{
-				"email": reqDTO.Email,
+			"range": map[string]interface{}{
+				"total_amount_range": totalAmountRange,
 			},
 		})
 	}
 
-	// If filtering by username
-	if reqDTO.Username != "" {
+	// If searching by status
+	if reqDTO.Status != "" {
 		mustConditions = append(mustConditions, map[string]interface{}{
 			"match": map[string]interface{}{
-				"username": reqDTO.Username,
+				"status": reqDTO.Status,
 			},
 		})
 	}
 
-	// If filtering by address
-	if reqDTO.Address != "" {
-		mustConditions = append(mustConditions, map[string]interface{}{
-			"match": map[string]interface{}{
-				"address": reqDTO.Address,
-			},
-		})
-	}
-
-	// If filtering by role_name
-	if reqDTO.RoleName != "" {
-		mustConditions = append(mustConditions, map[string]interface{}{
-			"match": map[string]interface{}{
-				"role_name": reqDTO.RoleName,
-			},
-		})
-	}
-
-	// If filtering by created_at in range or partial range
+	// If searching by created_at in range or partial range
 	createdAtRange := map[string]interface{}{}
 	if reqDTO.CreatedAtGte != "" {
 		createdAtRange["gte"] = reqDTO.CreatedAtGte
@@ -312,7 +304,7 @@ func (userService *userService) GetUsers(ctx context.Context, reqDTO *elasticsea
 		})
 	}
 
-	// If not filtering -> get all
+	// If not searching -> get all
 	if len(mustConditions) == 0 {
 		mustConditions = append(mustConditions, map[string]interface{}{
 			"match_all": map[string]interface{}{},
@@ -349,7 +341,7 @@ func (userService *userService) GetUsers(ctx context.Context, reqDTO *elasticsea
 	// Send request to Elasticsearch
 	res, err := infrastructure.ElasticsearchClient.Search(
 		infrastructure.ElasticsearchClient.Search.WithContext(ctx),
-		infrastructure.ElasticsearchClient.Search.WithIndex("users"),
+		infrastructure.ElasticsearchClient.Search.WithIndex("invoices"),
 		infrastructure.ElasticsearchClient.Search.WithBody(bytes.NewReader(queryJSON)),
 	)
 	if err != nil {
@@ -359,14 +351,14 @@ func (userService *userService) GetUsers(ctx context.Context, reqDTO *elasticsea
 
 	// Parse Elasticsearch response
 	if res.IsError() {
-		return nil, fmt.Errorf("some thing wrong when querying users on elasticsearch")
+		return nil, fmt.Errorf("some thing wrong when querying invoices on elasticsearch")
 	}
 
 	// Declare Elasticsearch response
 	var elasticsearchResponse struct {
 		Hits struct {
 			Hits []struct {
-				Source dto.UserView `json:"_source"`
+				Source dto.InvoiceView `json:"_source"`
 			} `json:"hits"`
 		} `json:"hits"`
 	}
@@ -378,10 +370,10 @@ func (userService *userService) GetUsers(ctx context.Context, reqDTO *elasticsea
 	}
 
 	// Extract data from Elasticsearch response
-	users := make([]dto.UserView, len(elasticsearchResponse.Hits.Hits))
+	invoices := make([]dto.InvoiceView, len(elasticsearchResponse.Hits.Hits))
 	for i, hit := range elasticsearchResponse.Hits.Hits {
-		users[i] = hit.Source
+		invoices[i] = hit.Source
 	}
 
-	return dto.FromListUserViewToListUserProto(users), nil
+	return dto.FromListInvoiceViewToListInvoiceProto(invoices), nil
 }
