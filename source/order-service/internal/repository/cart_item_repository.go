@@ -140,7 +140,7 @@ func (cartItemRepository *cartItemRepository) Create(ctx context.Context, newCar
 }
 
 func (cartItemRepository *cartItemRepository) Update(ctx context.Context, updatedCartItem *model.CartItem) error {
-	_, err := infrastructure.PostgresDB.NewUpdate().Model(updatedCartItem).Exec(ctx)
+	_, err := infrastructure.PostgresDB.NewUpdate().Model(updatedCartItem).Where("id = ?", updatedCartItem.Id).Exec(ctx)
 	return err
 }
 

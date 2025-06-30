@@ -84,7 +84,7 @@ func (brandRepository *brandRepository) Create(ctx context.Context, newBrand *mo
 }
 
 func (brandRepository *brandRepository) Update(ctx context.Context, updatedBrand *model.Brand) error {
-	_, err := infrastructure.PostgresDB.NewUpdate().Model(updatedBrand).Exec(ctx)
+	_, err := infrastructure.PostgresDB.NewUpdate().Model(updatedBrand).Where("id = ?", updatedBrand.Id).Exec(ctx)
 	return err
 }
 

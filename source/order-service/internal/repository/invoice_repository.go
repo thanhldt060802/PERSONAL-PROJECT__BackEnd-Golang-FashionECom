@@ -93,7 +93,7 @@ func (invoiceRepository *invoiceRepository) Create(ctx context.Context, newInvoi
 }
 
 func (invoiceRepository *invoiceRepository) Update(ctx context.Context, updatedInvoice *model.Invoice) error {
-	_, err := infrastructure.PostgresDB.NewUpdate().Model(updatedInvoice).Exec(ctx)
+	_, err := infrastructure.PostgresDB.NewUpdate().Model(updatedInvoice).Where("id = ?", updatedInvoice.Id).Exec(ctx)
 	return err
 }
 

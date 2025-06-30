@@ -84,7 +84,7 @@ func (categoryRepository *categoryRepository) Create(ctx context.Context, newCat
 }
 
 func (categoryRepository *categoryRepository) Update(ctx context.Context, updatedCategory *model.Category) error {
-	_, err := infrastructure.PostgresDB.NewUpdate().Model(updatedCategory).Exec(ctx)
+	_, err := infrastructure.PostgresDB.NewUpdate().Model(updatedCategory).Where("id = ?", updatedCategory.Id).Exec(ctx)
 	return err
 }
 

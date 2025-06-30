@@ -81,7 +81,7 @@ func (userRepository *userRepository) Create(ctx context.Context, newUser *model
 }
 
 func (userRepository *userRepository) Update(ctx context.Context, updatedUser *model.User) error {
-	_, err := infrastructure.PostgresDB.NewUpdate().Model(updatedUser).Exec(ctx)
+	_, err := infrastructure.PostgresDB.NewUpdate().Model(updatedUser).Where("id = ?", updatedUser.Id).Exec(ctx)
 	return err
 }
 

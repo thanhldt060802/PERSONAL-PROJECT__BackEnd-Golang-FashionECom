@@ -80,7 +80,7 @@ func (productRepository *productRepository) Create(ctx context.Context, newProdu
 }
 
 func (productRepository *productRepository) Update(ctx context.Context, updatedProduct *model.Product) error {
-	_, err := infrastructure.PostgresDB.NewUpdate().Model(updatedProduct).Exec(ctx)
+	_, err := infrastructure.PostgresDB.NewUpdate().Model(updatedProduct).Where("id = ?", updatedProduct.Id).Exec(ctx)
 	return err
 }
 
@@ -134,7 +134,7 @@ func (productRepository *productRepository) UpdateStocks(ctx context.Context, up
 	defer tx.Rollback()
 
 	for _, updatedProduct := range updatedProducts {
-		if _, err := tx.NewUpdate().Model(updatedProduct).Exec(ctx); err != nil {
+		if _, err := tx.NewUpdate().Model(updatedProduct).Where("id = ?", updatedProduct.Id).Exec(ctx); err != nil {
 			return err
 		}
 	}
