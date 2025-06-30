@@ -40,11 +40,6 @@ func NewCategoryHandler(api huma.API, categoryService service.CategoryService, j
 		Tags:        []string{"Category"},
 	}, categoryHandler.GetCategoryById)
 
-	//
-	//
-	// For only admin
-	// ######################################################################################
-
 	// Create category
 	huma.Register(api, huma.Operation{
 		Method:      http.MethodPost,

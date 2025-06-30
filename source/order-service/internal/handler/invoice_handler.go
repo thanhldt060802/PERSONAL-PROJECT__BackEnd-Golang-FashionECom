@@ -125,6 +125,15 @@ func (invoiceHandler *InvoiceHandler) GetInvocies(ctx context.Context, reqDTO *d
 }
 
 func (invoiceHandler *InvoiceHandler) GetInvoiceById(ctx context.Context, reqDTO *dto.GetInvoiceByIdRequest) (*dto.BodyResponse[*model.InvoiceView], error) {
+	if reqDTO.Id == "{id}" {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusBadRequest
+		res.Code = "ERR_BAD_REQUEST"
+		res.Message = "Get invoice by id failed"
+		res.Details = []string{"missing path parameters: id"}
+		return nil, res
+	}
+
 	foundInvoice, err := invoiceHandler.invoiceService.GetInvoiceById(ctx, reqDTO)
 	if err != nil {
 		res := &dto.ErrorResponse{}
@@ -159,6 +168,15 @@ func (invoiceHandler *InvoiceHandler) CreateInvoice(ctx context.Context, reqDTO 
 }
 
 func (invoiceHandler *InvoiceHandler) UpdateInvoiceById(ctx context.Context, reqDTO *dto.UpdateInvoiceByIdRequest) (*dto.SuccessResponse, error) {
+	if reqDTO.Id == "{id}" {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusBadRequest
+		res.Code = "ERR_BAD_REQUEST"
+		res.Message = "Update invoice by id failed"
+		res.Details = []string{"missing path parameters: id"}
+		return nil, res
+	}
+
 	if err := invoiceHandler.invoiceService.UpdateInvoiceById(ctx, reqDTO); err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusBadRequest
@@ -175,6 +193,15 @@ func (invoiceHandler *InvoiceHandler) UpdateInvoiceById(ctx context.Context, req
 }
 
 func (invoiceHandler *InvoiceHandler) DeleteInvoiceById(ctx context.Context, reqDTO *dto.DeleteInvoiceByIdRequest) (*dto.SuccessResponse, error) {
+	if reqDTO.Id == "{id}" {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusBadRequest
+		res.Code = "ERR_BAD_REQUEST"
+		res.Message = "Delete invoice by id failed"
+		res.Details = []string{"missing path parameters: id"}
+		return nil, res
+	}
+
 	if err := invoiceHandler.invoiceService.DeleteInvoiceById(ctx, reqDTO); err != nil {
 		res := &dto.ErrorResponse{}
 		res.Status = http.StatusBadRequest
@@ -221,6 +248,15 @@ func (invoiceHandler *InvoiceHandler) GetMyInvoices(ctx context.Context, reqDTO 
 }
 
 func (invoiceHandler *InvoiceHandler) GetMyInvoiceById(ctx context.Context, reqDTO *dto.GetMyInvoiceByIdRequest) (*dto.BodyResponse[*model.InvoiceView], error) {
+	if reqDTO.Id == "{id}" {
+		res := &dto.ErrorResponse{}
+		res.Status = http.StatusBadRequest
+		res.Code = "ERR_BAD_REQUEST"
+		res.Message = "Get my invoice by id failed"
+		res.Details = []string{"missing path parameters: id"}
+		return nil, res
+	}
+
 	convertReqDTO := &dto.GetInvoiceByIdRequest{}
 	convertReqDTO.Id = reqDTO.Id
 	convertReqDTO.UserId = ctx.Value("user_id").(string)
