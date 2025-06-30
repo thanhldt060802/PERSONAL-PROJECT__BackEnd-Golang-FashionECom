@@ -28,14 +28,16 @@ func NewInvoiceRepository() InvoiceRepository {
 func (invoiceRepository *invoiceRepository) GetViewById(ctx context.Context, id string, dataExpansion bool) (*model.InvoiceView, error) {
 	invoice := new(model.InvoiceView)
 
-	if err := infrastructure.PostgresDB.NewSelect().Model(invoice).Where("_invoice.id = ?", id).Scan(ctx); err != nil {
+	query := infrastructure.PostgresDB.NewSelect().Model(invoice).Where("_invoice.id = ?", id)
+
+	if err := query.Scan(ctx); err != nil {
 		return nil, err
 	}
 
 	if dataExpansion {
 		var invoiceDetails []*model.InvoiceDetailView
 
-		err := infrastructure.PostgresDB.NewSelect().Model(&invoiceDetails).
+		query := infrastructure.PostgresDB.NewSelect().Model(&invoiceDetails).
 			TableExpr("tb_invoice_detail AS _invoice_detail").
 			Column("_invoice_detail.*").
 			ColumnExpr("_product.name AS product_name").
@@ -48,8 +50,9 @@ func (invoiceRepository *invoiceRepository) GetViewById(ctx context.Context, id 
 			Join("JOIN tb_product AS _product ON _product.id = _invoice_detail.product_id").
 			Join("JOIN tb_category AS _category ON _category.id = _product.category_id").
 			Join("JOIN tb_brand AS _brand ON _brand.id = _product.brand_id").
-			Where("_invoice_detail.invoice_id = ?", id).Scan(ctx)
-		if err != nil {
+			Where("_invoice_detail.invoice_id = ?", id)
+
+		if err := query.Scan(ctx); err != nil {
 			return nil, err
 		}
 
@@ -62,7 +65,9 @@ func (invoiceRepository *invoiceRepository) GetViewById(ctx context.Context, id 
 func (invoiceRepository *invoiceRepository) GetById(ctx context.Context, id string) (*model.Invoice, error) {
 	invoice := new(model.Invoice)
 
-	if err := infrastructure.PostgresDB.NewSelect().Model(&invoice).Where("id = ?", id).Scan(ctx); err != nil {
+	query := infrastructure.PostgresDB.NewSelect().Model(&invoice).Where("id = ?", id)
+
+	if err := query.Scan(ctx); err != nil {
 		return nil, err
 	}
 
@@ -88,7 +93,7 @@ func (invoiceRepository *invoiceRepository) Create(ctx context.Context, newInvoi
 }
 
 func (invoiceRepository *invoiceRepository) Update(ctx context.Context, updatedInvoice *model.Invoice) error {
-	_, err := infrastructure.PostgresDB.NewUpdate().Model(updatedInvoice).Where("id = ?", updatedInvoice.Id).Exec(ctx)
+	_, err := infrastructure.PostgresDB.NewUpdate().Model(updatedInvoice).Exec(ctx)
 	return err
 }
 
@@ -113,7 +118,9 @@ func (invoiceRepository *invoiceRepository) DeleteById(ctx context.Context, id s
 func (invoiceRepository *invoiceRepository) GetAllViews(ctx context.Context, dataExpansion bool) ([]*model.InvoiceView, error) {
 	var invoices []*model.InvoiceView
 
-	if err := infrastructure.PostgresDB.NewSelect().Model(&invoices).Scan(ctx); err != nil {
+	query := infrastructure.PostgresDB.NewSelect().Model(&invoices)
+
+	if err := query.Scan(ctx); err != nil {
 		return nil, err
 	}
 
@@ -121,7 +128,7 @@ func (invoiceRepository *invoiceRepository) GetAllViews(ctx context.Context, dat
 		for i := range invoices {
 			var invoiceDetails []*model.InvoiceDetailView
 
-			err := infrastructure.PostgresDB.NewSelect().Model(&invoiceDetails).
+			query := infrastructure.PostgresDB.NewSelect().Model(&invoiceDetails).
 				TableExpr("tb_invoice_detail AS _invoice_detail").
 				Column("_invoice_detail.*").
 				ColumnExpr("_product.name AS product_name").
@@ -134,8 +141,9 @@ func (invoiceRepository *invoiceRepository) GetAllViews(ctx context.Context, dat
 				Join("JOIN tb_product AS _product ON _product.id = _invoice_detail.product_id").
 				Join("JOIN tb_category AS _category ON _category.id = _product.category_id").
 				Join("JOIN tb_brand AS _brand ON _brand.id = _product.brand_id").
-				Where("_invoice_detail.invoice_id = ?", invoices[i].Id).Scan(ctx)
-			if err != nil {
+				Where("_invoice_detail.invoice_id = ?", invoices[i].Id)
+
+			if err := query.Scan(ctx); err != nil {
 				return nil, err
 			}
 

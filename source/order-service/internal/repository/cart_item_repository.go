@@ -64,7 +64,7 @@ func (cartItemRepository *cartItemRepository) GetViews(ctx context.Context, offs
 func (cartItemRepository *cartItemRepository) GetAllViewsByUserId(ctx context.Context, userId string) ([]*model.CartItemView, error) {
 	var cartItems []*model.CartItemView
 
-	err := infrastructure.PostgresDB.NewSelect().Model(&cartItems).
+	query := infrastructure.PostgresDB.NewSelect().Model(&cartItems).
 		TableExpr("tb_cart_item AS _cart_item").
 		Column("_cart_item.*").
 		ColumnExpr("_product.name AS product_name").
@@ -79,9 +79,9 @@ func (cartItemRepository *cartItemRepository) GetAllViewsByUserId(ctx context.Co
 		Join("JOIN tb_product AS _product ON _product.id = _cart_item.product_id").
 		Join("JOIN tb_category AS _category ON _category.id = _product.category_id").
 		Join("JOIN tb_brand AS _brand ON _brand.id = _product.brand_id").
-		Where("_cart_item.user_id = ?", userId).Scan(ctx)
+		Where("_cart_item.user_id = ?", userId)
 
-	if err != nil {
+	if err := query.Scan(ctx); err != nil {
 		return nil, err
 	}
 
@@ -124,7 +124,9 @@ func (cartItemRepository *cartItemRepository) GetViewsByUserId(ctx context.Conte
 func (cartItemRepository *cartItemRepository) GetById(ctx context.Context, id string) (*model.CartItem, error) {
 	cartItem := new(model.CartItem)
 
-	if err := infrastructure.PostgresDB.NewSelect().Model(cartItem).Where("id = ?", id).Scan(ctx); err != nil {
+	query := infrastructure.PostgresDB.NewSelect().Model(cartItem).Where("id = ?", id)
+
+	if err := query.Scan(ctx); err != nil {
 		return nil, err
 	}
 
@@ -138,7 +140,7 @@ func (cartItemRepository *cartItemRepository) Create(ctx context.Context, newCar
 }
 
 func (cartItemRepository *cartItemRepository) Update(ctx context.Context, updatedCartItem *model.CartItem) error {
-	_, err := infrastructure.PostgresDB.NewUpdate().Model(updatedCartItem).Where("id = ?", updatedCartItem.Id).Exec(ctx)
+	_, err := infrastructure.PostgresDB.NewUpdate().Model(updatedCartItem).Exec(ctx)
 	return err
 }
 

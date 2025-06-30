@@ -30,7 +30,9 @@ func NewUserRepository() UserRepository {
 func (userRepository *userRepository) GetViewById(ctx context.Context, id string) (*model.UserView, error) {
 	user := new(model.UserView)
 
-	if err := infrastructure.PostgresDB.NewSelect().Model(user).Where("_user.id = ?", id).Scan(ctx); err != nil {
+	query := infrastructure.PostgresDB.NewSelect().Model(user).Where("_user.id = ?", id)
+
+	if err := query.Scan(ctx); err != nil {
 		return nil, err
 	}
 
@@ -40,7 +42,9 @@ func (userRepository *userRepository) GetViewById(ctx context.Context, id string
 func (userRepository *userRepository) GetById(ctx context.Context, id string) (*model.User, error) {
 	user := new(model.User)
 
-	if err := infrastructure.PostgresDB.NewSelect().Model(user).Where("id = ?", id).Scan(ctx); err != nil {
+	query := infrastructure.PostgresDB.NewSelect().Model(user).Where("id = ?", id)
+
+	if err := query.Scan(ctx); err != nil {
 		return nil, err
 	}
 
@@ -50,7 +54,9 @@ func (userRepository *userRepository) GetById(ctx context.Context, id string) (*
 func (userRepository *userRepository) GetByUsername(ctx context.Context, username string) (*model.User, error) {
 	user := new(model.User)
 
-	if err := infrastructure.PostgresDB.NewSelect().Model(user).Where("username = ?", username).Scan(ctx); err != nil {
+	query := infrastructure.PostgresDB.NewSelect().Model(user).Where("username = ?", username)
+
+	if err := query.Scan(ctx); err != nil {
 		return nil, err
 	}
 
@@ -60,7 +66,9 @@ func (userRepository *userRepository) GetByUsername(ctx context.Context, usernam
 func (userRepository *userRepository) GetByEmail(ctx context.Context, email string) (*model.User, error) {
 	user := new(model.User)
 
-	if err := infrastructure.PostgresDB.NewSelect().Model(user).Where("email = ?", email).Scan(ctx); err != nil {
+	query := infrastructure.PostgresDB.NewSelect().Model(user).Where("email = ?", email)
+
+	if err := query.Scan(ctx); err != nil {
 		return nil, err
 	}
 
@@ -73,7 +81,7 @@ func (userRepository *userRepository) Create(ctx context.Context, newUser *model
 }
 
 func (userRepository *userRepository) Update(ctx context.Context, updatedUser *model.User) error {
-	_, err := infrastructure.PostgresDB.NewUpdate().Model(updatedUser).Where("id = ?", updatedUser.Id).Exec(ctx)
+	_, err := infrastructure.PostgresDB.NewUpdate().Model(updatedUser).Exec(ctx)
 	return err
 }
 
@@ -85,7 +93,9 @@ func (userRepository *userRepository) DeleteById(ctx context.Context, id string)
 func (userRepository *userRepository) GetAllViews(ctx context.Context) ([]*model.UserView, error) {
 	var users []*model.UserView
 
-	if err := infrastructure.PostgresDB.NewSelect().Model(&users).Scan(ctx); err != nil {
+	query := infrastructure.PostgresDB.NewSelect().Model(&users)
+
+	if err := query.Scan(ctx); err != nil {
 		return nil, err
 	}
 

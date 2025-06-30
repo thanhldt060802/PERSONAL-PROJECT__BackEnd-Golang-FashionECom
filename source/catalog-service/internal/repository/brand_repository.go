@@ -45,7 +45,9 @@ func (brandRepository *brandRepository) GetAllViews(ctx context.Context, sortFie
 func (brandRepository *brandRepository) GetViewById(ctx context.Context, id string) (*model.BrandView, error) {
 	brand := new(model.BrandView)
 
-	if err := infrastructure.PostgresDB.NewSelect().Model(brand).Where("_brand.id = ?", id).Scan(ctx); err != nil {
+	query := infrastructure.PostgresDB.NewSelect().Model(brand).Where("_brand.id = ?", id)
+
+	if err := query.Scan(ctx); err != nil {
 		return nil, err
 	}
 
@@ -55,7 +57,9 @@ func (brandRepository *brandRepository) GetViewById(ctx context.Context, id stri
 func (brandRepository *brandRepository) GetById(ctx context.Context, id string) (*model.Brand, error) {
 	brand := new(model.Brand)
 
-	if err := infrastructure.PostgresDB.NewSelect().Model(brand).Where("id = ?", id).Scan(ctx); err != nil {
+	query := infrastructure.PostgresDB.NewSelect().Model(brand).Where("id = ?", id)
+
+	if err := query.Scan(ctx); err != nil {
 		return nil, err
 	}
 
@@ -65,7 +69,9 @@ func (brandRepository *brandRepository) GetById(ctx context.Context, id string) 
 func (brandRepository *brandRepository) GetByName(ctx context.Context, name string) (*model.Brand, error) {
 	brand := new(model.Brand)
 
-	if err := infrastructure.PostgresDB.NewSelect().Model(brand).Where("name = ?", name).Scan(ctx); err != nil {
+	query := infrastructure.PostgresDB.NewSelect().Model(brand).Where("name = ?", name)
+
+	if err := query.Scan(ctx); err != nil {
 		return nil, err
 	}
 
@@ -78,7 +84,7 @@ func (brandRepository *brandRepository) Create(ctx context.Context, newBrand *mo
 }
 
 func (brandRepository *brandRepository) Update(ctx context.Context, updatedBrand *model.Brand) error {
-	_, err := infrastructure.PostgresDB.NewUpdate().Model(updatedBrand).Where("id = ?", updatedBrand.Id).Exec(ctx)
+	_, err := infrastructure.PostgresDB.NewUpdate().Model(updatedBrand).Exec(ctx)
 	return err
 }
 

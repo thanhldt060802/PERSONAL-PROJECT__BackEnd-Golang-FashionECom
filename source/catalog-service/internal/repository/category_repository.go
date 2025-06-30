@@ -45,7 +45,9 @@ func (categoryRepository *categoryRepository) GetAllViews(ctx context.Context, s
 func (categoryRepository *categoryRepository) GetViewById(ctx context.Context, id string) (*model.CategoryView, error) {
 	category := new(model.CategoryView)
 
-	if err := infrastructure.PostgresDB.NewSelect().Model(category).Where("_category.id = ?", id).Scan(ctx); err != nil {
+	query := infrastructure.PostgresDB.NewSelect().Model(category).Where("_category.id = ?", id)
+
+	if err := query.Scan(ctx); err != nil {
 		return nil, err
 	}
 
@@ -55,7 +57,9 @@ func (categoryRepository *categoryRepository) GetViewById(ctx context.Context, i
 func (categoryRepository *categoryRepository) GetById(ctx context.Context, id string) (*model.Category, error) {
 	category := new(model.Category)
 
-	if err := infrastructure.PostgresDB.NewSelect().Model(category).Where("id = ?", id).Scan(ctx); err != nil {
+	query := infrastructure.PostgresDB.NewSelect().Model(category).Where("id = ?", id)
+
+	if err := query.Scan(ctx); err != nil {
 		return nil, err
 	}
 
@@ -65,7 +69,9 @@ func (categoryRepository *categoryRepository) GetById(ctx context.Context, id st
 func (categoryRepository *categoryRepository) GetByName(ctx context.Context, name string) (*model.Category, error) {
 	category := new(model.Category)
 
-	if err := infrastructure.PostgresDB.NewSelect().Model(category).Where("name = ?", name).Scan(ctx); err != nil {
+	query := infrastructure.PostgresDB.NewSelect().Model(category).Where("name = ?", name)
+
+	if err := query.Scan(ctx); err != nil {
 		return nil, err
 	}
 
@@ -78,7 +84,7 @@ func (categoryRepository *categoryRepository) Create(ctx context.Context, newCat
 }
 
 func (categoryRepository *categoryRepository) Update(ctx context.Context, updatedCategory *model.Category) error {
-	_, err := infrastructure.PostgresDB.NewUpdate().Model(updatedCategory).Where("id = ?", updatedCategory.Id).Exec(ctx)
+	_, err := infrastructure.PostgresDB.NewUpdate().Model(updatedCategory).Exec(ctx)
 	return err
 }
 
